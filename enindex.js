@@ -8,8 +8,11 @@
 //   - MY_INSTANCE
 
 // Modules
-import base from "modules/base.js";
+import * as base from "./modules/base.js";
 
 // Exported functions
-ei = {};
+var ei = {};
+
+// Global bindings
+window.ei = ei;
 // EOF
