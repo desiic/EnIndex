@@ -1,3 +1,8 @@
+// EnIndex
+// Encrypted IndexedDB for JavaScript
+// Convenient wrapper for IndexedDB APIs with encryption
+// See: https://developer.mozilla.org/en-US/docs/Web/API/IndexedDB_API
+
 // Conventions
 // ===========
 // Naming rules:
@@ -16,11 +21,25 @@
 //   - Try to reduce lines but more comments
 
 // Modules
-import * as base from "./modules/base.js";
+import base from "./modules/base.js";
+import idb  from "./modules/idb.js";
+
+// Shorthands
+var log  = console.log;
+var logw = console.warn;
+var loge = console.error;
 
 // Exported functions
-var ei = {};
+var eidb = {
+    idb: idb, // IndexedDB Wrapper
 
-// Global bindings
-window.ei = ei;
+    // Methods on window.indexedDB instance
+    open: idb.open
+};
+
+// Global bindings, base functionalities
+window.new_lock = base.new_lock;
+
+// Global bindings, whole lib
+window.eidb = eidb;
 // EOF
