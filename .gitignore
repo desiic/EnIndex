@@ -1,0 +1,10 @@
+# Everywhere
+node_modules
+
+# From project root
+/doc-src
+
+# Keep
+!.gitignore
+!.gitkeep
+# EOF
