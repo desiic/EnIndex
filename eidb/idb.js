@@ -19,6 +19,9 @@ class idb{
 
     /** 
      * Open db using db name and a specific version
+     * ```
+     * var [Result,Obj] = await eidb.open("my-db-name")
+     * ```
      * @param  {String} Name    - Name of db to open
      * @param  {Number} version - Version of db (version of index schema), >= current ver
      * @return {Array}  2 items which are result message and result object,
