@@ -20,7 +20,7 @@ Similar to C++ STL with one exceptional rule for compound properties/variables.
 Documentation
 =============
 Usage
-  * Use `eidb` class in global scope; see doc: [eidb](http://doc.desiic.com/enindex/module-eidb-eidb.html/module-eidb-eidb.html).
+  * Use `eidb` class in global scope; see doc: [eidb](http://doc.desiic.com/enindex/module-eidb-eidb.html)
   
 Quick Start and Guides
   * [https://coda.io/@desiic/enindex](https://coda.io/@desiic/enindex)
