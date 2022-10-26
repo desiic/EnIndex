@@ -1,5 +1,7 @@
 {
-    "plugins": [],
+    "plugins": [
+        "plugins/markdown"
+    ],
     "recurseDepth": 10,
     "source": {
         "includePattern": ".+\\.js(doc|x)?$",
@@ -13,5 +15,25 @@
     "templates": {
         "cleverLinks": false,
         "monospaceLinks": false
+    },
+    "opts": {
+        "theme_opts": {
+            "default_theme": "light",
+            "homepageTitle": "EnIndex Documentation",
+            "menu": [
+                {
+                    "title": "Doc Home",
+                    "link": "index.html",
+                    "target": "_self"
+                },
+                {
+                    "title": "Project Website",
+                    "link": "https://github.com/desiic/enindex",
+                    "target": "_blank"
+                }
+            ],
+            "sections": ["Modules"],
+            "include_css": ["./jsdoc-custom.css"]
+        }
     }
 }

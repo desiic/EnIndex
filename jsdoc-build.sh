@@ -18,10 +18,18 @@ rm -rf doc
 mkdir doc-src
 
 # Add files
-cp -f  enindex.js doc-src 
-cp -rf modules    doc-src
+cp -f  eidb.js doc-src 
+cp -rf eidb    doc-src
 
 # Make documentation
-npm install docdash
-jsdoc -c jsdoc.json -t node_modules/docdash -R README.md -r doc-src -d doc
+# npm install docdash
+npm install clean-jsdoc-theme
+
+echo -e "\nBuilding doc..."
+jsdoc -c jsdoc.json -t node_modules/clean-jsdoc-theme -R README.md \
+    -r doc-src -d doc
+
+# # Add custom CSS (docdash only)
+# echo -e $'\n'         >>doc/styles/jsdoc.css
+# cat  jsdoc-custom.css >>doc/styles/jsdoc.css
 # EOF

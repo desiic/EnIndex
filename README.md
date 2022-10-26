@@ -1,13 +1,15 @@
-<h1 class="page-title" style="font-size:48px; margin-top:1em;
-    margin-bottom:0;">EnIndex</h1>
+EnIndex
+=======
 Encrypted IndexedDB - Designed for convenience of use
 
-# Git Clone
+Git Clone
+=========
 Repository
-  * https://github.com/desiic/enindex
+  * [https://github.com/desiic/enindex](https://github.com/desiic/enindex)
 
-# Coding Convention
-Similar to C++ STL with exceptional rule for compound properties/variables.
+Coding Convention
+=================
+Similar to C++ STL with one exceptional rule for compound properties/variables.
   * my_namespace
   * my_class
   * my_method
@@ -15,16 +17,17 @@ Similar to C++ STL with exceptional rule for compound properties/variables.
   * My_Compound (maths is using both lower-case and upper-case)
   * MY_CONSTANT
 
-# Documentation
-Quick Start
-  * Use `eidb` class in global scope.
+Documentation
+=============
+Usage
+  * Use `eidb` class in global scope; see doc: [eidb](module-eidb-eidb.html).
   
-Manual
-  * https://coda.io/@desiic/enindex
+Quick Start and Guides
+  * [https://coda.io/@desiic/enindex](https://coda.io/@desiic/enindex)
 
-Source Code Documentation
+Source Code Documentation (this documentation)
   * https://doc.desiic.com/enindex
 
 Tools
-  * JSDoc, docdash Template
+  * JSDoc, clean-jsdoc-theme Template
 ___  
