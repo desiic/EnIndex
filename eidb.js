@@ -58,12 +58,12 @@ class eidb {
     static idbx = idbx;
 
     /**
-     * Shortcut to eidb.idb.open
+     * Alias of `eidb.idb.open` [See here](module-eidb_idb-idb.html#.open)
      */
     static open = idb.open;
 
     /**
-     * Shortcut to eidb.idbx.open_av
+     * Alias of `eidb.idbx.open_av`
      */
     static open_av = idbx.open_av;
 }
