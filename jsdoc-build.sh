@@ -22,5 +22,6 @@ cp -f  enindex.js doc-src
 cp -rf modules    doc-src
 
 # Make documentation
-jsdoc -c jsdoc.json -r doc-src -d doc
+npm install docdash
+jsdoc -c jsdoc.json -t node_modules/docdash -R README.md -r doc-src -d doc
 # EOF

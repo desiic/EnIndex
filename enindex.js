@@ -29,16 +29,36 @@ var log  = console.log;
 var logw = console.warn;
 var loge = console.error;
 
-// Exported functions
-var eidb = {
-    idb: idb, // IndexedDB Wrapper
+/**
+ * Create new async/await lock
+ */
+function new_lock(...Args){
+    return base.new_lock(...Args);
+}
 
-    // Methods on window.indexedDB instance
-    open: idb.open
-};
+/**
+ * Main class of EnIndex library
+ */
+class eidb {
+
+    /**
+     * IndexedDB wrapper
+     */
+    static idb = idb;
+
+    /**
+     * Shortcut to eidb.idb.open
+     */
+    static open = idb.open;
+
+    /**
+     * Shortcut to eidb.idbx.open_av
+     */
+    static open_av = idbx.open_av;
+}
 
 // Global bindings, base functionalities
-window.new_lock = base.new_lock;
+window.new_lock = new_lock;
 
 // Global bindings, whole lib
 window.eidb = eidb;

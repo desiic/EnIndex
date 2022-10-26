@@ -1,4 +1,6 @@
-// IDBFactory
+/** 
+ * eidb.idb.idb_factory, IDBFactory class wrapper
+ */
 class idb_factory {
 }
 

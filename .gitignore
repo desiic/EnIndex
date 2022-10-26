@@ -1,4 +1,5 @@
 # Everywhere
+node_modules
 
 # From project root
 /doc-src
