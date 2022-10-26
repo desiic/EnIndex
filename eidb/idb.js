@@ -20,6 +20,7 @@ class idb{
     /** 
      * Open db using db name and a specific version
      * ```
+     * // Example
      * var [Result,Obj] = await eidb.open("my-db-name")
      * ```
      * @param  {String} Name    - Name of db to open
