@@ -18,7 +18,13 @@ class idb{
     static idb_factory = idb_factory;
 
     /** 
-     * Open db
+     * Open db using db name and a specific version
+     * @param  {String} Name    - Name of db to open
+     * @param  {Number} version - Version of db (version of index schema), >= current ver
+     * @return {Array}  2 items which are result message and result object,
+     *                  result message is a string, one of "error", "blocked", "upgrade", "success";
+     *                  result object for error is error object, for blocked is an event,
+     *                  for upgrade and success are both db object to use.
      */
     static async open(Name, version){
         try {
@@ -26,11 +32,13 @@ class idb{
         }
         catch (Err){
             loge("idb.open: Error caught:",Err);
-            return null;
+            return ["error",Err];
         }
 
         // Lock to wait for callback
         var [Lock,Unlock] = new_lock();
+        var Err_Obj       = null;
+        var Ev_Obj        = null;
 
         // Operation sequences may happen:
         //   - error
@@ -39,7 +47,8 @@ class idb{
         var Sequence_Cancel_Reason = null;
 
         Req.onerror = function(Ev){
-            loge("idb.open: Failed with error:",Ev.target.error);
+            loge("idb.open: Failed with error:",Ev.target.error);            
+            Err_Obj = Ev.target.error;
             Unlock("error"); // Nothing next but just clear the lock, no sequence to cancel
         };        
         Req.onblocked = function(Ev){
@@ -47,6 +56,8 @@ class idb{
             logw("Check source code, shouldn't be blocked by connections in current tab or other tabs.");
             logw("Tip: Avoid being blocked by using temporary connections in all tabs\x20"+
                  "together with IDBDatabase.versionchange event.");
+
+            Ev_Obj = Ev;     
             Unlock("blocked");
             Sequence_Cancel_Reason = "block";
         };
@@ -74,10 +85,10 @@ class idb{
         var Result = await Lock;
 
         if (Result=="error")   
-            return [Result, null]; // Error, no .result        
+            return [Result, Err_Obj]; // Error, no .result        
         if (Result=="blocked") 
-            return [Result, null]; // The request has not finished, no .result yet,
-                                   // waiting for other connections to close.
+            return [Result, Ev_Obj]; // The request has not finished, no .result yet,
+                                     // waiting for other connections to close.
         // This returns either db from upgrade or success event,
         // upgrade+close+reopen if it is upgrading case.
         if (Result=="upgrade" || Result=="success") 
