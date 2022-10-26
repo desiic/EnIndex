@@ -25,7 +25,7 @@ Usage
 Quick Start and Guides
   * [https://coda.io/@desiic/enindex](https://coda.io/@desiic/enindex)
 
-Source Code Documentation (this documentation)
+Source Code Documentation
   * [http://doc.desiic.com/enindex](http://doc.desiic.com/enindex)
 
 Tools
