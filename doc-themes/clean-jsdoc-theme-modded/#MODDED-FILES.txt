@@ -1,0 +1,6 @@
+publish.js
+Modded in jsdoc-build.sh script
+
+tmpl\sidebar-items.tmpl
+Mod added inside
+___
