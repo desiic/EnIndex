@@ -60,7 +60,7 @@ class eidb {
 
     METHODS__________;
     /**
-     * @function
+     * @function open
      * Alias of `eidb.idb.open` [See here](module-eidb_idb-idb.html#.open)
      */
     static open = idb.open;
