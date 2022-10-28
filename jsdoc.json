@@ -36,7 +36,8 @@
                 }
             ],
             "sections": ["Modules"],
-            "include_css": ["./jsdoc-custom.css"]
+            "include_css": ["./doc-inc/jsdoc-custom.css"],
+            "include_js":  ["./doc-inc/jsdoc-custom.js"]
         }
     }
 }
