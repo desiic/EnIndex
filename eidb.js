@@ -43,11 +43,15 @@ function new_lock(...Args){
 
 /**
  * Main class of EnIndex library, can be used directly under global scope, 
- * that is `window.eidb` or just `eidb`
+ * that is `window.eidb` or just `eidb`.
  */
 class eidb {
 
-    static SUB_NAMESPACES__________ = 1;
+    /**
+     * ________________________________________
+     */ 
+    SUB_NAMESPACES;
+
     /**
      * Sub-namespace, IndexedDB wrapper
      */
@@ -58,7 +62,11 @@ class eidb {
      */
     static idbx = idbx;
 
-    static METHODS__________ = 2;
+    /**
+     * ________________________________________
+     */ 
+    METHODS;
+
     /**
      * Alias of `eidb.idb.open` [See here](module-eidb_idb-idb.html#.open)
      */
