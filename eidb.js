@@ -47,7 +47,7 @@ function new_lock(...Args){
  */
 class eidb {
 
-    SUB_NAMESPACES__________ = null;
+    static SUB_NAMESPACES__________;
     /**
      * Sub-namespace, IndexedDB wrapper
      */
@@ -58,7 +58,7 @@ class eidb {
      */
     static idbx = idbx;
 
-    METHODS__________ = null;
+    static METHODS__________;
     /**
      * Alias of `eidb.idb.open` [See here](module-eidb_idb-idb.html#.open)
      */
