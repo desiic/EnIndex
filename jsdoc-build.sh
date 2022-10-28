@@ -37,7 +37,7 @@ perl -pi -e $'s|data.sort\(\'longname, version, since\'\);|// No sort|g' publish
 cd ../..
 
 echo -e "\nBuilding doc..."
-jsdoc -c jsdoc.json -t doc-themes/clean-jsdoc-theme-modded -R README.md \
+jsdoc -c doc-conf/jsdoc.json -t doc-themes/clean-jsdoc-theme-modded -R README.md \
     -r doc-src -d doc
 
 # # Add custom CSS (docdash only, already in jsdoc.json for clean-jsdoc-theme)
