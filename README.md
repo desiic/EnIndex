@@ -1,6 +1,7 @@
 EnIndex
 =======
-Encrypted IndexedDB - Designed for convenience of use
+Encrypted IndexedDB - Designed for convenience of use, using Promise instead
+of callback or multiple callbacks for events.
 
 Git Clone
 =========
