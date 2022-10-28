@@ -5,8 +5,8 @@ if [[ $BASH_SOURCE != $0 ]]; then
     echo "Don't source this file, Bash it."
     return
 fi
-if [[ ! -f jsdoc.json ]]; then
-    echo "No jsdoc.json found in current dir!"
+if [[ ! -f doc-conf/jsdoc.json ]]; then
+    echo "Error: Config file ./doc-conf/jsdoc.json not found!"
     exit  
 fi
 
