@@ -49,7 +49,6 @@ class eidb {
 
     SUB_NAMESPACES__________;
     /**
-     * @namespace
      * Sub-namespace, IndexedDB wrapper
      */
     static idb = idb;
@@ -61,7 +60,7 @@ class eidb {
 
     METHODS__________;
     /**
-     * @method
+     * @function
      * Alias of `eidb.idb.open` [See here](module-eidb_idb-idb.html#.open)
      */
     static open = idb.open;
