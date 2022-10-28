@@ -2,6 +2,9 @@
     "plugins": [
         "plugins/markdown"
     ],
+    "markdown": {
+        "idInHeadings": true // This is important for clean-jsdoc-theme, otherwise some features might not work.
+    },
     "recurseDepth": 10,
     "source": {
         "includePattern": ".+\\.js(doc|x)?$",
