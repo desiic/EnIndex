@@ -23,7 +23,6 @@ class idb_factory {
      */
     constructor(Idb_Factory){
         this.self = Idb_Factory;
-        log(this.self)
     }
 
     /** 
