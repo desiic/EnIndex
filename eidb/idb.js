@@ -15,6 +15,10 @@ var new_lock = base.new_lock;
  * `eidb.idb` IndexedDB wrapper
  */
 class idb{
+
+    /**
+     * Wrapper class of IDBFactory
+     */
     static idb_factory = idb_factory;
 
     /**
