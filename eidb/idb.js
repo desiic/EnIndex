@@ -29,7 +29,7 @@ class idb{
      * @return {Array}  See `eidb.idb.idb_factory` class [here](module-eidb_idb_idb_factory-idb_factory.html#.open)
      */
     static async open(Name, version){
-        return await (new idb_factory(window.indexedDB)).open(Name,version);
+        return await (new idb_factory(window.indexedDB)) .open(Name,version);
     }
 }
 
