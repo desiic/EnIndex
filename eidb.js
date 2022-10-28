@@ -60,6 +60,10 @@ class eidb {
 
     METHODS__________;
     /**
+     * a member
+     */
+    static a = 999;
+    /**
      * Alias of `eidb.idb.open` [See here](module-eidb_idb-idb.html#.open)
      * ```
      * // Example
