@@ -5,21 +5,25 @@
 import base from "../base.js";
 
 // Shorthands
+var log      = console.log;
+var logw     = console.warn;
+var loge     = console.error;
 var new_lock = base.new_lock;
 
 /** 
  * `eidb.idb.idb_factory` IDBFactory class wrapper
  */
 class idb_factory {
-    self = null;
+    // self = null;
 
     /**
      * Construct with the IDBFactory instance underhood
      * @param {IDBFactory} Idb_Factory - IDBFactory instance to use, usually 
      *                                   just `window.indexedDB`
      */
-    idb_factory(Idb_Factory){
+    constructor(Idb_Factory){
         this.self = Idb_Factory;
+        log(this.self)
     }
 
     /** 
@@ -32,7 +36,7 @@ class idb_factory {
      *                  result object for error is error object, for blocked is an event,
      *                  for upgrade and success are both db object to use.
      */
-     static async open(Name, version){
+     async open(Name, version){
         try {
             var Req = this.self.open(Name,version);
         }
