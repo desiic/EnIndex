@@ -20,6 +20,9 @@ class idb{
     /**
      * Call open db on default instance of IDBFactory already at `window.indexedDB`.
      * [See here](module-eidb_idb_idb_factory-idb_factory.html#.open)
+     * @param  {String} Name
+     * @param  {Number} version
+     * @return {Array}
      */
     static async open(Name, version){
         return await (new idb_factory(window.indexedDB)).open(Name,version);

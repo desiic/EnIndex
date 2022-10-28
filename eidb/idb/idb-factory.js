@@ -15,8 +15,8 @@ class idb_factory {
     }
 
     /** 
-     * Open db using db name and a specific version, using the singleton of
-     * IDBFactory already at `window.indexedDB`
+     * Open db using db name and a specific version, using the IDBFactory 
+     * instance set by constructor
      * ```
      * // Example
      * var [Result,Obj] = await eidb.open("my-db-name")
