@@ -61,6 +61,10 @@ class eidb {
     METHODS__________;
     /**
      * Alias of `eidb.idb.open` [See here](module-eidb_idb-idb.html#.open)
+     * ```
+     * // Example
+     * var [Result,Obj] = await eidb.open("my-db-name")
+     * ```
      */
     static open = idb.open;
 
