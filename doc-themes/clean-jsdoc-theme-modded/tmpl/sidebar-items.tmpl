@@ -1,0 +1,29 @@
+<?js
+var data = this.sidebar
+
+if (Array.isArray(data.sections)) {
+    data.sections.forEach(function(section) {
+        if(section.items.length > 0) { ?>
+            <div class="sidebar-section-title with-arrow" data-isopen="false" id="<?js= section.id?>">
+                <div><?js= section.name ?></div>
+                <svg><use xlink:href="#down-icon"></use></svg>
+            </div>
+            <div class="sidebar-section-children-container">
+                <?js 
+                // Mod:
+                section.items.sort((A,B)=>{
+                    if (A.name < B.name) return -1;
+                    if (A.name > B.name) return 1;
+                    return 0;
+                });
+
+                section.items.forEach(function(item) { ?>
+                    <div class="sidebar-section-children">
+                        <?js= item.anchor ?>
+                    </div>
+                    
+                <?js }) ?>
+            </div><?js 
+        }
+    })
+}?>

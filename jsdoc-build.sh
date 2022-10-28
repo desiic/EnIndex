@@ -28,7 +28,7 @@ npm install clean-jsdoc-theme
 # Disable sorting in template to keep source code in sections
 # https://github.com/jsdoc/jsdoc/issues/428#issue-14846165
 echo -e "\nDisabling sort in template..."
-cd node_modules/clean-jsdoc-theme
+cd doc-themes/clean-jsdoc-theme-modded
 
 if [[ ! -f publish.bak.js ]]; then
     cp -f publish.js publish.bak.js
@@ -37,10 +37,10 @@ perl -pi -e $'s|data.sort\(\'longname, version, since\'\);|// No sort|g' publish
 cd ../..
 
 echo -e "\nBuilding doc..."
-jsdoc -c jsdoc.json -t node_modules/clean-jsdoc-theme -R README.md \
+jsdoc -c jsdoc.json -t doc-themes/clean-jsdoc-theme-modded -R README.md \
     -r doc-src -d doc
 
-# # Add custom CSS (docdash only)
+# # Add custom CSS (docdash only, already in jsdoc.json for clean-jsdoc-theme)
 # echo -e $'\n'         >>doc/styles/jsdoc.css
 # cat  jsdoc-custom.css >>doc/styles/jsdoc.css
 # EOF
