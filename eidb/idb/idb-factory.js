@@ -9,6 +9,8 @@ class idb_factory {
 
     /**
      * Construct with the IDBFactory instance underhood
+     * @param {IDBFactory} Idb_Factory - IDBFactory instance to use, usually 
+     *                                   just `window.indexedDB`
      */
     idb_factory(Idb_Factory){
         this.self = Idb_Factory;
@@ -16,11 +18,7 @@ class idb_factory {
 
     /** 
      * Open db using db name and a specific version, using the IDBFactory 
-     * instance set by constructor
-     * ```
-     * // Example
-     * var [Result,Obj] = await eidb.open("my-db-name")
-     * ```
+     * instance set by constructor     
      * @param  {String} Name    - Name of db to open
      * @param  {Number} version - Version of db (version of index schema), >= current ver
      * @return {Array}  2 items which are result message and result object,
