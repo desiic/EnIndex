@@ -1,9 +1,10 @@
 publish.js
-    Modded in jsdoc-build.sh script
+    Modded in jsdoc-build.sh script: Disable original all item sort
+    to keep item ordered the same as in source code.
 
 tmpl\sidebar-items.tmpl
-    Mod added inside
+    Mod added inside: Sort
 
 tmpl\container.tmpl
-    Mod added inside
+    Mod added inside: Bigger class names
 ___

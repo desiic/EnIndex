@@ -18,7 +18,10 @@ function mod_func(){
     
     for (let Tog of Togs)
         Tog.setAttribute("data-isopen","true");
+
+    // Remove event
+    window.removeEventListener("load", mod_func);
 }
 
-window.addEventListener("load",mod_func);
+window.addEventListener("load", mod_func);
 // EOF
