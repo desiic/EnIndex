@@ -1,6 +1,9 @@
 publish.js
-Modded in jsdoc-build.sh script
+    Modded in jsdoc-build.sh script
 
 tmpl\sidebar-items.tmpl
-Mod added inside
+    Mod added inside
+
+tmpl\container.tmpl
+    Mod added inside
 ___
