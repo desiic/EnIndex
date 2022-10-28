@@ -17,6 +17,7 @@
         "monospaceLinks": false
     },
     "opts": {
+        "sort": false,
         "theme_opts": {
             "default_theme": "light",
             "homepageTitle": "EnIndex Documentation",
