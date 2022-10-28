@@ -1,6 +1,12 @@
 /**
  * @module eidb/idb/idb_factory
  */
+// Modules
+import base from "../base.js";
+
+// Shorthands
+var new_lock = base.new_lock;
+
 /** 
  * `eidb.idb.idb_factory` IDBFactory class wrapper
  */

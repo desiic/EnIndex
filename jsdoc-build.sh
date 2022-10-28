@@ -25,6 +25,17 @@ cp -rf eidb    doc-src
 # npm install docdash
 npm install clean-jsdoc-theme
 
+# Disable sorting in template to keep source code in sections
+# https://github.com/jsdoc/jsdoc/issues/428#issue-14846165
+echo -e "\nDisabling sort in template..."
+cd node_modules/clean-jsdoc-theme
+
+if [[ ! -f publish.bak.js ]]; then
+    cp -f publish.js publish.bak.js
+fi
+perl -pi -e $'s|data.sort\(\'longname, version, since\'\);|// No sort|g' publish.js
+cd ../..
+
 echo -e "\nBuilding doc..."
 jsdoc -c jsdoc.json -t node_modules/clean-jsdoc-theme -R README.md \
     -r doc-src -d doc
