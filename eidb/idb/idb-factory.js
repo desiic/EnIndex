@@ -39,9 +39,9 @@ class idb_factory {
      *                  result message is a string, one of "error", "blocked", "upgrade", "success";
      *                  result object for error is error object, for blocked is an event,
      *                  for upgrade and success are both db object to use.<br/>
-     *                  <ul><b>4 cases</b>:
-     *                      <li>["error",   Error_Obj]            </li>
-     *                      <li>["blocked", Event_Obj]            </li>
+     *                  <ul><b>4 cases:</b>
+     *                      <li>["error",   Error_Obj]</li>
+     *                      <li>["blocked", Event_Obj]</li>
      *                      <li>["upgrade", idb_database instance]</li>
      *                      <li>["success", idb_database instance]</li>
      *                  </ul>
