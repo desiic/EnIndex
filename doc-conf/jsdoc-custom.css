@@ -5,5 +5,5 @@ html { font-size:14px !important; }
 ul { list-style:circle !important; }
 
 /* Outdent first item in UL in article */
-article ul >*:nth-child(1) { margin-left:-.5rem !important; }
+article ul >*:nth-child(1) { margin-left:-3rem !important; }
 /* EOF */
