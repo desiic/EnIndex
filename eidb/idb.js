@@ -2,8 +2,8 @@
  * @module eidb/idb
  */
 // Modules
-import base        from "./base.js";
-import idb_factory from "./idb/idb-factory.js";
+import eidb from "../eidb.js";
+import base from "./base.js";
 
 // Shorthands
 var log      = console.log;
@@ -24,7 +24,7 @@ class idb{
      * @return {Array}  See `eidb.idb.idb_factory` class [here](module-eidb_idb_idb_factory-idb_factory.html#.open)
      */
     static async open(Name, version){
-        return await (new idb_factory(window.indexedDB)) .open(Name,version);
+        return await eidb.Idb_Factory.open(Name,version);
     }
 
     /**
@@ -34,7 +34,7 @@ class idb{
      * @return {null|Object} See `eidb.idb.idb_factory` class [here](module-eidb_idb_idb_factory-idb_factory.html#delete_database)
      */
     static async delete_database(Name){
-        return await (new idb_factory(window.indexedDB)) .delete_database(Name);
+        return await eidb.Idb_Factory.delete_database(Name);
     }
 
     /**
@@ -42,7 +42,7 @@ class idb{
      * @return {Object|Array} See `eidb.idb.idb_factory` class [here](module-eidb_idb_idb_factory-idb_factory.html#databases)
      */
     static async databases(){
-        return await (new idb_factory(window.indexedDB)) .databases();
+        return await eidb.Idb_Factory.databases();
     }
 }
 
