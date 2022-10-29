@@ -17,11 +17,6 @@ var new_lock = base.new_lock;
 class idb{
 
     /**
-     * Wrapper class of IDBFactory
-     */
-    static idb_factory = idb_factory;
-
-    /**
      * Call open db on default instance of IDBFactory already at `window.indexedDB`.
      * [See here](module-eidb_idb_idb_factory-idb_factory.html#open)
      * @param  {String} Name    - See `eidb.idb.idb_factory` class [here](module-eidb_idb_idb_factory-idb_factory.html#open)
@@ -40,6 +35,14 @@ class idb{
      */
     static async delete_database(Name){
         return await (new idb_factory(window.indexedDB)) .delete_database(Name);
+    }
+
+    /**
+     * Get the list of databases, using the default instance of IDBFactory at `window.indexedDB`
+     * @return {Object|Array} See `eidb.idb.idb_factory` class [here](module-eidb_idb_idb_factory-idb_factory.html#databases)
+     */
+    static async databases(){
+        return await (new idb_factory(window.indexedDB)) .databases();
     }
 }
 

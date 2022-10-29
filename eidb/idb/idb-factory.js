@@ -14,7 +14,11 @@ var new_lock = base.new_lock;
  * `eidb.idb.idb_factory` IDBFactory class wrapper
  */
 class idb_factory {
-    // self = null;
+    
+    /**
+     * Properties
+     */ 
+    self = null;
 
     /**
      * Construct with the IDBFactory instance underhood
@@ -121,6 +125,16 @@ class idb_factory {
             Unlock(null);
         };
         return await Lock;
+    }
+
+    /**
+     * Get the list of databases, using the instance of IDBFactory set by constructor
+     * @return {Object|Array} Error object or the list of databases found, 
+     *                        with `name` and `version` properties only.
+     *                        Use `instance of Array` to check if it's not error.
+     */
+    async databases(){
+        return await this.self.databases();
     }
 }
 

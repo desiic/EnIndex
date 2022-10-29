@@ -85,6 +85,11 @@ class eidb {
      * Alias of `eidb.idb.delete_database` [See here](module-eidb_idb-idb.html#.delete_database)
      */
     static delete_database = idb.delete_database;
+
+    /**
+     * Alias of `eidb.idb.databases` [See here](module-eidb_idb-idb.html#.databases)
+     */
+    static databases = idb.databases;
 }
 
 // Global bindings, base functionalities
