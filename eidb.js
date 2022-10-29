@@ -80,6 +80,11 @@ class eidb {
      * Alias of `eidb.idbx.open_av`
      */
     static open_av = idbx.open_av;
+
+    /**
+     * Alias of `eidb.idb.delete_database`
+     */
+    static delete_database = idb.delete_database;
 }
 
 // Global bindings, base functionalities

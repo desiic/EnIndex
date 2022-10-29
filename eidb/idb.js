@@ -31,6 +31,16 @@ class idb{
     static async open(Name, version){
         return await (new idb_factory(window.indexedDB)) .open(Name,version);
     }
+
+    /**
+     * Delete database, using the default instance of IDBFactory already at `window.indexedDB`
+     * [See here](module-eidb_idb_idb_factory-idb_factory.html#.delete_database)
+     * @param  {String}      Name - See `eidb.idb.idb_factory` class [here](module-eidb_idb_idb_factory-idb_factory.html#.delete_database)
+     * @return {null|Object} See `eidb.idb.idb_factory` class [here](module-eidb_idb_idb_factory-idb_factory.html#.delete_database)
+     */
+    static async delete_database(Name){
+        return await (new idb_factory(window.indexedDB)) .delete_database(Name);
+    }
 }
 
 // Module export
