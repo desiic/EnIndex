@@ -3,4 +3,7 @@ html { font-size:14px !important; }
 
 /* Light dots */
 ul { list-style:circle !important; }
+
+/* Outdent first item in UL in article */
+article ul >*:nth-child(1) { margin-left:-.5rem !important; }
 /* EOF */
