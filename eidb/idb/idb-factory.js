@@ -103,6 +103,25 @@ class idb_factory {
         if (Result=="upgrade" || Result=="success") 
             return [Result, Req.result]; // .result is IDBDatabase object
     }
+
+    /**
+     * Delete database, using the default instance of IDBFactory already at `window.indexedDB`
+     * [See here](module-eidb_idb_idb_factory-idb_factory.html#.delete_database)
+     * @param  {String}      Name - See `eidb.idb.idb_factory` class [here](module-eidb_idb_idb_factory-idb_factory.html#.delete_database)
+     * @return {null|Object} See `eidb.idb.idb_factory` class [here](module-eidb_idb_idb_factory-idb_factory.html#.delete_database)
+     */
+    async delete_database(Name){
+        var Req           = this.self.deleteDatabase(Name);
+        var [Lock,Unlock] = new_lock();
+
+        Req.onerror = function(Ev){
+            Unlock(Ev.target.error);
+        };
+        Req.onsuccess = function(Ev){
+            Unlock(null);
+        };
+        return await Lock;
+    }
 }
 
 // Module export
