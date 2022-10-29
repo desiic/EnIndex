@@ -2,7 +2,8 @@
  * @module eidb/idb/idb_factory
  */
 // Modules
-import base from "../base.js";
+import base         from "../base.js";
+import idb_database from "./idb-database.js";
 
 // Shorthands
 var log      = console.log;
@@ -14,7 +15,11 @@ var new_lock = base.new_lock;
  * `eidb.idb.idb_factory` IDBFactory class wrapper
  */
 class idb_factory {
-    // self = null;
+    
+    /**
+     * Properties
+     */ 
+    self = null;
 
     /**
      * Construct with the IDBFactory instance underhood
@@ -33,7 +38,12 @@ class idb_factory {
      * @return {Array}  2 items which are result message and result object,
      *                  result message is a string, one of "error", "blocked", "upgrade", "success";
      *                  result object for error is error object, for blocked is an event,
-     *                  for upgrade and success are both db object to use.
+     *                  for upgrade and success are both db object to use.<br/>
+     *                  4 cases:
+     *                    - ["error",   Error_Obj]
+     *                    - ["blocked", Event_Obj]
+     *                    - ["upgrade", idb_database instance]
+     *                    - ["success", idb_database instance] 
      */
      async open(Name, version){
         try {
@@ -101,7 +111,7 @@ class idb_factory {
         // This returns either db from upgrade or success event,
         // upgrade+close+reopen if it is upgrading case.
         if (Result=="upgrade" || Result=="success") 
-            return [Result, Req.result]; // .result is IDBDatabase object
+            return [Result, new idb_database(Req.result)]; // .result is IDBDatabase object
     }
 
     /**
@@ -121,6 +131,16 @@ class idb_factory {
             Unlock(null);
         };
         return await Lock;
+    }
+
+    /**
+     * Get the list of databases, using the instance of IDBFactory set by constructor
+     * @return {Object|Array} Error object or the list of databases found, 
+     *                        with `name` and `version` properties only.
+     *                        Use `instance of Array` to check if it's not error.
+     */
+    async databases(){
+        return await this.self.databases();
     }
 }
 

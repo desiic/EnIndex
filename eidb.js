@@ -24,9 +24,10 @@
 //   - Try to reduce lines but more comments
 
 // Modules
-import base  from "./eidb/base.js";
-import idb   from "./eidb/idb.js";
-import idbx  from "./eidb/idbx.js";
+import base        from "./eidb/base.js";
+import idb         from "./eidb/idb.js";
+import idbx        from "./eidb/idbx.js";
+import idb_factory from "./eidb/idb/idb-factory.js";
 
 // Shorthands
 var log  = console.log;
@@ -48,7 +49,7 @@ function new_lock(...Args){
 class eidb {
 
     /**
-     * ___
+     * _________________________________________________________________________
      */
     SUB_NAMESPACES;
 
@@ -63,7 +64,17 @@ class eidb {
     static idbx = idbx;
 
     /**
-     * ___
+     * _________________________________________________________________________
+     */
+    PROPERTIES;
+
+    /**
+     * Global idb_factory
+     */
+    static Idb_Factory = new idb_factory(window.indexedDB);
+
+    /**
+     * _________________________________________________________________________
      */
     METHODS;
 
@@ -85,6 +96,11 @@ class eidb {
      * Alias of `eidb.idb.delete_database` [See here](module-eidb_idb-idb.html#.delete_database)
      */
     static delete_database = idb.delete_database;
+
+    /**
+     * Alias of `eidb.idb.databases` [See here](module-eidb_idb-idb.html#.databases)
+     */
+    static databases = idb.databases;
 }
 
 // Global bindings, base functionalities
@@ -92,4 +108,7 @@ window.new_lock = new_lock;
 
 // Global bindings, whole lib
 window.eidb = eidb;
+
+// Module export, for submodules to use only, outer JS uses window.* above
+export default eidb; 
 // EOF

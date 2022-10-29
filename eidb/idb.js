@@ -2,8 +2,8 @@
  * @module eidb/idb
  */
 // Modules
-import base        from "./base.js";
-import idb_factory from "./idb/idb-factory.js";
+import eidb from "../eidb.js";
+import base from "./base.js";
 
 // Shorthands
 var log      = console.log;
@@ -17,11 +17,6 @@ var new_lock = base.new_lock;
 class idb{
 
     /**
-     * Wrapper class of IDBFactory
-     */
-    static idb_factory = idb_factory;
-
-    /**
      * Call open db on default instance of IDBFactory already at `window.indexedDB`.
      * [See here](module-eidb_idb_idb_factory-idb_factory.html#open)
      * @param  {String} Name    - See `eidb.idb.idb_factory` class [here](module-eidb_idb_idb_factory-idb_factory.html#open)
@@ -29,7 +24,7 @@ class idb{
      * @return {Array}  See `eidb.idb.idb_factory` class [here](module-eidb_idb_idb_factory-idb_factory.html#.open)
      */
     static async open(Name, version){
-        return await (new idb_factory(window.indexedDB)) .open(Name,version);
+        return await eidb.Idb_Factory.open(Name,version);
     }
 
     /**
@@ -39,7 +34,15 @@ class idb{
      * @return {null|Object} See `eidb.idb.idb_factory` class [here](module-eidb_idb_idb_factory-idb_factory.html#delete_database)
      */
     static async delete_database(Name){
-        return await (new idb_factory(window.indexedDB)) .delete_database(Name);
+        return await eidb.Idb_Factory.delete_database(Name);
+    }
+
+    /**
+     * Get the list of databases, using the default instance of IDBFactory at `window.indexedDB`
+     * @return {Object|Array} See `eidb.idb.idb_factory` class [here](module-eidb_idb_idb_factory-idb_factory.html#databases)
+     */
+    static async databases(){
+        return await eidb.Idb_Factory.databases();
     }
 }
 
