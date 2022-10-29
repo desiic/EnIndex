@@ -77,12 +77,12 @@ class eidb {
     static open = idb.open;
 
     /**
-     * Alias of `eidb.idbx.open_av`
+     * Alias of `eidb.idbx.open_av` [See here](module-eidb_idbx-idbx.html#.open_av)
      */
     static open_av = idbx.open_av;
 
     /**
-     * Alias of `eidb.idb.delete_database`
+     * Alias of `eidb.idb.delete_database` [See here](module-eidb_idb-idb.html#.delete_database)
      */
     static delete_database = idb.delete_database;
 }

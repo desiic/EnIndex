@@ -105,10 +105,10 @@ class idb_factory {
     }
 
     /**
-     * Delete database, using the default instance of IDBFactory already at `window.indexedDB`
-     * [See here](module-eidb_idb_idb_factory-idb_factory.html#.delete_database)
-     * @param  {String}      Name - See `eidb.idb.idb_factory` class [here](module-eidb_idb_idb_factory-idb_factory.html#.delete_database)
-     * @return {null|Object} See `eidb.idb.idb_factory` class [here](module-eidb_idb_idb_factory-idb_factory.html#.delete_database)
+     * Delete database, using the instance of IDBFactory set by constructor
+     * @param  {String}      Name - Name of the database to delete
+     * @return {null|Object} null if no errors, or error Object; note that it's no
+     *                       errors when the database name doesn't exist
      */
     async delete_database(Name){
         var Req           = this.self.deleteDatabase(Name);
