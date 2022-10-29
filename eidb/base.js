@@ -15,8 +15,8 @@ class base{
      * Create async/await lock
      */
     static new_lock(){
-        var Unlock, Lock=new Promise((Res,Rej)=>{ Unlock=Res; });
-        return [Lock,Unlock];
+        var unlock, Lock=new Promise((res,rej)=>{ unlock=res; });
+        return [Lock, unlock];
     }
 }
 

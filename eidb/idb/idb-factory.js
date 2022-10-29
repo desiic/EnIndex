@@ -56,7 +56,7 @@ class idb_factory {
         }
 
         // Lock to wait for callback
-        var [Lock,Unlock] = new_lock();
+        var [Lock,unlock] = new_lock();
         var Err_Obj       = null;
         var Ev_Obj        = null;
 
@@ -69,7 +69,7 @@ class idb_factory {
         Req.onerror = function(Ev){
             loge("idb.open: Failed with error:",Ev.target.error);            
             Err_Obj = Ev.target.error;
-            Unlock("error"); // Nothing next but just clear the lock, no sequence to cancel
+            unlock("error"); // Nothing next but just clear the lock, no sequence to cancel
         };        
         Req.onblocked = function(Ev){
             logw(`idb.open: Upgrade blocked, requested to change to version ${version}`);
@@ -78,29 +78,29 @@ class idb_factory {
                  "together with IDBDatabase.versionchange event.");
 
             Ev_Obj = Ev;     
-            Unlock("blocked");
+            unlock("blocked");
             Sequence_Cancel_Reason = "block";
         };
         Req.onupgradeneeded = function(Ev){
             if (Sequence_Cancel_Reason != null){
                 logw(`idb.open: Upgrade cancelled due to '${Sequence_Cancel_Reason}' event fired right previously`);
-                Unlock(); // Redundant, no longer awaited
+                unlock(); // Redundant, no longer awaited
                 return;
             }
 
             log(`idb.open: Upgrade needed, to version ${version}`);
-            Unlock("upgrade");
+            unlock("upgrade");
             Sequence_Cancel_Reason = "upgrade";
         };
         Req.onsuccess = function(Ev){
             if (Sequence_Cancel_Reason != null){
                 logw(`idb.open: Open cancelled due to '${Sequence_Cancel_Reason}' event fired right previously`);
-                Unlock(); // Redundant, no longer awaited
+                unlock(); // Redundant, no longer awaited
                 return;
             }
 
             log(`idb.open: Database opened successfully`);
-            Unlock("success");
+            unlock("success");
         };
         var Result = await Lock;
 
@@ -123,13 +123,13 @@ class idb_factory {
      */
     async delete_database(Name){
         var Req           = this.self.deleteDatabase(Name);
-        var [Lock,Unlock] = new_lock();
+        var [Lock,unlock] = new_lock();
 
         Req.onerror = function(Ev){
-            Unlock(Ev.target.error);
+            unlock(Ev.target.error);
         };
         Req.onsuccess = function(Ev){
-            Unlock(null);
+            unlock(null);
         };
         return await Lock;
     }

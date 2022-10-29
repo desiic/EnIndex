@@ -13,7 +13,7 @@ Coding Convention
 Similar to C++ STL with one exceptional rule for compound properties/variables.
   * my_namespace
   * my_class
-  * my_method
+  * my_method (or function var, or event)
   * my_primitive (maths is using both lower-case and upper-case, bool or number)
   * My_Compound (maths is using both lower-case and upper-case, others)
   * MY_CONSTANT
