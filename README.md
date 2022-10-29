@@ -14,8 +14,8 @@ Similar to C++ STL with one exceptional rule for compound properties/variables.
   * my_namespace
   * my_class
   * my_method
-  * my_primitive (maths is using both lower-case and upper-case)
-  * My_Compound (maths is using both lower-case and upper-case)
+  * my_primitive (maths is using both lower-case and upper-case, bool or number)
+  * My_Compound (maths is using both lower-case and upper-case, others)
   * MY_CONSTANT
 
 Documentation

@@ -27,6 +27,32 @@ class idb_database {
     constructor(Idb_Database){
         this.self = Idb_Database;
     }
+
+    /**
+     * _________________________________________________________________________
+     */
+    SETS_AND_GETS;
+
+    /**
+     * Get name
+     */
+    get Name(){
+        return this.self.name;
+    }
+
+    /**
+     * Get objectStoreNames
+     */
+    get Object_Store_Names(){
+        return [...this.self.objectStoreNames];
+    }
+
+    /**
+     * Get version
+     */
+    get version(){
+        return this.self.version;
+    }
 }
 
 // Module export
