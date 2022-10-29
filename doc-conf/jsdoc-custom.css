@@ -1,3 +1,9 @@
+/* Normal font size */
 html { font-size:14px !important; }
-ul   { list-style:circle !important; }
+
+/* Light dots */
+ul { list-style:circle !important; }
+
+/* Intend for dd */
+article dd { padding-left:2rem !important; }
 /* EOF */
