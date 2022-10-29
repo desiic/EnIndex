@@ -39,11 +39,12 @@ class idb_factory {
      *                  result message is a string, one of "error", "blocked", "upgrade", "success";
      *                  result object for error is error object, for blocked is an event,
      *                  for upgrade and success are both db object to use.<br/>
-     *                  4 cases:<br/>
-     *                    * ["error",   Error_Obj]
-     *                    * ["blocked", Event_Obj]
-     *                    * ["upgrade", idb_database instance]
-     *                    * ["success", idb_database instance] 
+     *                  4 cases:<ul>
+     *                    <li>["error",   Error_Obj]</li>
+     *                    <li>["blocked", Event_Obj]</li>
+     *                    <li>["upgrade", idb_database instance]</li>
+     *                    <li>["success", idb_database instance]</li>
+     *                  </ul>
      */
      async open(Name, version){
         try {
