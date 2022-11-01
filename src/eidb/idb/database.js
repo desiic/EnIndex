@@ -78,7 +78,7 @@ class database {
         this.self.onversionchange = callback;
     }
 
-    /**
+    /* NON-JSDOC
      * IN ALPHABETIC ORDER MATCHING MOZILLA.ORG
      * _________________________________________________________________________
      */

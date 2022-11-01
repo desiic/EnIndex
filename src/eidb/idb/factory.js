@@ -31,12 +31,6 @@ class factory {
     }
 
     /**
-     * IN ALPHABETIC ORDER MATCHING MOZILLA.ORG
-     * _________________________________________________________________________
-     */
-    METHODS;
-
-    /**
      * Get the list of databases, using the instance of IDBFactory set by constructor
      * @return {Array} 1st value: Error object or null<br/>
      *                 2nd value: The list of databases found, with `name` and `version` properties only.
