@@ -18,6 +18,10 @@ Similar to C++ STL with one exceptional rule for compound properties/variables.
   * My_Compound (maths is using both lower-case and upper-case, others)
   * MY_CONSTANT
 
+Database Convention
+===================
+Primary field `id` (auto-incremented) is always added by default to all object stores.
+
 Documentation
 =============
 Usage

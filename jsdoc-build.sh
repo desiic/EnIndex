@@ -18,16 +18,16 @@ rm -rf doc
 mkdir doc-src
 
 # Add files
-cp -f  eidb.js doc-src 
-cp -rf eidb    doc-src
+cp -f  src/eidb.js doc-src 
+cp -rf src/eidb    doc-src
 
 # Make documentation
 # npm install docdash
-npm install clean-jsdoc-theme
+# npm install clean-jsdoc-theme
 
 # Disable sorting in template to keep source code in sections
 # https://github.com/jsdoc/jsdoc/issues/428#issue-14846165
-echo -e "\nDisabling sort in template..."
+echo "Disabling sort in template..."
 cd doc-themes/clean-jsdoc-theme-modded
 
 if [[ ! -f publish.bak.js ]]; then

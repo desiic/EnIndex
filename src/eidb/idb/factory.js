@@ -1,9 +1,9 @@
 /**
- * @module eidb/idb/idb_factory
+ * @module eidb/idb/factory
  */
 // Modules
-import base         from "../base.js";
-import idb_database from "./idb-database.js";
+import base     from "../base.js";
+import database from "./database.js";
 
 // Shorthands
 var log      = console.log;
@@ -12,9 +12,9 @@ var loge     = console.error;
 var new_lock = base.new_lock;
 
 /** 
- * `eidb.idb.idb_factory` IDBFactory class wrapper
+ * `eidb.idb.factory` IDBFactory class wrapper
  */
-class idb_factory {
+class factory {
     
     /**
      * Properties
@@ -30,29 +30,66 @@ class idb_factory {
         this.self = Idb_Factory;
     }
 
+    /**
+     * IN ALPHABETIC ORDER MATCHING MOZILLA.ORG
+     * _________________________________________________________________________
+     */
+    METHODS;
+
+    /**
+     * Get the list of databases, using the instance of IDBFactory set by constructor
+     * @return {Array} 1st value: Error object or null<br/>
+     *                 2nd value: The list of databases found, with `name` and `version` properties only.
+     */
+    async databases(){
+        try {
+            return [null,await this.self.databases()];
+        }
+        catch (Dom_Exception){
+            return [Dom_Exception,null];
+        }
+    }
+
+    /**
+     * Delete database, using the instance of IDBFactory set by constructor
+     * @param  {String}      Name - Name of the database to delete
+     * @return {Object|null} Error object or null; note that it's no
+     *                       errors when the database name doesn't exist
+     */
+     async delete_database(Name){
+        var Req           = this.self.deleteDatabase(Name); // No exceptions
+        var [Lock,unlock] = new_lock();
+
+        Req.onerror = function(Ev){
+            unlock(Ev.target.error);
+        };
+        Req.onsuccess = function(Ev){
+            unlock(null);
+        };
+        return await Lock;
+    }
+
     /** 
      * Open db using db name and a specific version, using the IDBFactory 
      * instance set by constructor     
      * @param  {String} Name    - Name of db to open
      * @param  {Number} version - Version of db (version of index schema), >= current ver
-     * @return {Array}  2 items which are result message and result object,
-     *                  result message is a string, one of "error", "blocked", "upgrade", "success";
-     *                  result object for error is error object, for blocked is an event,
-     *                  for upgrade and success are both db object to use.<br/>
-     *                  <ul><b>4 cases:</b>
-     *                      <li>["error",   Error_Obj]</li>
-     *                      <li>["blocked", Event_Obj]</li>
-     *                      <li>["upgrade", idb_database instance]</li>
-     *                      <li>["success", idb_database instance]</li>
+     * @return {Array}  1st value: Error object or null<br/>
+     *                  2nd value: Result object `{Status:, Value:}`<br/>
+     *                  <ul><b>4 cases of returned value:</b>
+     *                      <li>`[Error_Obj, {Status:"errored",    null                 }]`</li>
+     *                      <li>`[null,      {Status:"blocked",    Event_Obj            }]`</li>
+     *                      <li>`[null,      {Status:"to-upgrade", database instance}]`</li>
+     *                      <li>`[null,      {Status:"opened",     database instance}]`</li>
      *                  </ul>
      */
-     async open(Name, version){
+    async open(Name, version){
         try {
             var Req = this.self.open(Name,version);
         }
-        catch (Err){
+        catch (Err){ // eg. when version is 0 or negative
             loge("idb.open: Error caught:",Err);
-            return ["error",Err];
+            return [Err, {Status:"errored", Value:null}];
         }
 
         // Lock to wait for callback
@@ -69,7 +106,7 @@ class idb_factory {
         Req.onerror = function(Ev){
             loge("idb.open: Failed with error:",Ev.target.error);            
             Err_Obj = Ev.target.error;
-            unlock("error"); // Nothing next but just clear the lock, no sequence to cancel
+            unlock("errored"); // Nothing next but just clear the lock, no sequence to cancel
         };        
         Req.onblocked = function(Ev){
             logw(`idb.open: Upgrade blocked, requested to change to version ${version}`);
@@ -79,7 +116,7 @@ class idb_factory {
 
             Ev_Obj = Ev;     
             unlock("blocked");
-            Sequence_Cancel_Reason = "block";
+            Sequence_Cancel_Reason = "blocked";
         };
         Req.onupgradeneeded = function(Ev){
             if (Sequence_Cancel_Reason != null){
@@ -89,8 +126,8 @@ class idb_factory {
             }
 
             log(`idb.open: Upgrade needed, to version ${version}`);
-            unlock("upgrade");
-            Sequence_Cancel_Reason = "upgrade";
+            unlock("to-upgrade");
+            Sequence_Cancel_Reason = "to-upgrade";
         };
         Req.onsuccess = function(Ev){
             if (Sequence_Cancel_Reason != null){
@@ -100,51 +137,22 @@ class idb_factory {
             }
 
             log(`idb.open: Database opened successfully`);
-            unlock("success");
+            unlock("opened");
         };
         var Result = await Lock;
 
-        if (Result=="error")   
-            return [Result, Err_Obj]; // Error, no .result        
+        if (Result=="errored")   
+            return [Err_Obj, {Status:Result, Value:null}]; // Error, no .result        
         if (Result=="blocked") 
-            return [Result, Ev_Obj]; // The request has not finished, no .result yet,
-                                     // waiting for other connections to close.
+            return [null, {Status:Result, Value:Ev_Obj}]; // The request has not finished, no .result yet,
+                                              // waiting for other connections to close.
         // This returns either db from upgrade or success event,
         // upgrade+close+reopen if it is upgrading case.
-        if (Result=="upgrade" || Result=="success") 
-            return [Result, new idb_database(Req.result)]; // .result is IDBDatabase object
-    }
-
-    /**
-     * Delete database, using the instance of IDBFactory set by constructor
-     * @param  {String}      Name - Name of the database to delete
-     * @return {null|Object} null if no errors, or error Object; note that it's no
-     *                       errors when the database name doesn't exist
-     */
-    async delete_database(Name){
-        var Req           = this.self.deleteDatabase(Name);
-        var [Lock,unlock] = new_lock();
-
-        Req.onerror = function(Ev){
-            unlock(Ev.target.error);
-        };
-        Req.onsuccess = function(Ev){
-            unlock(null);
-        };
-        return await Lock;
-    }
-
-    /**
-     * Get the list of databases, using the instance of IDBFactory set by constructor
-     * @return {Object|Array} Error object or the list of databases found, 
-     *                        with `name` and `version` properties only.
-     *                        Use `instance of Array` to check if it's not error.
-     */
-    async databases(){
-        return await this.self.databases();
+        if (Result=="to-upgrade" || Result=="opened") 
+            return [null, {Status:Result, Value:new database(Req.result)}]; // .result is IDBDatabase object    
     }
 }
 
 // Module export
-export default idb_factory;
+export default factory;
 // EOF

@@ -14,8 +14,8 @@
 //   - my_namespace -- Generic nouns,    eg. app.ui.utils
 //   - my_class     -- Generic nouns,    eg. technical_manager
 //   - my_method    -- Verbs, aux verbs, eg. process_documents
-//   - my_primitive -- Specific nouns,   eg. i, j, k, n (specific nouns, but maths)
-//   - My_Compound  -- Specific nouns,   eg. John_Doe
+//   - my_primitive -- Specific nouns,   eg. i, j, k, n (maths var with both lower and upper-case)
+//   - My_Compound  -- Specific nouns,   eg. John_Doe   (maths var with both lower and upper-case)
 //   - MY_INSTANCE  -- Numbers, digits,  eg. MAX_PRICE
 // Other guides:
 //   - Line <80 chars, max 120 chars
@@ -24,23 +24,15 @@
 //   - Try to reduce lines but more comments
 
 // Modules
-import base        from "./eidb/base.js";
-import idb         from "./eidb/idb.js";
-import idbx        from "./eidb/idbx.js";
-import idb_factory from "./eidb/idb/idb-factory.js";
+import base    from "./eidb/base.js";
+import idb     from "./eidb/idb.js";
+import idbx    from "./eidb/idbx.js";
+import factory from "./eidb/idb/factory.js";
 
 // Shorthands
 var log  = console.log;
 var logw = console.warn;
 var loge = console.error;
-
-/**
- * Create new async/await lock, can be called directly under global scope,
- * that is `window.new_lock()` or just `new_lock()`
- */
-function new_lock(...Args){
-    return base.new_lock(...Args);
-}
 
 /**
  * Main class of EnIndex library, can be used directly under global scope, 
@@ -66,12 +58,27 @@ class eidb {
     /**
      * _________________________________________________________________________
      */
+    CONSTANTS;
+
+    /**
+     * Read-only mode for creating transaction
+     */
+    static RO = "readonly";
+
+    /**
+     * Read-write mode for creating transaction
+     */
+    static RW = "readwrite";
+
+    /**
+     * _________________________________________________________________________
+     */
     PROPERTIES;
 
     /**
      * Global idb_factory
      */
-    static Idb_Factory = new idb_factory(window.indexedDB);
+    static Factory = new factory(window.indexedDB);
 
     /**
      * _________________________________________________________________________
@@ -79,10 +86,15 @@ class eidb {
     METHODS;
 
     /**
+     * Alias of `eidb.idb.databases` [See here](module-eidb_idb-idb.html#.databases)
+     */
+    static databases = idb.databases;
+
+    /**
      * Alias of `eidb.idb.open` [See here](module-eidb_idb-idb.html#.open)
      * ```
      * // Example
-     * var [Result,Obj] = await eidb.open("my-db-name")
+     * var [Err,Result] = await eidb.open("my-db-name")
      * ```
      */
     static open = idb.open;
@@ -96,18 +108,15 @@ class eidb {
      * Alias of `eidb.idb.delete_database` [See here](module-eidb_idb-idb.html#.delete_database)
      */
     static delete_database = idb.delete_database;
-
-    /**
-     * Alias of `eidb.idb.databases` [See here](module-eidb_idb-idb.html#.databases)
-     */
-    static databases = idb.databases;
 }
 
 // Global bindings, base functionalities
-window.new_lock = new_lock;
+window.new_lock = base.new_lock;
 
 // Global bindings, whole lib
 window.eidb = eidb;
+window.RO   = eidb.RO;
+window.RW   = eidb.RW;
 
 // Module export, for submodules to use only, outer JS uses window.* above
 export default eidb; 
