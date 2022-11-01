@@ -92,7 +92,7 @@ class transaction {
     /**
      * On complete event
      */
-    set on_commit(callback){
+    set on_complete(callback){
         this.self.oncomplete = callback;
     }
 
