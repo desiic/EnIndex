@@ -74,7 +74,7 @@ class object_store {
         return this.self.transaction;
     }
 
-    /**
+    /* NON-JSDOC
      * IN ALPHABETIC ORDER MATCHING MOZILLA.ORG
      * _________________________________________________________________________
      */

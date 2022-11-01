@@ -103,7 +103,7 @@ class transaction {
         this.self.onerror = callback;
     }
 
-    /**
+    /* NON-JSDOC
      * IN ALPHABETIC ORDER MATCHING MOZILLA.ORG
      * _________________________________________________________________________
      */
@@ -148,7 +148,7 @@ class transaction {
         } 
     }
 
-    /**
+    /* NON-JSDOC
      * _________________________________________________________________________
      */
     ADDITIONAL_METHODS;
