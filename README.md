@@ -25,7 +25,7 @@ Primary field `id` (auto-incremented) is always added by default to all object s
 Documentation
 =============
 Usage
-  * Use `eidb` class in global scope; see doc: [eidb](http://doc.desiic.com/enindex/module-eidb-eidb.html)
+  * Use `eidb` class in global scope; see doc: [eidb](http://doc.desiic.com/enindex/module-eidb.html)
   
 Quick Start and Guides
   * [https://coda.io/@desiic/enindex](https://coda.io/@desiic/enindex)
