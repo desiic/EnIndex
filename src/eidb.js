@@ -118,6 +118,17 @@ window.eidb = eidb;
 window.RO   = eidb.RO;
 window.RW   = eidb.RW;
 
+/**
+ * EXAMPLES
+ * ========
+ * 
+ * Open database with automatic versioning
+ * ```
+ * var [Err,Db] = idbx.open_av("my-db", Indices);
+ * ```
+ */
+var _;
+
 // Module export, for submodules to use only, outer JS uses window.* above
 export default eidb; 
 // EOF
