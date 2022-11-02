@@ -128,6 +128,8 @@ window.RW   = eidb.RW;
  * ```
  */
 
+// WARNING: The 'Examples' block above should be right above this export
+// to be used as module description by JSDoc.
 // Module export, for submodules to use only, outer JS uses window.* above
 export default eidb; 
 // EOF
