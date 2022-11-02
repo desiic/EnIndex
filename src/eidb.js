@@ -119,8 +119,7 @@ window.RO   = eidb.RO;
 window.RW   = eidb.RW;
 
 /**
- * Examples
- * --------
+ * ### Examples
  * 
  * Open database with automatic versioning
  * ```
