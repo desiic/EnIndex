@@ -70,9 +70,7 @@ class factory {
      * @param  {Number} version - Version of db (version of index schema), >= current ver
      * @return {Array}  1st value: Error object or null<br/>
      *                  2nd value: Result object `{Status:, Value:}`<br/>
-     * 
-     *                  aasdfasdf
-     *                  <ul><li>4 cases of returned value:</li>
+     *                  <ul><b>4 cases of returned value:</b>
      *                      <li>`[Error_Obj, {Status:"errored",    null                 }]`</li>
      *                      <li>`[null,      {Status:"blocked",    Event_Obj            }]`</li>
      *                      <li>`[null,      {Status:"to-upgrade", database instance}]`</li>
