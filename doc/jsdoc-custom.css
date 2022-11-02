@@ -12,10 +12,13 @@ article ul >b:nth-child(1) { margin-left:-3rem !important; }
 .main-wrapper article {
     display:flex; flex-direction:column;
 }   
+/* In jsdoc-custom.js: */
+/*
 .main-wrapper article >.container-overview {
     order:1;
 }
 .main-wrapper article >.container-overview >h3 {
     display:none;
 }
+*/
 /* EOF */
