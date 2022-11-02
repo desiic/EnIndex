@@ -110,6 +110,16 @@ class eidb {
     static delete_database = idb.delete_database;
 }
 
+/**
+ * Examples
+ * --------
+ * 
+ * Open database with automatic versioning
+ * ```
+ * var [Err,Db] = idbx.open_av("my-db", Indices);
+ * ```
+ */
+
 // Global bindings, base functionalities
 window.new_lock = base.new_lock;
 
@@ -117,15 +127,6 @@ window.new_lock = base.new_lock;
 window.eidb = eidb;
 window.RO   = eidb.RO;
 window.RW   = eidb.RW;
-
-/**
- * ### Examples
- * 
- * Open database with automatic versioning
- * ```
- * var [Err,Db] = idbx.open_av("my-db", Indices);
- * ```
- */
 
 // Module export, for submodules to use only, outer JS uses window.* above
 export default eidb; 
