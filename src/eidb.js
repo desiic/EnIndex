@@ -124,7 +124,7 @@ window.RW   = eidb.RW;
  * 
  * Open database with automatic versioning
  * ```
- * var [Err,Db] = idbx.open_av("my-db", Indices);
+ * var [Err,Db] = eidb.open_av("my-db", Indices);
  * ```
  */
 
