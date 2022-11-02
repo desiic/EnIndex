@@ -6,4 +6,16 @@ ul { list-style:circle !important; }
 
 /* Outdent first item in UL in article */
 article ul >*:nth-child(1) { margin-left:-3rem !important; }
+
+/* Move module export description to bottom coz it's used for 
+   very very long list of examples */
+.main-wrapper article {
+    display:flex; flex-direction:column;
+}   
+.main-wrapper article >.container-overview {
+    order:1;
+}
+.main-wrapper article >.container-overview >h3 {
+    display:none;
+}
 /* EOF */
