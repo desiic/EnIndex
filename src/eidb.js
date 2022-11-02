@@ -120,7 +120,7 @@ window.RW   = eidb.RW;
 
 /**
  * Examples
- * ========
+ * --------
  * 
  * Open database with automatic versioning
  * ```
