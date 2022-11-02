@@ -13,6 +13,14 @@ function d$$(Selector){
 
 // Mod func
 function mod_func(){
+    // Move examples to bottom
+    var Check_Id = d$("#classes");
+
+    if (Check_Id!=null){
+        d$(".main-wrapper article >.container-overview").style.order = 1;
+        d$(".main-wrapper article >.container-overview >h3").style.display = "none";
+    }
+
     // Expand all sections in left sidebar
     var Togs = d$$("#sidebar .sidebar-section-title");
     
