@@ -110,6 +110,29 @@ class eidb {
     static delete_database = idb.delete_database;
 }
 
+/*
+Range	            Code
+All keys ≥ x	    IDBKeyRange.lowerBound (x)
+All keys > x	    IDBKeyRange.lowerBound (x, true)
+All keys ≤ y	    IDBKeyRange.upperBound (y)
+All keys < y	    IDBKeyRange.upperBound (y, true)
+All keys ≥ x && ≤ y	IDBKeyRange.bound (x, y)
+All keys > x &&< y	IDBKeyRange.bound (x, y, true, true)
+All keys > x && ≤ y	IDBKeyRange.bound (x, y, true, false)
+All keys ≥ x &&< y	IDBKeyRange.bound (x, y, false, true)
+The key = z	        IDBKeyRange.only (z)
+*/
+window.WITH_LEFT     = false;
+window.WITH_RIGHT    = false;
+window.NO_LEFT       = true;
+window.NO_RIGHT      = true;
+window.range_gte     = (x)=>IDBKeyRange.lowerBound(x);
+window.range_gt      = (x)=>IDBKeyRange.lowerBound(x, true);
+window.range_lte     = (y)=>IDBKeyRange.upperBound(y); 
+window.range_lt      = (y)=>IDBKeyRange.upperBound(y, true); 
+window.range_between = (x,y,exc_l,exc_r)=>IDBKeyRange.bound(x,y, exc_l,exc_r);
+window.value_is      = (z)=>IDBKeyRange.only(z);
+
 // Global bindings, base functionalities
 window.new_lock = base.new_lock;
 

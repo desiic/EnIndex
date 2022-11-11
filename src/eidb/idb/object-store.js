@@ -106,6 +106,32 @@ class object_store {
             return [Dom_Exception, null];
         }
     }
+
+    /**
+     * Clear store
+     * @return {Object} Error or null
+     */
+    async clear(){
+        try {
+            var Req           = this.self.clear();
+            var [Lock,unlock] = new_lock();
+
+            Req.onerror = function(Ev){
+                unlock(["error", Ev.target.error]);
+            };
+            Req.onsuccess = function(Ev){
+                unlock(["okay", Ev.target.result]);
+            };
+            var [Stat,Result] = await Lock;
+
+            // Result
+            if (Stat=="error") return Result;
+            return null;
+        }
+        catch (Dom_Exception){
+            return Dom_Exception;
+        }
+    }
 }
 
 // Module export
