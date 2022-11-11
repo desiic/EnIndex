@@ -136,7 +136,9 @@ window.value_is      = (z)=>IDBKeyRange.only(z);
 // Global bindings, base functionalities
 window.new_lock = base.new_lock;
 
-// Global bindings, whole lib
+/** 
+ * Global bindings, whole lib
+ */
 window.eidb = eidb;
 window.RO   = eidb.RO;
 window.RW   = eidb.RW;
