@@ -82,7 +82,7 @@ class eidb {
      */
     static Factory = new factory(window.indexedDB);
 
-    /*
+    /**
      * _________________________________________________________________________
      */
     METHODS;
@@ -90,7 +90,6 @@ class eidb {
     /**
      * Alias of `eidb.idb.databases` [See here](module-eidb_idb-idb.html#.databases)
      */
-    /** @func databases */
     static databases = idb.databases;
 
     /**
@@ -100,25 +99,21 @@ class eidb {
      * var [Err,Result] = await eidb.open("my-db-name")
      * ```
      */
-    /** @func open */
     static open = idb.open;
 
     /**
      * Alias of `eidb.idbx.open_av` [See here](module-eidb_idbx-idbx.html#.open_av)
      */
-    /** @func open_av */
     static open_av = idbx.open_av;
 
     /**
      * Alias of `eidb.idbx.do_op` [See here](module-eidb_idbx-idbx.html#.do_op)
      */
-    /** @func do_op */
     static do_op = idbx.do_op;
 
     /**
      * Alias of `eidb.idb.delete_database` [See here](module-eidb_idb-idb.html#.delete_database)
      */
-    /** @func delete_database */
     static delete_database = idb.delete_database;
 }
 
