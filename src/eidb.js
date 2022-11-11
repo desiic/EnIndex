@@ -187,12 +187,13 @@ window.value_is      = value_is;
 
 // Global bindings, base functionalities
 /**
+ * @func
  * Create async/await lock, example:
  * ```
  * var [Lock,unlock] = new_lock();
  * ```
  */
-var new_lock = base.new_lock;
+const new_lock = base.new_lock;
 window.new_lock = new_lock;
 
 // Global bindings, others
