@@ -36,7 +36,8 @@ var loge = console.error;
 
 /**
  * Main class of EnIndex library, can be used directly under global scope, 
- * that is `window.eidb` or just `eidb`.
+ * that is `window.eidb` or just `eidb`. It contains mainly sub-namespaces
+ * and static aliases to static methods.
  */
 class eidb {
 
@@ -126,16 +127,53 @@ The key = z	        IDBKeyRange.only (z)
  * Indicates that left value in index value range is included
  */
 const WITH_LEFT = false;
-const WITH_RIGHT    = false;
-const NO_LEFT       = true;
-const NO_RIGHT      = true;
-const range_gte     = (x)=>IDBKeyRange.lowerBound(x);
-const range_gt      = (x)=>IDBKeyRange.lowerBound(x, true);
-const range_lte     = (y)=>IDBKeyRange.upperBound(y); 
-const range_lt      = (y)=>IDBKeyRange.upperBound(y, true); 
-const range_between = (x,y,exc_l,exc_r)=>IDBKeyRange.bound(x,y, exc_l,exc_r);
-const value_is      = (z)=>IDBKeyRange.only(z);
 
+/**
+ * Indicates that right value in key range is included
+ */
+const WITH_RIGHT = false;
+
+/**
+ * Indicates that left value in key range is EXCLUDED
+ */
+const NO_LEFT = true;
+
+/**
+ * Indicates that right value in key range is EXCLUDED
+ */
+const NO_RIGHT = true;
+
+/**
+ * Key range (greater than or equal)
+ */
+const range_gte = (x)=>IDBKeyRange.lowerBound(x);
+
+/**
+ * Key range (greater than)
+ */
+const range_gt = (x)=>IDBKeyRange.lowerBound(x, true);
+
+/**
+ * Key range (less than or equal)
+ */
+const range_lte = (y)=>IDBKeyRange.upperBound(y); 
+
+/**
+ * Key range (less than)
+ */
+const range_lt = (y)=>IDBKeyRange.upperBound(y, true); 
+
+/**
+ * Key range between 2 values: [..], (..], [..), or (..)
+ */
+const range_between = (x,y,exc_l,exc_r)=>IDBKeyRange.bound(x,y, exc_l,exc_r);
+
+/**
+ * Key range of exact only 1 value
+ */
+const value_is = (z)=>IDBKeyRange.only(z);
+
+// Bind to global scope
 window.WITH_LEFT     = WITH_LEFT;
 window.WITH_RIGHT    = WITH_RIGHT;
 window.NO_LEFT       = NO_LEFT;
@@ -148,12 +186,31 @@ window.range_between = range_between;
 window.value_is      = value_is;
 
 // Global bindings, base functionalities
-window.new_lock = base.new_lock;
+/**
+ * Create async/await lock, example:
+ * ```
+ * var [Lock,unlock] = new_lock();
+ * ```
+ */
+var new_lock = base.new_lock;
+window.new_lock = new_lock;
+
+// Global bindings, others
+/**
+ * Read-only transaction mode
+ */
+var RO = eidb.RO;
+window.RO = RO;
+
+/**
+ * Read-write transaction mode
+ */
+var RW = eidb.RW;
+window.RW = RW;
 
 // Global bindings, whole lib
+// EnIndex library global object
 window.eidb = eidb;
-window.RO   = eidb.RO;
-window.RW   = eidb.RW;
 
 /**
  * Note
