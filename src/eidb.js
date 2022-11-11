@@ -122,23 +122,35 @@ All keys > x && ≤ y	IDBKeyRange.bound (x, y, true, false)
 All keys ≥ x &&< y	IDBKeyRange.bound (x, y, false, true)
 The key = z	        IDBKeyRange.only (z)
 */
-window.WITH_LEFT     = false;
-window.WITH_RIGHT    = false;
-window.NO_LEFT       = true;
-window.NO_RIGHT      = true;
-window.range_gte     = (x)=>IDBKeyRange.lowerBound(x);
-window.range_gt      = (x)=>IDBKeyRange.lowerBound(x, true);
-window.range_lte     = (y)=>IDBKeyRange.upperBound(y); 
-window.range_lt      = (y)=>IDBKeyRange.upperBound(y, true); 
-window.range_between = (x,y,exc_l,exc_r)=>IDBKeyRange.bound(x,y, exc_l,exc_r);
-window.value_is      = (z)=>IDBKeyRange.only(z);
+/**
+ * Indicates that left value in index value range is included
+ */
+const WITH_LEFT = false;
+const WITH_RIGHT    = false;
+const NO_LEFT       = true;
+const NO_RIGHT      = true;
+const range_gte     = (x)=>IDBKeyRange.lowerBound(x);
+const range_gt      = (x)=>IDBKeyRange.lowerBound(x, true);
+const range_lte     = (y)=>IDBKeyRange.upperBound(y); 
+const range_lt      = (y)=>IDBKeyRange.upperBound(y, true); 
+const range_between = (x,y,exc_l,exc_r)=>IDBKeyRange.bound(x,y, exc_l,exc_r);
+const value_is      = (z)=>IDBKeyRange.only(z);
+
+window.WITH_LEFT     = WITH_LEFT;
+window.WITH_RIGHT    = WITH_RIGHT;
+window.NO_LEFT       = NO_LEFT;
+window.NO_RIGHT      = NO_RIGHT;
+window.range_gte     = range_gte;
+window.range_gt      = range_gt;
+window.range_lte     = range_lte;
+window.range_lt      = range_lt;
+window.range_between = range_between;
+window.value_is      = value_is;
 
 // Global bindings, base functionalities
 window.new_lock = base.new_lock;
 
-/** 
- * Global bindings, whole lib
- */
+// Global bindings, whole lib
 window.eidb = eidb;
 window.RO   = eidb.RO;
 window.RW   = eidb.RW;
