@@ -132,6 +132,37 @@ class object_store {
             return Dom_Exception;
         }
     }
+
+    /**
+     * Count values
+     * @param  {key_range} Range - The range to count, can be null
+     * @return {Array}     Error or null, and count
+     */
+    async count(Range){
+        try {
+            if (Range==null)
+                var Req = this.self.count();
+            else
+                var Req = this.self.count(Range.self);
+
+            var [Lock,unlock] = new_lock();
+
+            Req.onerror = function(Ev){
+                unlock(["error", Ev.target.error]);
+            };
+            Req.onsuccess = function(Ev){
+                unlock(["okay", Ev.target.result]);
+            };
+            var [Stat,Result] = await Lock;
+
+            // Result
+            if (Stat=="error") return [Result,null];
+            return [null,Result];
+        }
+        catch (Dom_Exception){
+            return [Dom_Exception,null];
+        }
+    }
 }
 
 // Module export

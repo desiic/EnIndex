@@ -24,10 +24,11 @@
 //   - Try to reduce lines but more comments
 
 // Modules
-import base    from "./eidb/base.js";
-import idb     from "./eidb/idb.js";
-import idbx    from "./eidb/idbx.js";
-import factory from "./eidb/idb/factory.js";
+import base      from "./eidb/base.js";
+import idb       from "./eidb/idb.js";
+import idbx      from "./eidb/idbx.js";
+import factory   from "./eidb/idb/factory.js";
+import key_range from "./eidb/idb/key-range.js";
 
 // Shorthands
 var log  = console.log;
@@ -81,7 +82,7 @@ class eidb {
      */
     static Factory = new factory(window.indexedDB);
 
-    /**
+    /*
      * _________________________________________________________________________
      */
     METHODS;
@@ -89,6 +90,7 @@ class eidb {
     /**
      * Alias of `eidb.idb.databases` [See here](module-eidb_idb-idb.html#.databases)
      */
+    /** @func databases */
     static databases = idb.databases;
 
     /**
@@ -98,16 +100,25 @@ class eidb {
      * var [Err,Result] = await eidb.open("my-db-name")
      * ```
      */
+    /** @func open */
     static open = idb.open;
 
     /**
      * Alias of `eidb.idbx.open_av` [See here](module-eidb_idbx-idbx.html#.open_av)
      */
+    /** @func open_av */
     static open_av = idbx.open_av;
+
+    /**
+     * Alias of `eidb.idbx.do_op` [See here](module-eidb_idbx-idbx.html#.do_op)
+     */
+    /** @func do_op */
+    static do_op = idbx.do_op;
 
     /**
      * Alias of `eidb.idb.delete_database` [See here](module-eidb_idb-idb.html#.delete_database)
      */
+    /** @func delete_database */
     static delete_database = idb.delete_database;
 }
 
@@ -146,32 +157,36 @@ const NO_RIGHT = true;
 /**
  * Key range (greater than or equal)
  */
-const range_gte = (x)=>IDBKeyRange.lowerBound(x);
+const range_gte = (x)=>new key_range(IDBKeyRange.lowerBound(x));
 
 /**
  * Key range (greater than)
  */
-const range_gt = (x)=>IDBKeyRange.lowerBound(x, true);
+const range_gt = (x)=>new key_range(IDBKeyRange.lowerBound(x, true));
 
 /**
  * Key range (less than or equal)
  */
-const range_lte = (y)=>IDBKeyRange.upperBound(y); 
+const range_lte = (y)=>new key_range(IDBKeyRange.upperBound(y)); 
 
 /**
  * Key range (less than)
  */
-const range_lt = (y)=>IDBKeyRange.upperBound(y, true); 
+const range_lt = (y)=>new key_range(IDBKeyRange.upperBound(y, true)); 
 
 /**
  * Key range between 2 values: [..], (..], [..), or (..)
+ * @param {Any}     x   - Left value
+ * @param {Any}     y   - Right value
+ * @param {Boolean} exl - Indicates whether to exclude left value
+ * @param {Boolean} exr - Indicates whether to exclude right value
  */
-const range_between = (x,y,exc_l,exc_r)=>IDBKeyRange.bound(x,y, exc_l,exc_r);
+const range_between = (x,y,exl,exr)=>new key_range(IDBKeyRange.bound(x,y, exl,exr));
 
 /**
  * Key range of exact only 1 value
  */
-const value_is = (z)=>IDBKeyRange.only(z);
+const value_is = (z)=>new key_range(IDBKeyRange.only(z));
 
 // Bind to global scope
 window.WITH_LEFT     = WITH_LEFT;
@@ -217,7 +232,7 @@ window.eidb = eidb;
  * Note
  * ----
  * 
- * ### All members of this module are bound to global scope under `window` object.
+ * ### All members & methods of this module are bound to global scope under `window` object.
  * 
  * Examples
  * --------
