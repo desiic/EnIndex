@@ -156,6 +156,11 @@ window.RO   = eidb.RO;
 window.RW   = eidb.RW;
 
 /**
+ * Note
+ * ----
+ * 
+ * ### All members of this module are bound to global scope under `window` object.
+ * 
  * Examples
  * --------
  * 
