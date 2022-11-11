@@ -187,7 +187,7 @@ window.value_is      = value_is;
 
 // Global bindings, base functionalities
 /**
- * @func
+ * @func new_lock
  * Create async/await lock, example:
  * ```
  * var [Lock,unlock] = new_lock();
