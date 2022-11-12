@@ -373,13 +373,25 @@ log("EnIndex loaded");
  * Examples
  * --------
  * 
+ * Sample index schema
+ * ```
+ * // 1:Single value, 2:Multientry, u1:Unique single value, u2:Unique multientry
+ * var Indices = {
+ *     my_store: { 
+ *         foo:1, bar:2, foobar:u1, barfoo:u2, "foo.bar":1, "bar.foo":2         
+ *     }
+ * };
+ * ```
+ * 
  * Open database with automatic versioning
  * ```
- * var Db = eidb.open_av("my-db", Indices);
+ * var Db = eidb.open_av("my_db", Indices);
  * 
  * if (Db instanceof Error){
  *     ...
  * }
+ * 
+ * // Do some ops
  * ...
  * Db.close();
  * ```
