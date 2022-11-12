@@ -5,14 +5,62 @@
 import idb from "./idb.js";
 
 // Shorthands
-var log  = console.log;
-var logw = console.warn;
-var loge = console.error;
+var log      = console.log;
+var logw     = console.warn;
+var loge     = console.error;
+var obj2json = JSON.stringify;
+var json2obj = JSON.parse;
 
 /** 
  * `eidb.idbx` IndexedDB extended feature class
  */ 
 class idbx {
+
+    /**
+     * Check if is unused store
+     */
+    static is_unused_store(Store_Name){
+        if (localStorage.Unused_Stores==null || localStorage.Unused_Stores.trim().length==0)
+            return false;
+
+        let Unused_Stores = json2obj(localStorage.Unused_Stores);
+        return Unused_Stores.indexOf(Store_Name)>=0;
+    }
+
+    /**
+     * Update unused store list
+     */
+    static update_unused_store_list(Op,Store_Name){
+        if (Op=="add"){
+            if (localStorage.Unused_Stores==null || localStorage.Unused_Stores.trim().length==0)
+                localStorage.Unused_Stores = obj2json([Store_Name]);
+            else{
+                // Load
+                let Unused_Stores = json2obj(localStorage.Unused_Stores);
+                // Combine
+                Unused_Stores = Array.from(new Set([...Unused_Stores,Store_Name]));
+                // Save
+                localStorage.Unused_Stores = obj2json(Unused_Stores);
+            }
+        }
+        else 
+        if (Op=="remove"){
+            if (localStorage.Unused_Stores==null || localStorage.Unused_Stores.trim().length==0)
+                localStorage.Unused_Stores = obj2json([]);
+            else{
+                // Load
+                let Unused_Stores = json2obj(localStorage.Unused_Stores);
+                
+                // Remove
+                let idx = Unused_Stores.indexOf(Store_Name);
+                if (idx>=0) Unused_Stores.splice(idx,1);
+                
+                // Save
+                localStorage.Unused_Stores = obj2json(Unused_Stores);
+            }
+        }
+        // No other ops
+    }
 
     /**
      * Get current indices
@@ -25,6 +73,11 @@ class idbx {
         var T       = Db.transaction(Db.Object_Store_Names,RO);
 
         for (let Store_Name of Db.Object_Store_Names){
+            // Ignore unused store to avoid upgrade being triggered again and again
+            if (idbx.is_unused_store(Store_Name))
+                continue;
+
+            // Make index schema
             let S               = T.object_store(Store_Name);
             Indices[Store_Name] = {};     
 
@@ -99,16 +152,29 @@ class idbx {
                 Del_Stores.push(Store_Name);
 
         for (let Store_Name of Del_Stores){
-            log("idbx.upgrade_db: Deleting unused store:",Store_Name);
-            Db.delete_object_store(Store_Name); // Indices are deleted together
+            log("idbx.upgrade_db: Found unused store:",Store_Name);
+            // WARN: AVOID LOSING USERS' DATA, WON'T DELETE, COMMENTED OUT:
+            // Db.delete_object_store(Store_Name); // Indices are deleted together
+
+            // Mark unused store not to trigger upgrade again
+            idbx.update_unused_store_list("add",Store_Name);
         }
         
         // Create new stores (and new indices)   
         var Cre_Stores = [];
 
         for (let Store_Name of New_Stores)
-            if (Cur_Stores.indexOf(Store_Name) == -1)
-                Cre_Stores.push(Store_Name);
+            if (Cur_Stores.indexOf(Store_Name)==-1){                
+                if (!idbx.is_unused_store(Store_Name))
+                    Cre_Stores.push(Store_Name); // Not existing, create
+                else{
+                    // Existing, but current index schema ignored Store_Name, 
+                    // make empty entry to create all new indices for Store_Name
+                    Cur_Indices[Store_Name] = {};
+                    // Remove from unused store list coz it's now in index schema:
+                    idbx.update_unused_store_list("remove",Store_Name);
+                }
+            }
 
         for (let Store_Name of Cre_Stores){
             log("idbx.upgrade_db: Creating new store:",Store_Name);
