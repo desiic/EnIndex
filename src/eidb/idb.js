@@ -29,7 +29,7 @@ class idb{
      * [See here](module-eidb_idb_factory-factory.html#open)
      * @param  {String} Name    - See `eidb.idb.factory` class [here](module-eidb_idb_factory-factory.html#open)
      * @param  {Number} version - See `eidb.idb.factory` class [here](module-eidb_idb_factory-factory.html#open)
-     * @return {Array}  See `eidb.idb.factory` class [here](module-eidb_idb_factory-factory.html#.open)
+     * @return {Object} See `eidb.idb.factory` class [here](module-eidb_idb_factory-factory.html#.open)
      */
     static async open(Name, version){
         window._Db_Name = Name;

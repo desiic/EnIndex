@@ -2,8 +2,11 @@
  * @module eidb/idb/object_store
  */
 // Modules
-import base  from "../base.js";
-import index from "../idb/index.js";
+import base              from "../base.js";
+import index             from "../idb/index.js";
+import transaction       from "./transaction.js";
+import cursor            from "./cursor.js";
+import cursor_with_value from "./cursor-with-value.js";
 
 // Shorthands
 var log      = console.log;
@@ -72,7 +75,7 @@ class object_store {
      * @return {Object}
      */
     get Transaction(){
-        return this.self.transaction;
+        return new transaction(this.self.transaction);
     }
 
     /* NON-JSDOC
@@ -157,7 +160,7 @@ class object_store {
      * Create index (CREATE INDEX)
      * @return {Object} Error or the index object
      */
-    async create_index(Name,Key_Path,Key_Type){
+    create_index(Name,Key_Path,Key_Type){
         try {
             if (Key_Type==n1)
                 var Params={unique:false, multiEntry:false};
@@ -221,7 +224,11 @@ class object_store {
      */
     async get(Range){
         try {
-            var Req           = this.self.get(Range.self);
+            if (Range==null)
+                var Req = this.self.get();
+            else
+                var Req = this.self.get(Range.self);
+
             var [Lock,unlock] = new_lock();
 
             Req.onerror = function(Ev){
@@ -243,7 +250,11 @@ class object_store {
      */
      async get_all(Range){
         try {
-            var Req           = this.self.getAll(Range.self);
+            if (Range==null)
+                var Req = this.self.getAll();
+            else
+                var Req = this.self.getAll(Range.self);
+
             var [Lock,unlock] = new_lock();
 
             Req.onerror = function(Ev){
@@ -265,8 +276,8 @@ class object_store {
      */
     async get_all_keys(Range, max){
         try {
-            if (max==null)
-                var Req = this.self.getAllKeys(Range.self);
+            if (Range==null)
+                var Req = this.self.getAllKeys();
             else
                 var Req = this.self.getAllKeys(Range.self, max);
 
@@ -291,7 +302,11 @@ class object_store {
      */
     async get_key(Range){
         try {
-            var Req           = this.self.getKey(Range.self);
+            if (Range==null)
+                var Req = this.self.getKey();
+            else
+                var Req = this.self.getKey(Range.self);
+
             var [Lock,unlock] = new_lock();
 
             Req.onerror = function(Ev){
@@ -312,7 +327,7 @@ class object_store {
      */
     index(Name){
         try {
-            return this.self.index(Name);
+            return new index(this.self.index(Name));
         }
         catch (Dom_Exception){
             return Dom_Exception;
@@ -324,15 +339,19 @@ class object_store {
      * @return {Object} Error or cursor
      */
     async open_cursor(Range,Direction="next"){ // "nextunique", "prev", "prevunique"
-        try {            
-            var Req           = this.self.openCursor(Range.self, Direction);
+        try {         
+            if (Range==null)   
+                var Req = this.self.openCursor();
+            else
+                var Req = this.self.openCursor(Range.self, Direction);
+
             var [Lock,unlock] = new_lock();
 
             Req.onerror = function(Ev){
                 unlock(Ev.target.error);
             };
             Req.onsuccess = function(Ev){
-                unlock(Ev.target.result);
+                unlock(new cursor_with_value(Ev.target.result));
             };
             return await Lock;
         }
@@ -346,15 +365,19 @@ class object_store {
      * @return {Object} Error or cursor
      */
     async open_key_cursor(Range,Direction="next"){ // "nextunique", "prev", "prevunique"
-        try {            
-            var Req           = this.self.openKeyCursor(Range.self, Direction);
+        try {          
+            if (Range==null)
+                var Req = this.self.openKeyCursor();
+            else  
+                var Req = this.self.openKeyCursor(Range.self, Direction);
+
             var [Lock,unlock] = new_lock();
 
             Req.onerror = function(Ev){
                 unlock(Ev.target.error);
             };
             Req.onsuccess = function(Ev){
-                unlock(Ev.target.result);
+                unlock(new cursor(Ev.target.result));
             };
             return await Lock;
         }

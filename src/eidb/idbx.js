@@ -18,16 +18,162 @@ class idbx {
      * Get current indices
      */
     static async get_cur_indices(Db_Name){
-        var [Err,{Status,Value}] = await idb.open(Db_Name);
-        if (Err!=null || Status=="blocked" || Status=="to-upgrade") return null;
+        var Db = await idb.open(Db_Name);
 
         // Get indices
-        var Db      = Value;
-        var Indices = {};
-        
+        var Indices = {};        
+        var T       = Db.transaction(Db.Object_Store_Names,RO);
+
         for (let Store_Name of Db.Object_Store_Names){
-            // let 
+            let S               = T.object_store(Store_Name);
+            Indices[Store_Name] = {};     
+
+            for (let Index_Name of S.Index_Names){
+                let I          = S.index(Index_Name);
+                let Key_Path   = I.Key_Path;
+                let unique     = I.unique;
+                let multientry = I.multientry;
+                let type;
+
+                if (unique==false && multientry==false) type=1; // n1
+                else
+                if (unique==false && multientry==true)  type=2; // n2
+                else
+                if (unique==true  && multientry==false) type=3; // u1
+                else
+                if (unique==true  && multientry==true)  type=4; // u2
+                else{}
+
+                Indices[Store_Name][Key_Path] = type;
+            }
         }
+
+        Db.close();
+        return Indices;
+    }
+
+    /**
+     * Convert index schema to string to diff
+     */
+    static indices2str(Indices){
+        var Arr = [];
+        
+        for (let Store_Name in Indices)
+            for (let Index_Name in Indices[Store_Name]){
+                let type = Indices[Store_Name][Index_Name];
+                Arr.push(`${Store_Name}/${Index_Name}:${type};`);
+            }
+
+        Arr.sort();
+        return Arr.join("");
+    }
+
+    /**
+     * Get current db version
+     */ 
+    static async get_cur_db_ver(Db_Name){
+        var Db  = await idb.open(Db_Name);
+        var ver = Db.version;
+        Db.close();
+        return ver;
+    }
+
+    /**
+     * Upgrade db
+     */
+    static async upgrade_db(Db_Name, Cur_Indices, New_Indices){
+        var ver     = await idbx.get_cur_db_ver(Db_Name);
+        var new_ver = ver+1;
+        log("idbx.upgrade_db: Upgrading to version",new_ver);
+
+        // Open db with new version will trigger upgrade
+        var Db = await idb.open(Db_Name, new_ver);
+
+        // Delete unused stores (and their indices)
+        var Cur_Stores = Object.keys(Cur_Indices);
+        var New_Stores = Object.keys(New_Indices);
+        var Del_Stores = [];
+
+        for (let Store_Name of Cur_Stores)
+            if (New_Stores.indexOf(Store_Name) == -1)
+                Del_Stores.push(Store_Name);
+
+        for (let Store_Name of Del_Stores){
+            log("idbx.upgrade_db: Deleting unused store:",Store_Name);
+            Db.delete_object_store(Store_Name); // Indices are deleted together
+        }
+        
+        // Create new stores (and new indices)   
+        var Cre_Stores = [];
+
+        for (let Store_Name of New_Stores)
+            if (Cur_Stores.indexOf(Store_Name) == -1)
+                Cre_Stores.push(Store_Name);
+
+        for (let Store_Name of Cre_Stores){
+            log("idbx.upgrade_db: Creating new store:",Store_Name);
+            let S = Db.create_object_store(Store_Name);
+
+            for (let Index_Name in New_Indices[Store_Name]){
+                let type = New_Indices[Store_Name][Index_Name];
+                log("idbx.upgrade_db: Creating new index:",Store_Name,"/",Index_Name);
+                S.create_index(Index_Name,Index_Name,type);
+            }
+        }
+
+        // Now left only the same stores to uprade
+        var Same_Stores = [];
+        var All_Stores  = Array.from(new Set([...Cur_Stores,...New_Stores]));
+
+        for (let Store_Name of All_Stores)
+            if (Del_Stores.indexOf(Store_Name)==-1 && Cre_Stores.indexOf(Store_Name)==-1)
+                Same_Stores.push(Store_Name);
+
+        // Delete unused indices, create new indices, and update changed indices
+        var T = Db.Transaction;
+
+        for (let Store_Name of Same_Stores){
+            let S             = T.object_store(Store_Name);
+            let Cur_Idx_Names = Object.keys(Cur_Indices[Store_Name]);
+            let New_Idx_Names = Object.keys(New_Indices[Store_Name]);
+            let Del_Idx_Names = [];
+            let Cre_Idx_Names = [];
+
+            // Del unused
+            for (let Idx_Name of Cur_Idx_Names)
+                if (New_Idx_Names.indexOf(Idx_Name)==-1){
+                    log("idbx.upgrade_db: Deleting unused index:",Store_Name,"/",Idx_Name);
+                    S.delete_index(Idx_Name);
+                    Del_Idx_Names.push(Idx_Name);
+                }
+
+            // Create new
+            for (let Idx_Name of New_Idx_Names)
+                if (Cur_Idx_Names.indexOf(Idx_Name)==-1){
+                    let type = New_Indices[Store_Name][Idx_Name];
+                    log("idbx.upgrade_db: Creating new index:",Store_Name,"/",Idx_Name);
+                    S.create_index(Idx_Name,Idx_Name,type);
+                    Cre_Idx_Names.push(Idx_Name);
+                }
+
+            // Update those changed (del, re-create with new type)
+            let Same_Idx_Names = [];
+            let All_Idx_Names  = Array.from(new Set([...Cur_Idx_Names,...New_Idx_Names]));
+
+            for (let Idx_Name of All_Idx_Names)
+                if (Del_Idx_Names.indexOf(Idx_Name)==-1 && Cre_Idx_Names.indexOf(Idx_Name)==-1)
+                    Same_Idx_Names.push(Idx_Name);
+
+            for (let Idx_Name of Same_Idx_Names)
+                if (New_Indices[Store_Name][Idx_Name] != Cur_Indices[Store_Name][Idx_Name]){
+                    let type = New_Indices[Store_Name][Idx_Name];
+                    log("idbx.upgrade_db: Updating index to new type:",Store_Name,"/",Idx_Name+":"+type);
+                    S.delete_index(Idx_Name);
+                    S.create_index(Idx_Name,Idx_Name, type); // New type
+                }    
+        }         
+            
+        Db.close();
     }
 
     /**
@@ -37,15 +183,40 @@ class idbx {
      * @return {Array}  Error or null, and database object
      */
     static async open_av(Db_Name,Indices){
-        window._Db_Name = Db_Name;
-        var Cur_Indices = await idbx.get_cur_indices(Db_Name);
-        log(Cur_Indices)
+        if (Db_Name==null) { 
+            loge("idbx.open_av: Db name cannot be null");
+            return;
+        }
+        if (Indices==null){
+            loge("idbx.open_av: Indices name cannot be null");
+            return;
+        }        
+
+        // All id is primary field of u1 type (unique, single value)
+        for (let Store_Name in Indices)
+            Indices[Store_Name].id = u1;
+
+        // Check if indices changed
+        window._Db_Name     = Db_Name;
+        var New_Indices     = Indices;
+        var Cur_Indices     = await idbx.get_cur_indices(Db_Name);
+        var Cur_Indices_Str = idbx.indices2str(Cur_Indices);
+        var New_Indices_Str = idbx.indices2str(New_Indices);
+        
+        // No indices changed, use current db
+        if (New_Indices_Str == Cur_Indices_Str)
+            return await idb.open(Db_Name);
+
+        // Indices changed, upgrade
+        await idbx.upgrade_db(Db_Name, Cur_Indices, New_Indices);
+        return await idb.open(Db_Name);
     }
 
     /**
      * Re-open db with name set by idb.open or idbx.open_av
      */
     static async reopen(){
+        return await idb.open(window._Db_Name);
     }
 
     /**
@@ -65,11 +236,10 @@ class idbx {
             return;
         }
 
-        var [_,Res] = await idb.open(window._Db_Name);
-        var Db      = Res.Value;
-        var [_,T]   = Db.transaction(Store_Name,RW);
-        var [_,S]   = T.store1();
-        var Result  = S[Prop_Name];
+        var Db     = await idb.open(window._Db_Name);
+        var T      = Db.transaction(Store_Name,RW);
+        var S      = T.store1();
+        var Result = S[Prop_Name];
         return Result;
     }
 
@@ -83,11 +253,10 @@ class idbx {
             return;
         }
 
-        var [_,Res] = await idb.open(window._Db_Name);
-        var Db      = Res.Value;
-        var [_,T]   = Db.transaction(Store_Name,RW);
-        var [_,S]   = T.store1();
-        var Result  = await S[Op_Name](...Args);
+        var Db     = await idb.open(window._Db_Name);
+        var T      = Db.transaction(Store_Name,RW);
+        var S      = T.store1();
+        var Result = await S[Op_Name](...Args);
         return Result;
     }
 }

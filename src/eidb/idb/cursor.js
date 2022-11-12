@@ -114,14 +114,12 @@ var new_lock = base.new_lock;
             var [Lock,unlock] = new_lock();
 
             Req.onerror = (Ev)=>{
-                unlock(["error",Ev.target.error]);
+                unlock(Ev.target.error);
             };
             Req.onsuccess = (Ev)=>{
-                unlock(["okay",Ev.target.result]);
+                unlock(Ev.target.result);
             };
-            var [Stat,Result] = await Lock;
-            
-            return Result;
+            return await Lock;
         }
         catch (Dom_Exception){
             return Dom_Exception;
@@ -137,14 +135,12 @@ var new_lock = base.new_lock;
             var [Lock,unlock] = new_lock();
 
             Req.onerror = (Ev)=>{
-                unlock(["error",Ev.target.error]);
+                unlock(Ev.target.error);
             };
             Req.onsuccess = (Ev)=>{
-                unlock(["okay",Ev.target.result]);
+                unlock(Ev.target.result);
             };
-            var [Stat,Result] = await Lock;
-            
-            return Result;
+            return await Lock;
         }
         catch (Dom_Exception){
             return Dom_Exception;

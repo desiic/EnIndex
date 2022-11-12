@@ -107,6 +107,11 @@ class eidb {
     static open_av = idbx.open_av;
 
     /**
+     * Alias of `eidb.idbx.reopen` [See here](module-eidb_idbx-idbx.html#.reopen)
+     */
+    static reopen = idbx.reopen;
+
+    /**
      * Alias of `eidb.idbx.set_db` [See here](module-eidb_idbx-idbx.html#.set_db)
      */
     static set_db = idbx.set_db;
@@ -375,6 +380,17 @@ log("EnIndex loaded");
  * if (Db instanceof Error){
  *     ...
  * }
+ * ...
+ * Db.close();
+ * ```
+ * 
+ * `open_av` is to be called once at app load, use `reopen` later on. Avoid
+ * being blocked in db upgrade when app is in multiple browser tabs, 
+ * call `reopen` and close for every transaction.
+ * ```
+ * var Db = eidb.reopen();
+ * ...
+ * Db.close();
  * ```
  */
 
