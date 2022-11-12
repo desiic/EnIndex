@@ -15,10 +15,31 @@ var loge = console.error;
 class idbx {
 
     /**
-     * Open db with version set automatically (av, ie. auto-versioning)
+     * Get current indices
      */
-    static async open_av(Name,Indices){
-        window._Db_Name = Name;
+    static async get_cur_indices(Db_Name){
+        var [Err,{Status,Value}] = await idb.open(Db_Name);
+        if (Err!=null || Status=="blocked" || Status=="to-upgrade") return null;
+
+        // Get indices
+        var Db      = Value;
+        var Indices = {};
+        
+        for (let Store_Name of Db.Object_Store_Names){
+            // let 
+        }
+    }
+
+    /**
+     * Open db with version set automatically (av, ie. auto-versioning)
+     * @param  {String} Db_Name - Database name
+     * @param  {Object} Indices - Index schema of database
+     * @return {Array}  Error or null, and database object
+     */
+    static async open_av(Db_Name,Indices){
+        window._Db_Name = Db_Name;
+        var Cur_Indices = await idbx.get_cur_indices(Db_Name);
+        log(Cur_Indices)
     }
 
     /**

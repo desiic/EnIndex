@@ -32,15 +32,14 @@ class factory {
 
     /**
      * Get the list of databases, using the instance of IDBFactory set by constructor
-     * @return {Array} 1st value: Error object or null<br/>
-     *                 2nd value: The list of databases found, with `name` and `version` properties only.
+     * @return {Object} Error or the list of database names
      */
     async databases(){
         try {
-            return [null,await this.self.databases()];
+            return await this.self.databases();
         }
         catch (Dom_Exception){
-            return [Dom_Exception,null];
+            return Dom_Exception;
         }
     }
 
@@ -68,13 +67,12 @@ class factory {
      * instance set by constructor     
      * @param  {String} Name    - Name of db to open
      * @param  {Number} version - Version of db (version of index schema), >= current ver
-     * @return {Array}  1st value: Error object or null<br/>
-     *                  2nd value: Result object `{Status:, Value:}`<br/>
+     * @return {Object} Error or the database object<br/>
      *                  <ul><b>4 cases of returned value:</b>
-     *                      <li>`[Error_Obj, {Status:"errored",    null                 }]`</li>
-     *                      <li>`[null,      {Status:"blocked",    Event_Obj            }]`</li>
-     *                      <li>`[null,      {Status:"to-upgrade", database instance}]`</li>
-     *                      <li>`[null,      {Status:"opened",     database instance}]`</li>
+     *                      <li>`Err.Status = "errored"`</li>
+     *                      <li>`Err.Status = "blocked", Err.Event = Event_Obj`</li>
+     *                      <li>`Db.to_upgrade = true`</li>
+     *                      <li>`Db.to_upgrade = false`</li>
      *                  </ul>
      */
     async open(Name, version){
@@ -83,7 +81,8 @@ class factory {
         }
         catch (Err){ // eg. when version is 0 or negative
             loge("idb.open: Error caught:",Err);
-            return [Err, {Status:"errored", Value:null}];
+            Err.Status = "errored";
+            return Err;
         }
 
         // Lock to wait for callback
@@ -135,15 +134,29 @@ class factory {
         };
         var Result = await Lock;
 
-        if (Result=="errored")   
-            return [Err_Obj, {Status:Result, Value:null}]; // Error, no .result        
-        if (Result=="blocked") 
-            return [null, {Status:Result, Value:Ev_Obj}]; // The request has not finished, no .result yet,
-                                              // waiting for other connections to close.
-        // This returns either db from upgrade or success event,
-        // upgrade+close+reopen if it is upgrading case.
-        if (Result=="to-upgrade" || Result=="opened") 
-            return [null, {Status:Result, Value:new database(Req.result)}]; // .result is IDBDatabase object    
+        if (Result=="errored"){   
+            Err_Obj.Status = "errored";
+            return Err_Obj; // Error, no .result        
+        }
+
+        if (Result=="blocked"){ 
+            let Err_Obj    = new Error("Upgrade is blocked by other connections, close them all first.");
+            Err_Obj.Status = "blocked";
+            Err_Obj.Event  = Ev_Obj;
+            return Err_Obj;
+        }
+        
+        // To upgrade: Caller to upgrade, close, and reopen db
+        if (Result=="to-upgrade"){ 
+            let Db = new database(Req.result); // .result is IDBDatabase object    
+            Db.to_upgrade = true;
+        }
+
+        // Db opened normally
+        if (Result=="opened"){ 
+            let Db = new database(Req.result); // .result is IDBDatabase object    
+            Db.to_upgrade = false;
+        }
     }
 }
 

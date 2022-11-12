@@ -95,16 +95,15 @@ class database {
     /**
      * Create object store
      * @param  {String} Name - Name of object store
-     * @return {Array}  1st value: Error object or null<br/>
-     *                  2nd object: object_store instance to use
+     * @return {Object} Error or the new object store
      */
     create_object_store(Name){
         try {
             var Options = {keyPath:"id", autoIncrement:true};
-            return [null, new object_store(this.self.createObjectStore(Name,Options))];
+            return new object_store(this.self.createObjectStore(Name,Options));
         }
         catch (Dom_Exception){
-            return [Dom_Exception, null];
+            return Dom_Exception;
         }
     }
 
@@ -127,15 +126,14 @@ class database {
      * @param  {String}       Mode        - String, either "readonly" or "readwrite";
      *                                      see `eidb` module with `RO` and `RW` constants defined there.
      * @param  {Object}       Options     - Options passed to IDBDatabase.transaction
-     * @return {Array}        1st value: Error object or null<br/>
-     *                        2nd value: The created transaction
+     * @return {Object}       Error or the transaction
      */
     transaction(Store_Names, Mode, Options){
         try {
-            return [null, new transaction(this.self.transaction(Store_Names, Mode, Options))];
+            return new transaction(this.self.transaction(Store_Names, Mode, Options));
         }
         catch (Dom_Exception){
-            return [Dom_Exception, null];
+            return Dom_Exception;
         }
     }
 }

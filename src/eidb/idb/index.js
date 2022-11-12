@@ -76,15 +76,15 @@ class index {
             var [Lock,unlock] = new_lock();
 
             Req.onerror = (Ev)=>{
-                unlock([Ev.target.error, null]);
+                unlock(Ev.target.error);
             };
             Req.onsuccess = (Ev)=>{
-                unlock([null, Ev.target.result]);
+                unlock(Ev.target.result);
             };
             return await Lock;
         }
         catch (Dom_Exception){
-            return [Dom_Exception, null];
+            return Dom_Exception;
         }            
     }
 
@@ -97,15 +97,15 @@ class index {
             var [Lock,unlock] = new_lock();
 
             Req.onerror = (Ev)=>{
-                unlock([Ev.target.error, null]);
+                unlock(Ev.target.error);
             };
             Req.onsuccess = (Ev)=>{
-                unlock([null, Ev.target.result]);
+                unlock(Ev.target.result);
             };
             return await Lock;
         }
         catch (Dom_Exception){
-            return [Dom_Exception, null];
+            return Dom_Exception;
         }            
     }
 
@@ -118,15 +118,15 @@ class index {
             var [Lock,unlock] = new_lock();
 
             Req.onerror = (Ev)=>{
-                unlock([Ev.target.error, null]);
+                unlock(Ev.target.error);
             };
             Req.onsuccess = (Ev)=>{
-                unlock([null, Ev.target.result]);
+                unlock(Ev.target.result);
             };
             return await Lock;
         }
         catch (Dom_Exception){
-            return [Dom_Exception, null];
+            return Dom_Exception;
         }            
     }
 
@@ -139,15 +139,15 @@ class index {
             var [Lock,unlock] = new_lock();
 
             Req.onerror = (Ev)=>{
-                unlock([Ev.target.error, null]);
+                unlock(Ev.target.error);
             };
             Req.onsuccess = (Ev)=>{
-                unlock([null, Ev.target.result]);
+                unlock(Ev.target.result);
             };
             return await Lock;
         }
         catch (Dom_Exception){
-            return [Dom_Exception, null];
+            return Dom_Exception;
         }            
     }
 
@@ -160,15 +160,15 @@ class index {
             var [Lock,unlock] = new_lock();
 
             Req.onerror = (Ev)=>{
-                unlock([Ev.target.error, null]);
+                unlock(Ev.target.error);
             };
             Req.onsuccess = (Ev)=>{
-                unlock([null, Ev.target.result]);
+                unlock(Ev.target.result);
             };
             return await Lock;
         }
         catch (Dom_Exception){
-            return [Dom_Exception, null];
+            return Dom_Exception;
         }            
     }
 
@@ -181,15 +181,15 @@ class index {
             var [Lock,unlock] = new_lock();
 
             Req.onerror = (Ev)=>{
-                unlock([Ev.target.error, null]);
+                unlock(Ev.target.error);
             };
             Req.onsuccess = (Ev)=>{
-                unlock([null, Ev.target.result]);
+                unlock(Ev.target.result);
             };
             return await Lock;
         }
         catch (Dom_Exception){
-            return [Dom_Exception, null];
+            return Dom_Exception;
         }            
     }
 
@@ -202,15 +202,15 @@ class index {
             var [Lock,unlock] = new_lock();
 
             Req.onerror = (Ev)=>{
-                unlock([Ev.target.error, null]);
+                unlock(Ev.target.error);
             };
             Req.onsuccess = (Ev)=>{
-                unlock([null, Ev.target.result]);
+                unlock(Ev.target.result);
             };
             return await Lock;
         }
         catch (Dom_Exception){
-            return [Dom_Exception, null];
+            return Dom_Exception;
         }            
     }
 }
