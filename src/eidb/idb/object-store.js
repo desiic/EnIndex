@@ -2,7 +2,8 @@
  * @module eidb/idb/object_store
  */
 // Modules
-import base from "../base.js";
+import base  from "../base.js";
+import index from "../idb/index.js";
 
 // Shorthands
 var log      = console.log;
@@ -108,7 +109,7 @@ class object_store {
     }
 
     /**
-     * Clear store
+     * Clear store (DELETE)
      * @return {Object} Error or null
      */
     async clear(){
@@ -134,8 +135,8 @@ class object_store {
     }
 
     /**
-     * Count values
-     * @param  {key_range} Range - The range to count, can be null
+     * Count values (COUNT)
+     * @param  {key_range} Range - The primary index range to count, can be null
      * @return {Array}     Error or null, and count
      */
     async count(Range){
@@ -144,6 +145,276 @@ class object_store {
                 var Req = this.self.count();
             else
                 var Req = this.self.count(Range.self);
+
+            var [Lock,unlock] = new_lock();
+
+            Req.onerror = function(Ev){
+                unlock(["error", Ev.target.error]);
+            };
+            Req.onsuccess = function(Ev){
+                unlock(["okay", Ev.target.result]);
+            };
+            var [Stat,Result] = await Lock;
+
+            // Result
+            if (Stat=="error") return [Result,null];
+            return [null,Result];
+        }
+        catch (Dom_Exception){
+            return [Dom_Exception,null];
+        }
+    }
+
+    /**
+     * Create index (CREATE INDEX)
+     * @return {Array}
+     */
+    async create_index(Name,Key_Path,Key_Type){
+        try {
+            if (Key_Type==n1)
+                var Params={unique:false, multiEntry:false};
+            else
+            if (Key_Type==n2)
+                var Params={unique:false, multiEntry:true};
+            else
+            if (Key_Type==u1)
+                var Params={unique:true, multiEntry:false};
+            else
+            if (Key_Type==u2)
+                var Params={unique:true, multiEntry:true};
+            else{}
+
+            var Index = new index(this.self.createIndex(Name,Key_Path,Params));
+            return [null,Index];
+        }
+        catch (Dom_Exception){
+            return [Dom_Exception,null];
+        }
+    }
+
+    /**
+     * Delete objects (DELETE)
+     * @param  {key_range} Range - A primary key range
+     * @return {Object}    Error or null
+     */
+    async delete(Range){
+        try {
+            var Req           = this.self.delete(Range.self);
+            var [Lock,unlock] = new_lock();
+
+            Req.onerror = function(Ev){
+                unlock(["error", Ev.target.error]);
+            };
+            Req.onsuccess = function(Ev){
+                unlock(["okay", Ev.target.result]);
+            };
+            var [Stat,Result] = await Lock;
+
+            // Result
+            if (Stat=="error") return Result;
+            return null;
+        }
+        catch (Dom_Exception){
+            return Dom_Exception;
+        }
+    }
+
+    /**
+     * Delete index (DELETE INDEX)
+     * @return {Object} Error or null
+     */
+    async delete_index(Name){
+        try {
+            this.self.deleteIndex(Name);
+        }
+        catch (Dom_Exception){
+            return Dom_Exception;
+        }
+    }
+
+    /**
+     * Get (SELECT) 1 object specified by primary key range
+     * @return {Array} Error or null, and object
+     */
+    async get(Range){
+        try {
+            var Req           = this.self.get(Range.self);
+            var [Lock,unlock] = new_lock();
+
+            Req.onerror = function(Ev){
+                unlock(["error", Ev.target.error]);
+            };
+            Req.onsuccess = function(Ev){
+                unlock(["okay", Ev.target.result]);
+            };
+            var [Stat,Result] = await Lock;
+
+            // Result
+            if (Stat=="error") return [Result,null];
+            return [null,Result];
+        }
+        catch (Dom_Exception){
+            return [Dom_Exception,null];
+        }
+    }
+
+    /**
+     * Get (SELECT) all objects specified by primary key range
+     * @return {Array} Error or null, and object
+     */
+     async get_all(Range){
+        try {
+            var Req           = this.self.getAll(Range.self);
+            var [Lock,unlock] = new_lock();
+
+            Req.onerror = function(Ev){
+                unlock(["error", Ev.target.error]);
+            };
+            Req.onsuccess = function(Ev){
+                unlock(["okay", Ev.target.result]);
+            };
+            var [Stat,Result] = await Lock;
+
+            // Result
+            if (Stat=="error") return [Result,null];
+            return [null,Result];
+        }
+        catch (Dom_Exception){
+            return [Dom_Exception,null];
+        }
+    }
+
+    /**
+     * Get (SELECT) all key objects (key field of object only) specified by primary key range
+     * @return {Array} Error or null, and object
+     */
+    async get_all_keys(Range, max){
+        try {
+            if (max==null)
+                var Req = this.self.getAllKeys(Range.self);
+            else
+                var Req = this.self.getAllKeys(Range.self, max);
+
+            var [Lock,unlock] = new_lock();
+
+            Req.onerror = function(Ev){
+                unlock(["error", Ev.target.error]);
+            };
+            Req.onsuccess = function(Ev){
+                unlock(["okay", Ev.target.result]);
+            };
+            var [Stat,Result] = await Lock;
+
+            // Result
+            if (Stat=="error") return [Result,null];
+            return [null,Result];
+        }
+        catch (Dom_Exception){
+            return [Dom_Exception,null];
+        }
+    }
+
+    /**
+     * Get (SELECT) 1 key object (key field of object only) specified by primary key range
+     * @return {Array} Error or null, and object
+     */
+    async get_key(Range){
+        try {
+            var Req           = this.self.getKey(Range.self);
+            var [Lock,unlock] = new_lock();
+
+            Req.onerror = function(Ev){
+                unlock(["error", Ev.target.error]);
+            };
+            Req.onsuccess = function(Ev){
+                unlock(["okay", Ev.target.result]);
+            };
+            var [Stat,Result] = await Lock;
+
+            // Result
+            if (Stat=="error") return [Result,null];
+            return [null,Result];
+        }
+        catch (Dom_Exception){
+            return [Dom_Exception,null];
+        }
+    }
+
+    /**
+     * Get index
+     */
+    index(Name){
+        try {
+            var Index = this.self.index(Name);
+            return [null,Index];
+        }
+        catch (Dom_Exception){
+            return [Dom_Exception,null];
+        }
+    }
+
+    /**
+     * Open cursor (normal cursor with .value)
+     * @return {Array} Error or null, and object
+     */
+    async open_cursor(Range,Direction="next"){ // "nextunique", "prev", "prevunique"
+        try {            
+            var Req           = this.self.openCursor(Range.self, Direction);
+            var [Lock,unlock] = new_lock();
+
+            Req.onerror = function(Ev){
+                unlock(["error", Ev.target.error]);
+            };
+            Req.onsuccess = function(Ev){
+                unlock(["okay", Ev.target.result]);
+            };
+            var [Stat,Result] = await Lock;
+
+            // Result
+            if (Stat=="error") return [Result,null];
+            return [null,Result];
+        }
+        catch (Dom_Exception){
+            return [Dom_Exception,null];
+        }
+    }
+
+    /**
+     * Open key cursor (cursor with no .value)
+     * @return {Array} Error or null, and object
+     */
+    async open_key_cursor(Range,Direction="next"){ // "nextunique", "prev", "prevunique"
+        try {            
+            var Req           = this.self.openKeyCursor(Range.self, Direction);
+            var [Lock,unlock] = new_lock();
+
+            Req.onerror = function(Ev){
+                unlock(["error", Ev.target.error]);
+            };
+            Req.onsuccess = function(Ev){
+                unlock(["okay", Ev.target.result]);
+            };
+            var [Stat,Result] = await Lock;
+
+            // Result
+            if (Stat=="error") return [Result,null];
+            return [null,Result];
+        }
+        catch (Dom_Exception){
+            return [Dom_Exception,null];
+        }
+    }
+
+    /**
+     * Put (UPSERT) value to store, Item.id==null -> INSERT, Item.id!=null -> UPDATE
+     * @return {Array} Error or null, and object
+     */
+    async put(Item,Range){
+        try {            
+            if (Range==null)
+                var Req = this.self.put(Item);
+            else
+                var Req = this.self.put(Item,Range.self);
 
             var [Lock,unlock] = new_lock();
 
