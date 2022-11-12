@@ -59,10 +59,10 @@ class key_range {
      */ 
     includes(Range){
         try {
-            return [null,this.self.includes(Range.self)];
+            return this.self.includes(Range.self);
         }
         catch (Dom_Exception){
-            return [Dom_Exception,null];
+            return Dom_Exception;
         }
     }
 }

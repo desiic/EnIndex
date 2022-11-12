@@ -84,7 +84,7 @@ class object_store {
     /**
      * Add value (INSERT), EnIndex has id field autoincremented, 
      * no key will be passed to IDBObjectStore.add
-     * @return {Array} Error|null and added object id
+     * @return {Object} Error or added object id
      */ 
     async add(Value){
         try {
@@ -92,19 +92,15 @@ class object_store {
             var [Lock,unlock] = new_lock();
 
             Req.onerror = function(Ev){
-                unlock(["error", Ev.target.error]);
+                unlock(Ev.target.error);
             };
             Req.onsuccess = function(Ev){
-                unlock(["okay", Ev.target.result]);
+                unlock(Ev.target.result);
             };
-            var [Stat,Result] = await Lock;
-
-            // Result
-            if (Stat=="error") return [Result,null];
-            return [null,Result]; // Added object id
+            return await Lock;
         }
         catch (Dom_Exception){
-            return [Dom_Exception, null];
+            return Dom_Exception;
         }
     }
 
@@ -118,16 +114,12 @@ class object_store {
             var [Lock,unlock] = new_lock();
 
             Req.onerror = function(Ev){
-                unlock(["error", Ev.target.error]);
+                unlock(Ev.target.error);
             };
             Req.onsuccess = function(Ev){
-                unlock(["okay", Ev.target.result]);
+                unlock(Ev.target.result);
             };
-            var [Stat,Result] = await Lock;
-
-            // Result
-            if (Stat=="error") return Result;
-            return null;
+            return await Lock;
         }
         catch (Dom_Exception){
             return Dom_Exception;
@@ -137,7 +129,7 @@ class object_store {
     /**
      * Count values (COUNT)
      * @param  {key_range} Range - The primary index range to count, can be null
-     * @return {Array}     Error or null, and count
+     * @return {Object}    Error or count value
      */
     async count(Range){
         try {
@@ -149,25 +141,21 @@ class object_store {
             var [Lock,unlock] = new_lock();
 
             Req.onerror = function(Ev){
-                unlock(["error", Ev.target.error]);
+                unlock(Ev.target.error);
             };
             Req.onsuccess = function(Ev){
-                unlock(["okay", Ev.target.result]);
+                unlock(Ev.target.result);
             };
-            var [Stat,Result] = await Lock;
-
-            // Result
-            if (Stat=="error") return [Result,null];
-            return [null,Result];
+            return await Lock;
         }
         catch (Dom_Exception){
-            return [Dom_Exception,null];
+            return Dom_Exception;
         }
     }
 
     /**
      * Create index (CREATE INDEX)
-     * @return {Array}
+     * @return {Object} Error or the index object
      */
     async create_index(Name,Key_Path,Key_Type){
         try {
@@ -184,11 +172,10 @@ class object_store {
                 var Params={unique:true, multiEntry:true};
             else{}
 
-            var Index = new index(this.self.createIndex(Name,Key_Path,Params));
-            return [null,Index];
+            return new index(this.self.createIndex(Name,Key_Path,Params));
         }
         catch (Dom_Exception){
-            return [Dom_Exception,null];
+            return Dom_Exception;
         }
     }
 
@@ -203,16 +190,12 @@ class object_store {
             var [Lock,unlock] = new_lock();
 
             Req.onerror = function(Ev){
-                unlock(["error", Ev.target.error]);
+                unlock(Ev.target.error);
             };
             Req.onsuccess = function(Ev){
-                unlock(["okay", Ev.target.result]);
+                unlock(Ev.target.result);
             };
-            var [Stat,Result] = await Lock;
-
-            // Result
-            if (Stat=="error") return Result;
-            return null;
+            return await Lock;
         }
         catch (Dom_Exception){
             return Dom_Exception;
@@ -234,7 +217,7 @@ class object_store {
 
     /**
      * Get (SELECT) 1 object specified by primary key range
-     * @return {Array} Error or null, and object
+     * @return {Object} Error or data object
      */
     async get(Range){
         try {
@@ -242,25 +225,21 @@ class object_store {
             var [Lock,unlock] = new_lock();
 
             Req.onerror = function(Ev){
-                unlock(["error", Ev.target.error]);
+                unlock(Ev.target.error);
             };
             Req.onsuccess = function(Ev){
-                unlock(["okay", Ev.target.result]);
+                unlock(Ev.target.result);
             };
-            var [Stat,Result] = await Lock;
-
-            // Result
-            if (Stat=="error") return [Result,null];
-            return [null,Result];
+            return await Lock;
         }
         catch (Dom_Exception){
-            return [Dom_Exception,null];
+            return Dom_Exception;
         }
     }
 
     /**
      * Get (SELECT) all objects specified by primary key range
-     * @return {Array} Error or null, and object
+     * @return {Object} Error or array of objects
      */
      async get_all(Range){
         try {
@@ -268,25 +247,21 @@ class object_store {
             var [Lock,unlock] = new_lock();
 
             Req.onerror = function(Ev){
-                unlock(["error", Ev.target.error]);
+                unlock(Ev.target.error);
             };
             Req.onsuccess = function(Ev){
-                unlock(["okay", Ev.target.result]);
+                unlock(Ev.target.result);
             };
-            var [Stat,Result] = await Lock;
-
-            // Result
-            if (Stat=="error") return [Result,null];
-            return [null,Result];
+            return await Lock;
         }
         catch (Dom_Exception){
-            return [Dom_Exception,null];
+            return Dom_Exception;
         }
     }
 
     /**
      * Get (SELECT) all key objects (key field of object only) specified by primary key range
-     * @return {Array} Error or null, and object
+     * @return {Object} Error or array of keys
      */
     async get_all_keys(Range, max){
         try {
@@ -298,25 +273,21 @@ class object_store {
             var [Lock,unlock] = new_lock();
 
             Req.onerror = function(Ev){
-                unlock(["error", Ev.target.error]);
+                unlock(Ev.target.error);
             };
             Req.onsuccess = function(Ev){
-                unlock(["okay", Ev.target.result]);
+                unlock(Ev.target.result);
             };
-            var [Stat,Result] = await Lock;
-
-            // Result
-            if (Stat=="error") return [Result,null];
-            return [null,Result];
+            return await Lock;
         }
         catch (Dom_Exception){
-            return [Dom_Exception,null];
+            return Dom_Exception;
         }
     }
 
     /**
      * Get (SELECT) 1 key object (key field of object only) specified by primary key range
-     * @return {Array} Error or null, and object
+     * @return {Object} Error or key
      */
     async get_key(Range){
         try {
@@ -324,19 +295,15 @@ class object_store {
             var [Lock,unlock] = new_lock();
 
             Req.onerror = function(Ev){
-                unlock(["error", Ev.target.error]);
+                unlock(Ev.target.error);
             };
             Req.onsuccess = function(Ev){
-                unlock(["okay", Ev.target.result]);
+                unlock(Ev.target.result);
             };
-            var [Stat,Result] = await Lock;
-
-            // Result
-            if (Stat=="error") return [Result,null];
-            return [null,Result];
+            return await Lock;
         }
         catch (Dom_Exception){
-            return [Dom_Exception,null];
+            return Dom_Exception;
         }
     }
 
@@ -345,17 +312,16 @@ class object_store {
      */
     index(Name){
         try {
-            var Index = this.self.index(Name);
-            return [null,Index];
+            return this.self.index(Name);
         }
         catch (Dom_Exception){
-            return [Dom_Exception,null];
+            return Dom_Exception;
         }
     }
 
     /**
      * Open cursor (normal cursor with .value)
-     * @return {Array} Error or null, and object
+     * @return {Object} Error or cursor
      */
     async open_cursor(Range,Direction="next"){ // "nextunique", "prev", "prevunique"
         try {            
@@ -363,25 +329,21 @@ class object_store {
             var [Lock,unlock] = new_lock();
 
             Req.onerror = function(Ev){
-                unlock(["error", Ev.target.error]);
+                unlock(Ev.target.error);
             };
             Req.onsuccess = function(Ev){
-                unlock(["okay", Ev.target.result]);
+                unlock(Ev.target.result);
             };
-            var [Stat,Result] = await Lock;
-
-            // Result
-            if (Stat=="error") return [Result,null];
-            return [null,Result];
+            return await Lock;
         }
         catch (Dom_Exception){
-            return [Dom_Exception,null];
+            return Dom_Exception;
         }
     }
 
     /**
      * Open key cursor (cursor with no .value)
-     * @return {Array} Error or null, and object
+     * @return {Object} Error or cursor
      */
     async open_key_cursor(Range,Direction="next"){ // "nextunique", "prev", "prevunique"
         try {            
@@ -389,25 +351,22 @@ class object_store {
             var [Lock,unlock] = new_lock();
 
             Req.onerror = function(Ev){
-                unlock(["error", Ev.target.error]);
+                unlock(Ev.target.error);
             };
             Req.onsuccess = function(Ev){
-                unlock(["okay", Ev.target.result]);
+                unlock(Ev.target.result);
             };
-            var [Stat,Result] = await Lock;
-
-            // Result
-            if (Stat=="error") return [Result,null];
-            return [null,Result];
+            return await Lock;
         }
         catch (Dom_Exception){
-            return [Dom_Exception,null];
+            return Dom_Exception;
         }
     }
 
     /**
-     * Put (UPSERT) value to store, Item.id==null -> INSERT, Item.id!=null -> UPDATE
-     * @return {Array} Error or null, and object
+     * Put (UPSERT) value to store, 
+     * Item.id==null|notExisting -> INSERT, Item.id!=null -> UPDATE
+     * @return {Object} Error or result
      */
     async put(Item,Range){
         try {            
@@ -419,19 +378,15 @@ class object_store {
             var [Lock,unlock] = new_lock();
 
             Req.onerror = function(Ev){
-                unlock(["error", Ev.target.error]);
+                unlock(Ev.target.error);
             };
             Req.onsuccess = function(Ev){
-                unlock(["okay", Ev.target.result]);
+                unlock(Ev.target.result);
             };
-            var [Stat,Result] = await Lock;
-
-            // Result
-            if (Stat=="error") return [Result,null];
-            return [null,Result];
+            return await Lock;
         }
         catch (Dom_Exception){
-            return [Dom_Exception,null];
+            return Dom_Exception;
         }
     }
 }

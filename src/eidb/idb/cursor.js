@@ -120,12 +120,11 @@ var new_lock = base.new_lock;
                 unlock(["okay",Ev.target.result]);
             };
             var [Stat,Result] = await Lock;
-
-            if (Stat=="error") return [Result,null];
-            return [null,Result];
+            
+            return Result;
         }
         catch (Dom_Exception){
-            return [Dom_Exception,null];
+            return Dom_Exception;
         }
     }
 
@@ -144,12 +143,11 @@ var new_lock = base.new_lock;
                 unlock(["okay",Ev.target.result]);
             };
             var [Stat,Result] = await Lock;
-
-            if (Stat=="error") return [Result,null];
-            return [null,Result];
+            
+            return Result;
         }
         catch (Dom_Exception){
-            return [Dom_Exception,null];
+            return Dom_Exception;
         }
     }
 }

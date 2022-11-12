@@ -357,6 +357,7 @@ var EXPORT;
 // Global bindings, whole lib
 // EnIndex library global object
 window.eidb = eidb;
+log("EnIndex loaded");
 
 /**
  * Note
@@ -369,7 +370,11 @@ window.eidb = eidb;
  * 
  * Open database with automatic versioning
  * ```
- * var [Err,Db] = eidb.open_av("my-db", Indices);
+ * var Db = eidb.open_av("my-db", Indices);
+ * 
+ * if (Db instanceof Error){
+ *     ...
+ * }
  * ```
  */
 

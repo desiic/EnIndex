@@ -136,15 +136,15 @@ class transaction {
 
     /**
      * Get object store by name
-     * @return {Array} Error|null and store
+     * @return {Object} Error or object store
      */
     object_store(Name){       
         try {
             var Store = this.self.objectStore(Name);
-            return [null, new object_store(Store)];
+            return new object_store(Store);
         }
         catch (Dom_Exception){
-            return [Dom_Exception,null];
+            return Dom_Exception;
         } 
     }
 
