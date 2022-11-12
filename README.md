@@ -28,7 +28,7 @@ Usage
   * Use `eidb` class in global scope; see doc: [eidb](http://doc.desiic.com/enindex/module-eidb.html)
   
 Quick Start and Guides
-  * [https://coda.io/@desiic/enindex](https://coda.io/@desiic/enindex)
+  * [https://coda.io/@desiic/enindex](https://coda.io/@desiic/enindex) (WIP!)
 
 Source Code Documentation
   * [http://doc.desiic.com/enindex](http://doc.desiic.com/enindex)
