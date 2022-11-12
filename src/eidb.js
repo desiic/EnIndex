@@ -368,10 +368,18 @@ log("EnIndex loaded");
  * Note
  * ----
  * 
- * ### All members & methods of this module are bound to global scope under `window` object.
+ * All members & methods of this module are bound to global scope under `window` object.
  * 
  * Examples
  * --------
+ * 
+ * EnIndex library is delivered as ES6 module, use `script` tag with `type="module"` to load:
+ * ```
+ * // Warn: Type module is loaded asynchronously, may not exist when root global JS
+ * // script is executed even if this module tag is at first position in HTML file.
+ * <script type="module" src="/path/to/eidb.js"></script> * 
+ * ```
+ * 
  * 
  * Sample index schema
  * ```
