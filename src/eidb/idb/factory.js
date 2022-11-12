@@ -2,8 +2,9 @@
  * @module eidb/idb/factory
  */
 // Modules
-import base     from "../base.js";
-import database from "./database.js";
+import base        from "../base.js";
+import database    from "./database.js";
+import transaction from "./transaction.js";
 
 // Shorthands
 var log      = console.log;
@@ -71,7 +72,7 @@ class factory {
      *                  <ul><b>4 cases of returned value:</b>
      *                      <li>`Err.Status = "errored"`</li>
      *                      <li>`Err.Status = "blocked", Err.Event = Event_Obj`</li>
-     *                      <li>`Db.to_upgrade = true`</li>
+     *                      <li>`Db.to_upgrade = true, Db.Transaction to use`</li>
      *                      <li>`Db.to_upgrade = false`</li>
      *                  </ul>
      */
@@ -97,7 +98,10 @@ class factory {
         var Sequence_Cancel_Reason = null;
 
         Req.onerror = function(Ev){
-            loge("idb.open: Failed with error:",Ev.target.error);            
+            // TO-DO: Fix "DOMException: The connection was closed" when callin open_av,
+            // open_av already returned db with to-upgrade but this onerror still fired.
+            // Temporary commented this error log line out:
+            // loge("idb.open: Failed with error:",Ev.target.error);            
             Err_Obj = Ev.target.error;
             unlock("errored"); // Nothing next but just clear the lock, no sequence to cancel
         };        
@@ -129,7 +133,7 @@ class factory {
                 return;
             }
 
-            log(`idb.open: Database opened successfully`);
+            // log(`idb.open: Database opened successfully`); // Avoid log polution, commented out
             unlock("opened");
         };
         var Result = await Lock;
@@ -149,13 +153,16 @@ class factory {
         // To upgrade: Caller to upgrade, close, and reopen db
         if (Result=="to-upgrade"){ 
             let Db = new database(Req.result); // .result is IDBDatabase object    
-            Db.to_upgrade = true;
+            Db.to_upgrade  = true;
+            Db.Transaction = new transaction(Req.transaction);
+            return Db;
         }
 
         // Db opened normally
         if (Result=="opened"){ 
             let Db = new database(Req.result); // .result is IDBDatabase object    
             Db.to_upgrade = false;
+            return Db;
         }
     }
 }

@@ -3,10 +3,13 @@
  */
 
 // Modules
-import base         from "../base.js";
-import object_store from "./object-store.js";
+import base              from "../base.js";
+import object_store      from "./object-store.js";
+import cursor            from "./cursor.js";
+import cursor_with_value from "./cursor-with-value.js";
 
 // Shorthands
+var   log      = console.log;
 const new_lock = base.new_lock;
 
 /**
@@ -72,7 +75,11 @@ class index {
      */
     async count(Range){
         try {
-            var Req           = this.self.count(Range);
+            if (Range==null)
+                var Req = this.self.count();
+            else
+                var Req = this.self.count(Range.self);
+
             var [Lock,unlock] = new_lock();
 
             Req.onerror = (Ev)=>{
@@ -93,7 +100,11 @@ class index {
      */
     async get(Range){
         try {
-            var Req           = this.self.get(Range);
+            if (Range==null)
+                var Req = this.self.get();
+            else
+                var Req = this.self.get(Range.self);
+
             var [Lock,unlock] = new_lock();
 
             Req.onerror = (Ev)=>{
@@ -114,7 +125,11 @@ class index {
      */
     async get_all(Range, max){
         try {
-            var Req           = this.self.getAll(Range, max);
+            if (Range==null)
+                var Req = this.self.getAll();
+            else                
+                var Req = this.self.getAll(Range.self, max);
+
             var [Lock,unlock] = new_lock();
 
             Req.onerror = (Ev)=>{
@@ -135,7 +150,11 @@ class index {
      */
     async get_all_keys(Range, max){
         try {
-            var Req           = this.self.getAllKeys(Range, max);
+            if (Range==null)
+                var Req = this.self.getAllKeys();
+            else                
+                var Req = this.self.getAllKeys(Range.self, max);
+
             var [Lock,unlock] = new_lock();
 
             Req.onerror = (Ev)=>{
@@ -156,7 +175,11 @@ class index {
      */
     async get_key(Range){
         try {
-            var Req           = this.self.getKey(Range);
+            if (Range==null)
+                var Req = this.self.getKey();
+            else
+                var Req = this.self.getKey(Range.self);
+
             var [Lock,unlock] = new_lock();
 
             Req.onerror = (Ev)=>{
@@ -177,14 +200,18 @@ class index {
      */
     async open_cursor(Range,Direction="next"){ 
         try {
-            var Req           = this.self.openCursor(Range,Direction);
+            if (Range==null)
+                var Req = this.self.openCursor();
+            else
+                var Req = this.self.openCursor(Range.self,Direction);
+
             var [Lock,unlock] = new_lock();
 
             Req.onerror = (Ev)=>{
                 unlock(Ev.target.error);
             };
             Req.onsuccess = (Ev)=>{
-                unlock(Ev.target.result);
+                unlock(new cursor_with_value(Ev.target.result));
             };
             return await Lock;
         }
@@ -198,14 +225,18 @@ class index {
      */
     async open_key_cursor(Range,Direction="next"){
         try {
-            var Req           = this.self.openKeyCursor(Range,Direction);
+            if (Range==null)
+                var Req = this.self.openKeyCursor();
+            else
+                var Req = this.self.openKeyCursor(Range.self,Direction);
+
             var [Lock,unlock] = new_lock();
 
             Req.onerror = (Ev)=>{
                 unlock(Ev.target.error);
             };
             Req.onsuccess = (Ev)=>{
-                unlock(Ev.target.result);
+                unlock(new cursor(Ev.target.result));
             };
             return await Lock;
         }

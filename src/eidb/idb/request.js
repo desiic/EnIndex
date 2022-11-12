@@ -3,9 +3,10 @@
  */
 
 // Modules
-import object_store from "./object-store.js";
-import index        from "./index.js";
-import cursor       from "./cursor.js";
+import object_store      from "./object-store.js";
+import index             from "./index.js";
+import cursor            from "./cursor.js";
+import cursor_with_value from "./cursor-with-value.js";
 
 /**
  * IDBRequest wraper class
@@ -52,8 +53,9 @@ import cursor       from "./cursor.js";
     get Source(){
         var Src = this.self.source;
 
-        if (Src instanceof IDBObjectStore) return new object_store(Src);
-        if (Src instanceof IDBIndex)       return new index(Src);
+        if (Src instanceof IDBObjectStore)     return new object_store(Src);
+        if (Src instanceof IDBIndex)           return new index(Src);
+        if (Src instanceof IDBCursorWithValue) return new cursor_with_value(Src);
         return new cursor(Src);
     }
 

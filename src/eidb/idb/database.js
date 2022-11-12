@@ -121,11 +121,15 @@ class database {
     }
 
     /**
-     * Create transaction
+     * Create transaction<br/>
+     * _______________________
+     * WARNING!!!: A transaction CANNOT be returned from a function coz
+     * when a transaction variable is out of scope it is terminated. All db
+     * operations must be in the same function with the transaction variable.
      * @param  {String|Array} Store_Names - String of single store name, or array of store names
      * @param  {String}       Mode        - String, either "readonly" or "readwrite";
      *                                      see `eidb` module with `RO` and `RW` constants defined there.
-     * @param  {Object}       Options     - Options passed to IDBDatabase.transaction
+     * @param  {Object}       Options     - OPTIONAL! Options passed to IDBDatabase.transaction
      * @return {Object}       Error or the transaction
      */
     transaction(Store_Names, Mode, Options){
