@@ -377,7 +377,7 @@ log("EnIndex loaded");
  * ```
  * // Warn: Type module is loaded asynchronously, may not exist when root global JS
  * // script is executed even if this module tag is at first position in HTML file.
- * <script type="module" src="/path/to/eidb.js"></script> * 
+ * <script type="module" src="/path/to/eidb.js"></script>
  * ```
  * 
  * 
