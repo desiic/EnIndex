@@ -17,7 +17,7 @@ function mod_func(){
     var Check_Id = d$("#classes");
 
     if (Check_Id!=null){
-        d$(".main-wrapper article >.container-overview").style.order = 1;
+        // d$(".main-wrapper article >.container-overview").style.order = 1;
         d$(".main-wrapper article >.container-overview >h3").style.display = "none";
     }
 
