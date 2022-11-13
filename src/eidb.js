@@ -87,6 +87,7 @@ class eidb {
      */
     METHODS;
 
+    // BASE OPS **********:
     /**
      * Alias of `eidb.idb.databases` [See here](module-eidb_idb-idb.html#.databases)
      */
@@ -101,6 +102,12 @@ class eidb {
      */
     static open = idb.open;
 
+    /**
+     * Alias of `eidb.idb.delete_database` [See here](module-eidb_idb-idb.html#.delete_database)
+     */
+    static delete_database = idb.delete_database;
+
+    // EXTENDED OPS **********:
     /**
      * Alias of `eidb.idbx.open_av` [See here](module-eidb_idbx-idbx.html#.open_av)
      */
@@ -126,10 +133,91 @@ class eidb {
      */
     static do_op = idbx.do_op;
 
+    // CRUD OPS **********:
     /**
-     * Alias of `eidb.idb.delete_database` [See here](module-eidb_idb-idb.html#.delete_database)
+     * Alias of `eidb.idbx.crud.insert_one` [See here](module-eidb_idbx_crud-crud.html#.insert_one)</br>
+     * CRUD/CREATE
      */
-    static delete_database = idb.delete_database;
+    static insert_one = idbx.crud.insert_one;
+
+    /**
+     * Alias of `eidb.idbx.crud.insert_many` [See here](module-eidb_idbx_crud-crud.html#.insert_many)</br>
+     * CRUD/CREATE
+     */
+    static insert_many = idbx.crud.insert_many;
+
+    /**
+     * Alias of `eidb.idbx.crud.exists` [See here](module-eidb_idbx_crud-crud.html#.exists)</br>
+     * CRUD/READ
+     */
+     static exists = idbx.crud.exists;
+
+    /**
+     * Alias of `eidb.idbx.crud.count` [See here](module-eidb_idbx_crud-crud.html#.count)</br>
+     * CRUD/READ
+     */
+    static count = idbx.crud.count;
+
+    /**
+     * Alias of `eidb.idbx.crud.count_all` [See here](module-eidb_idbx_crud-crud.html#.count_all)</br>
+     * CRUD/READ
+     */
+    static count_all = idbx.crud.count_all;
+
+    /**
+     * Alias of `eidb.idbx.crud.find_one` [See here](module-eidb_idbx_crud-crud.html#.find_one)
+     * </br>
+     * CRUD/READ
+     */
+    static find_one = idbx.crud.find_one;
+
+    /**
+     * Alias of `eidb.idbx.crud.find_many` [See here](module-eidb_idbx_crud-crud.html#.find_many)</br>
+     * CRUD/READ
+     */
+    static find_many = idbx.crud.find_many;
+
+    /**
+     * Alias of `eidb.idbx.crud.find_all` [See here](module-eidb_idbx_crud-crud.html#.find_all)</br>
+     * CRUD/READ
+     */
+    static find_all = idbx.crud.find_all;
+
+    /**
+     * Alias of `eidb.idbx.crud.filter` [See here](module-eidb_idbx_crud-crud.html#.filter)</br>
+     * CRUD/READ
+     */
+    static filter = idbx.crud.filter;
+
+    /**
+     * Alias of `eidb.idbx.crud.update_one` [See here](module-eidb_idbx_crud-crud.html#.update_one)</br>
+     * CRUD/UPDATE
+     */
+    static update_one = idbx.crud.update_one;
+
+    /**
+     * Alias of `eidb.idbx.crud.update_many` [See here](module-eidb_idbx_crud-crud.html#.update_many)</br>
+     * CRUD/UPDATE
+     */
+    static update_many = idbx.crud.update_many;
+
+    /**
+     * Alias of `eidb.idbx.crud.upsert_one` [See here](module-eidb_idbx_crud-crud.html#.upsert_one)</br>
+     * CRUD/UPDATE
+     */
+    static upsert_one = idbx.crud.upsert_one;
+
+    /**
+     * Alias of `eidb.idbx.crud.remove_one` [See here](module-eidb_idbx_crud-crud.html#.remove_one)</br>
+     * CRUD/DELETE
+     */
+    static remove_one = idbx.crud.remove_one;
+
+    /**
+     * Alias of `eidb.idbx.crud.remove_many` [See here](module-eidb_idbx_crud-crud.html#.remove_many)</br>
+     * CRUD/DELETE
+     */
+    static remove_many = idbx.crud.remove_many;    
 }
 
 /**

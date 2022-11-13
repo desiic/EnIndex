@@ -2,7 +2,8 @@
  * @module eidb/idbx
  */
 // Modules
-import idb from "./idb.js";
+import idb  from "./idb.js";
+import crud from "./idbx/crud.js";
 
 // Shorthands
 var log      = console.log;
@@ -17,9 +18,25 @@ var json2obj = JSON.parse;
 class idbx {
 
     /**
-     * Check if is unused store
+     * _________________________________________________________________________
      */
-    static is_unused_store(Store_Name){
+    SUB_NAMESPACES;
+
+    /**
+     * CRUD functionalities
+     */
+    static crud = crud;
+
+    /*
+     * _________________________________________________________________________
+     */
+    METHODS;
+
+    /**
+     * Check if is unused store
+     * @private
+     */
+    static #is_unused_store(Store_Name){
         if (localStorage.Unused_Stores==null || localStorage.Unused_Stores.trim().length==0)
             return false;
 
@@ -29,8 +46,9 @@ class idbx {
 
     /**
      * Update unused store list
+     * @private
      */
-    static update_unused_store_list(Op,Store_Name){
+    static #update_unused_store_list(Op,Store_Name){
         if (Op=="add"){
             if (localStorage.Unused_Stores==null || localStorage.Unused_Stores.trim().length==0)
                 localStorage.Unused_Stores = obj2json([Store_Name]);
@@ -74,7 +92,7 @@ class idbx {
 
         for (let Store_Name of Db.Object_Store_Names){
             // Ignore unused store to avoid upgrade being triggered again and again
-            if (idbx.is_unused_store(Store_Name))
+            if (idbx.#is_unused_store(Store_Name))
                 continue;
 
             // Make index schema
@@ -157,7 +175,7 @@ class idbx {
             // Db.delete_object_store(Store_Name); // Indices are deleted together
 
             // Mark unused store not to trigger upgrade again
-            idbx.update_unused_store_list("add",Store_Name);
+            idbx.#update_unused_store_list("add",Store_Name);
         }
         
         // Create new stores (and new indices)   
@@ -165,14 +183,14 @@ class idbx {
 
         for (let Store_Name of New_Stores)
             if (Cur_Stores.indexOf(Store_Name)==-1){                
-                if (!idbx.is_unused_store(Store_Name))
+                if (!idbx.#is_unused_store(Store_Name))
                     Cre_Stores.push(Store_Name); // Not existing, create
                 else{
                     // Existing, but current index schema ignored Store_Name, 
                     // make empty entry to create all new indices for Store_Name
                     Cur_Indices[Store_Name] = {};
                     // Remove from unused store list coz it's now in index schema:
-                    idbx.update_unused_store_list("remove",Store_Name);
+                    idbx.#update_unused_store_list("remove",Store_Name);
                 }
             }
 
@@ -286,7 +304,8 @@ class idbx {
     }
 
     /**
-     * Set db name
+     * Set db name<br/>
+     * Don't call this method, for testing purpose
      */
     static set_db(Name){
         window._Db_Name = Name;
