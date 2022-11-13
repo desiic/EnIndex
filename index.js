@@ -92,6 +92,7 @@ async function main(){
     log("Pw to keys:",[Ek,Ak]=await eidb.wcrypto.password2keys(Pw,"foobar",1000));
     log("Enc key:",await eidb.wcrypto.export_key(Ek));
     log("Auth key:",await eidb.wcrypto.export_key(Ak));
+    log("Static key:",await eidb.wcrypto.make_static_key("foobar",1000));
 }
 
 // Programme entry point

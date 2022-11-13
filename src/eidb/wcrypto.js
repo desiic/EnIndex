@@ -406,6 +406,16 @@ class wcrypto {
         var Auth_Key        = await wcrypto.derive_key_pb(Trunk2,Salt,iterations);
         return [Enc_Key,Auth_Key];
     }
+
+    /**
+     * Get static key (for data encryption to avoid decrypt+re-encryption when 
+     * password changes); static key is encrypted by enc key by password2keys.
+     * Static key should be saved encrypted in `metadata` object store.
+     */
+    static async make_static_key(Salt,iterations){
+        var Rand = wcrypto.random_uuid();
+        return await wcrypto.derive_key_pb(Rand,Salt,iterations);
+    }
 }
 
 export default wcrypto;
