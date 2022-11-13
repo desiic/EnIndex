@@ -28,11 +28,44 @@ async function main(){
     log("Reopened db:",Db);
     Db.close();
 
-    logw("Test get objs");
+    logw("Test CREATE");
     Db = await eidb.reopen();
-    var T = Db.transaction("my_store");
+    var T = Db.transaction("my_store",RW);
     var S = T.store1();
-    log("Objects:",await S.get_all());
+    log("Id:",await eidb.insert_one(S,{foo:"bar",bar:"foo",r:Math.random()}));
+    log("Ids:",await eidb.insert_many(S,[{foo:"bar"},{bar:"foo",a:"b"}]));
+    Db.close();
+
+    logw("Test READ");
+    Db = await eidb.reopen();
+    var T = Db.transaction("my_store",RW);
+    var S = T.store1();
+    log("Exists:",await eidb.exists(S,{bar:"foo",foo:"bar"}));
+    log("Count:", await eidb.count (S,{bar:"foo",foo:"bar"}));
+    log("Find1:", await eidb.find_one(S,{bar:"foo",foo:"bar"}));
+    log("Find+:", await eidb.find_many(S,{bar:"foo",foo:"bar"}));
+    log("Find*:", (await eidb.find_all(S)).length );
+    log("Filter:",await eidb.filter(S,{foo:"bar",id:1}));
+    Db.close();
+
+    logw("Test UPDATE");
+    Db = await eidb.reopen();
+    var T = Db.transaction("my_store",RW);
+    var S = T.store1();
+    log("Up1:", await eidb.update_one(S,{foo:"bar",bar:"foo"}, {foo3:"bar3"}));
+    log("Up+:", await eidb.update_many(S,{foo:"bar",bar:"foo"}, {foox:"barx"}));
+    log("Ups:", await eidb.upsert_one(S,{foo:"bar",bar:"foo"}, {fooxy:"barxy"}));
+    Db.close();
+
+    logw("Test DELETE");
+    Db = await eidb.reopen();
+    var T = Db.transaction("my_store",RW);
+    var S = T.store1();
+    log("Count:", await eidb.count_all(S));
+    log("Del1:", await eidb.remove_one(S,{foo:"bar",bar:"foo"}));
+    log("Count:", await eidb.count_all(S));
+    log("Del+:", await eidb.remove_many(S,{foo:"bar",bar:"foo"}));
+    log("Count:", await eidb.count_all(S));
     Db.close();
 }
 

@@ -198,20 +198,27 @@ class index {
     /**
      * Open cursor
      */
-    async open_cursor(Range,Direction="next"){ 
-        try {
-            if (Range==null)
+    async open_cursor(Range,Direction="next",func){ 
+        try {         
+            if (Range==null)   
                 var Req = this.self.openCursor();
             else
-                var Req = this.self.openCursor(Range.self,Direction);
+                var Req = this.self.openCursor(Range.self, Direction);
 
             var [Lock,unlock] = new_lock();
 
-            Req.onerror = (Ev)=>{
+            Req.onerror = function(Ev){
                 unlock(Ev.target.error);
             };
-            Req.onsuccess = (Ev)=>{
-                unlock(new cursor_with_value(Ev.target.result));
+            Req.onsuccess = function(Ev){
+                var Cursor = Ev.target.result;
+
+                if (Cursor!=null){ 
+                    func(Cursor);
+                    Cursor.continue();
+                }
+                else 
+                    unlock(null);
             };
             return await Lock;
         }
@@ -223,20 +230,27 @@ class index {
     /**
      * Open key cursor
      */
-    async open_key_cursor(Range,Direction="next"){
-        try {
-            if (Range==null)
-                var Req = this.self.openKeyCursor();
+    async open_key_cursor(Range,Direction="next",func){
+        try {         
+            if (Range==null)   
+                var Req = this.self.openCursor();
             else
-                var Req = this.self.openKeyCursor(Range.self,Direction);
+                var Req = this.self.openCursor(Range.self, Direction);
 
             var [Lock,unlock] = new_lock();
 
-            Req.onerror = (Ev)=>{
+            Req.onerror = function(Ev){
                 unlock(Ev.target.error);
             };
-            Req.onsuccess = (Ev)=>{
-                unlock(new cursor(Ev.target.result));
+            Req.onsuccess = function(Ev){
+                var Cursor = Ev.target.result;
+
+                if (Cursor!=null){ 
+                    func(Cursor);
+                    Cursor.continue();
+                }
+                else 
+                    unlock(null);
             };
             return await Lock;
         }
