@@ -10,7 +10,8 @@ fi
 # python3 -m http.server 8080
 
 # HTTPS
-# Ref: https://stackoverflow.com/a/56503260/5581893
+# Server, ref: https://stackoverflow.com/a/56503260/5581893
+# Cert install on Windows (optional): certmgr.msc
 python3 <<HEREDOC
 from http.server import HTTPServer,SimpleHTTPRequestHandler 
 import ssl
