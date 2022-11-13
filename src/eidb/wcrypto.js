@@ -179,38 +179,6 @@ class wcrypto {
     static SUBTLE(){}
 
     /**
-     * Decrypt AES
-     */
-    static async decrypt_aes(Ciphertext, Iv, Key){
-        var Bytes = wcrypto.base64_to_bytes(Ciphertext);
-        var Algo  = {name:"AES-GCM", iv:Iv};
-        var Buff  = await window.crypto.subtle.decrypt(Algo,Key,Bytes);
-        var Text  = wcrypto.bytes_to_utf8(new Uint8Array(Buff));
-
-        return Text;
-    }
-
-    /**
-     * Decrypt RSA
-     */
-    static decrypt_rsa(){
-    }
-
-    /**
-     * Derive bits
-     */
-    static derive_bits(){
-    }
-
-    /**
-     * Derive key from password (password-based)
-     */
-    static async derive_key_pb(){
-        var Algo = {name:"PBKDF2", hash:"SHA-256"}; // Password-based key derivation format 2
-        //TO-DO 
-    }
-
-    /**
      * Digest to SHA1
      */
     static async digest_sha1(Text){
@@ -229,7 +197,121 @@ class wcrypto {
     }
 
     /**
-     * Encrypt with AES key (GCM)
+     * Generate key<br/>
+     * AES only, options are AES-CBC (block), AES-CTR (counter), AES-GCM (enhanced counter);
+     * AES-GCM is better, used in TLS 1.2 https://stackoverflow.com/a/22958889/5581893
+     */ 
+    static async generate_key_aes(){
+        var Aes_Gcm = {name:"AES-GCM", length:256};
+        var Algorithm,extractable;
+        var Usages = ["encrypt","decrypt"]; 
+                      // "sign","verify","deriveKey","deriveBits","wrapKey","unwrapKey"
+
+        return await window.crypto.subtle.generateKey(
+            Algorithm   = Aes_Gcm,
+            extractable = true,
+            Usages
+        );
+    }
+
+    /**
+     * Generate key AES-KW (key wrapping)
+     */ 
+    static generate_key_aes_kw(){
+        // TO-DO
+    }
+
+    /**
+     * Generate key RSA
+     */ 
+    static generate_keys_rsa(){
+        // TO-DO
+    }
+
+    /**
+     * Import key
+     */ 
+    static async import_key_raw_aes(Hex){
+        if (Hex.length != 64) { // AES 256-bit
+            loge("wcrypto.import_key_raw: Hex of key must be of length 64 chars");
+            return null;
+        }
+
+        var extractable;
+        var Bytes  = wcrypto.hex_to_bytes(Hex);
+        var Usages = ["encrypt","decrypt"]; 
+                      // "sign","verify","deriveKey","deriveBits","wrapKey","unwrapKey"
+
+        var Key = await window.crypto.subtle.
+                  importKey("raw",Bytes,{name:"AES-GCM"},extractable=true,Usages);
+        return Key;
+    }
+
+    /**
+     * Import key from password for derivation
+     */ 
+    static async import_key_raw_pb(Password){
+        var extractable;
+        var Bytes  = wcrypto.utf8_to_bytes(Password);
+        var Usages = ["deriveKey","deriveBits"];  
+                      // "encrypt","decrypt","sign","verify","wrapKey","unwrapKey"
+
+        // PBKDF2 keys must set extractable=false                      
+        var Key = await window.crypto.subtle.
+                  importKey("raw",Bytes,{name:"PBKDF2"},extractable=false,Usages);
+        return Key;
+    }
+
+    /**
+     * Export key
+     */
+    static async export_key(Key){
+        return wcrypto.buff_to_hex(await window.crypto.subtle.exportKey("raw",Key));
+    }
+
+    /**
+     * Derive bits from password
+     */
+    static async derive_bits_pb(Password,Salt,iterations, bit_count=512){
+        var Base_Key = await wcrypto.import_key_raw_pb(Password);        
+
+        // Create key from base key (which contains password)
+        var Algo = {
+            name:       "PBKDF2",  // Base key is
+            hash:       "SHA-256", // Base key is
+            salt:       wcrypto.utf8_to_bytes(Salt),
+            iterations: iterations
+        }; 
+
+        var Bits = await window.crypto.subtle.deriveBits(Algo,Base_Key,bit_count);
+        return wcrypto.buff_to_hex(Bits);
+    }
+
+    /**
+     * Derive key from password (password-based)<br/>
+     * Ref: https://github.com/infotechinc/password-based-key-derivation-in-browser/blob/master/pbkdf2.js
+     */
+    static async derive_key_pb(Password,Salt,iterations){
+        var Base_Key = await wcrypto.import_key_raw_pb(Password);        
+
+        // Create key from base key (which contains password)
+        var Algo = {
+            name:       "PBKDF2", // Password-based key derivation format 2 
+            hash:       "SHA-256",
+            salt:       wcrypto.utf8_to_bytes(Salt),
+            iterations: iterations
+        }; 
+        var extractable;
+        var Usages = ["encrypt","decrypt"]; 
+                      // "sign","verify","deriveKey","deriveBits","wrapKey","unwrapKey"
+
+        var Key = await window.crypto.subtle.deriveKey(Algo,Base_Key,
+                      {name:"AES-GCM",length:256},extractable=true,Usages);
+        return Key;
+    }
+
+    /**
+     * Encrypt with AES key (GCM) to base64
      */ 
     static async encrypt_aes(Text, Key){
         var Bytes      = wcrypto.utf8_to_bytes(Text); // Always UTF-8 to bytes
@@ -245,89 +327,85 @@ class wcrypto {
      * Encrypt with RSA key
      */ 
     static async encrypt_rsa(){
+        // TO-DO
     }
 
     /**
-     * Export key
+     * Decrypt (AES) from base64
      */
-    static export_key(){
+    static async decrypt_aes(Ciphertext, Iv, Key){
+        var Bytes = wcrypto.base64_to_bytes(Ciphertext);
+        var Algo  = {name:"AES-GCM", iv:Iv};
+        var Buff  = await window.crypto.subtle.decrypt(Algo,Key,Bytes);
+        var Text  = wcrypto.bytes_to_utf8(new Uint8Array(Buff));
+
+        return Text;
     }
 
     /**
-     * Generate key<br/>
-     * AES only, options are AES-CBC (block), AES-CTR (counter), AES-GCM (enhanced counter);
-     * AES-GCM is better, used in TLS 1.2 https://stackoverflow.com/a/22958889/5581893
-     */ 
-    static async generate_key_aes(){
-        var Aes_Gcm = {name:"AES-GCM", length:256};
-        var Algorithm,extractable;
-        var Usages = ["encrypt","decrypt"]; // ,"sign","verify","deriveKey",
-                      // "deriveBits","wrapKey","unwrapKey"];
-
-        return await window.crypto.subtle.generateKey(
-            Algorithm   = Aes_Gcm,
-            extractable = true,
-            Usages
-        );
-    }
-
-    /**
-     * Generate key AES-KW (key wrapping)
-     */ 
-    static generate_key_aes_kw(){
-    }
-
-    /**
-     * Generate key RSA
-     */ 
-    static generate_keys_rsa(){
-    }
-
-    /**
-     * Import key
-     */ 
-    static async import_key_raw(Hex){
-        if (Hex.length != 64) { // AES 256-bit
-            loge("wcrypto.import_key_raw: Hex of key must be of length 64 chars");
-            return null;
-        }
-
-        var extractable;
-        var Bytes = wcrypto.hex_to_bytes(Hex);
-        var Key   = await window.crypto.subtle.importKey(
-                        "raw",Bytes,{name:"AES-GCM"},extractable=true,
-                        ["encrypt","decrypt"]);
-        return Key;
+     * Decrypt (RSA)
+     */
+    static decrypt_rsa(){
+        // TO-DO
     }
 
     /**
      * Sign
      */ 
     static sign(){
-    }
-
-    /**
-     * Unwrap key
-     */ 
-    static unwrap_key(){
+        // TO-DO
     }
 
     /**
      * Verify
      */ 
     static verify(){
+        // TO-DO
     }
 
     /**
      * Wrap key
      */
     static wrap_key(){
+        // TO-DO
+    }
+
+    /**
+     * Unwrap key
+     */ 
+    static unwrap_key(){
+        // TO-DO
     }
 
     /**
      * _________________________________________________________________________
      */
     static EXTENDED(){} 
+
+    /**
+     * Split string into 2
+     */
+    static split_into_2(Str){
+        var mid    = Math.floor(Str.length / 2);
+        var Trunk1 = Str.substring(0,mid);
+        var Trunk2 = Str.substring(mid);
+        return [Trunk1,Trunk2];
+    }
+
+    /**
+     * Get encryption key and auth key from password<br/>
+     * Encryption first, first bit trunk is more important as it's also the 
+     * derived bits with half number of bits, and users encrypt data on 
+     * client side first before registration with server.
+     * @return {Array} 2 AES-GCM 256bit keys, encryption key and auth key
+     */
+    static async password2keys(Password,Salt,iterations){
+        var Bits_Str        = await wcrypto.derive_bits_pb(Password,Salt,iterations);
+        var [Trunk1,Trunk2] = wcrypto.split_into_2(Bits_Str);
+        var Enc_Key         = await wcrypto.derive_key_pb(Trunk1,Salt,iterations);
+        var Auth_Key        = await wcrypto.derive_key_pb(Trunk2,Salt,iterations);
+        return [Enc_Key,Auth_Key];
+    }
 }
 
 export default wcrypto;
