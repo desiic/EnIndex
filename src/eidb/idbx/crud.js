@@ -23,7 +23,9 @@ class crud {
      * @return {Number} Id of the new obj
      */
     static async insert_one(Store,Obj){
-        return await Store.add(Obj);
+        var Obj_ = {...Obj}; // Clone to delete id
+        delete Obj_.id;      // Id is auto-incremented
+        return await Store.add(Obj_);
     }
 
     /**
@@ -37,7 +39,9 @@ class crud {
         
         // Add all objects till all added
         for (let Obj of Objs){
-            let Req = Store.self.add(Obj); // MUST BE 'let' HERE, EACH Req IS DIFFERENT.
+            let Obj_ = {...Obj}; // Clone to delete id
+            delete Obj_.id;      // Id is auto-incremented
+            let Req = Store.self.add(Obj_); // MUST BE 'let' HERE, EACH Req IS DIFFERENT.
 
             Req.onerror = (Ev)=>{
                 loge("crud.insert_many: Failed to add object, error:",Ev.target.error);
@@ -334,12 +338,15 @@ class crud {
         var Keys = Object.keys(Cond);
         if (Keys.length==0) return null;
 
+        let Changes_ = {...Changes}; // Clone to delete id
+        delete Changes_.id;          // Id is auto-incremented
+
         // Single cond
         if (Keys.length==1){
             let Obj = await crud.get_1stcond_obj(Store,Cond);
             if (Obj==null) return null;
 
-            Obj = {...Obj,...Changes};
+            Obj = {...Obj,...Changes_};
             Store.put(Obj);
             return Obj;
         }
@@ -352,7 +359,7 @@ class crud {
         var Obj = await Store.get(value_is(Ids[0]));
         if (Obj==null) return null;
 
-        Obj = {...Obj,...Changes};
+        Obj = {...Obj,...Changes_};
         Store.put(Obj);
         return Obj;
     }
@@ -364,6 +371,9 @@ class crud {
     static async update_many(Store,Cond,Changes){
         var Keys = Object.keys(Cond);
         if (Keys.length==0) return null;
+
+        let Changes_ = {...Changes}; // Clone to delete id
+        delete Changes_.id;          // Id is auto-incremented
 
         // Single cond
         if (Keys.length==1){
@@ -383,7 +393,7 @@ class crud {
         let [Lock,unlock] = new_lock();
 
         for (let Obj of Objs){
-            let Replacement = {...Obj,...Changes};
+            let Replacement = {...Obj,...Changes_};
             let Req         = Store.self.put(Replacement);
             
             Req.onerror = (Ev)=>{
@@ -409,17 +419,20 @@ class crud {
         var Keys = Object.keys(Cond);
         if (Keys.length==0) return null;
 
+        let Changes_ = {...Changes}; // Clone to delete id
+        delete Changes_.id;          // Id is auto-incremented
+
         // Single cond
         if (Keys.length==1){
             let Obj = await crud.get_1stcond_obj(Store,Cond);
 
             // Insert
             if (Obj==null){
-                return await Store.add(Changes);
+                return await Store.add(Changes_);
             };
 
             // Update
-            Obj = {...Obj,...Changes};
+            Obj = {...Obj,...Changes_};
             Store.put(Obj);
             return Obj;
         }
@@ -433,11 +446,11 @@ class crud {
         var Obj = await Store.get(value_is(Ids[0]));
 
         if (Obj==null){
-            return await Store.add(Changes);
+            return await Store.add(Changes_);
         };
 
         // Update
-        Obj = {...Obj,...Changes};
+        Obj = {...Obj,...Changes_};
         Store.put(Obj);
         return Obj;
     }
