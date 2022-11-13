@@ -468,7 +468,6 @@ log("EnIndex loaded");
  * <script type="module" src="/path/to/eidb.js"></script>
  * ```
  * 
- * 
  * Sample index schema
  * ```
  * // 1:Single value, 2:Multientry, u1:Unique single value, u2:Unique multientry
