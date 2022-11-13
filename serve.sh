@@ -9,7 +9,7 @@ fi
 # HTTP only:
 # python3 -m http.server 8080
 
-# HTTPS
+# HTTPS (for Web Crypto to work)
 # Server, ref: https://stackoverflow.com/a/56503260/5581893
 # Cert install on Windows (optional): certmgr.msc
 python3 <<HEREDOC
