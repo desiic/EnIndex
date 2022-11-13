@@ -196,7 +196,8 @@ class index {
     }
 
     /**
-     * Open cursor
+     * Open cursor<br>
+     * Use callback `func` with cursor coz `.onsuccess` is fired multiple times
      */
     async open_cursor(Range,Direction="next",func){ 
         try {         
@@ -228,7 +229,8 @@ class index {
     }
 
     /**
-     * Open key cursor
+     * Open key cursor<br>
+     * Use callback `func` with cursor coz `.onsuccess` is fired multiple times
      */
     async open_key_cursor(Range,Direction="next",func){
         try {         

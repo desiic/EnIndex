@@ -335,10 +335,11 @@ class object_store {
     }
 
     /**
-     * Open cursor (normal cursor with .value)
+     * Open cursor (normal cursor with .value)<br>
+     * Use callback `func` with cursor coz `.onsuccess` is fired multiple times
      * @return {Object} Error or null
      */
-    async open_cursor(Range,Direction="next",func){ // "nextunique", "prev", "prevunique"
+    async open_cursor(Range,Direction="next", func){ // "nextunique", "prev", "prevunique"
         try {         
             if (Range==null)   
                 var Req = this.self.openCursor();
@@ -368,7 +369,8 @@ class object_store {
     }
 
     /**
-     * Open key cursor (cursor with no .value)
+     * Open key cursor (cursor with no .value)<br>
+     * Use callback `func` with cursor coz `.onsuccess` is fired multiple times
      * @return {Object} Error or null
      */
     async open_key_cursor(Range,Direction="next", func){ // "nextunique", "prev", "prevunique"
