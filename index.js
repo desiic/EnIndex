@@ -67,6 +67,21 @@ async function main(){
     log("Del+:", await eidb.remove_many(S,{foo:"bar",bar:"foo"}));
     log("Count:", await eidb.count_all(S));
     Db.close();
+
+    logw("Test Web Crypto");
+    log("Rand unsigned:",eidb.wcrypto.get_random_values_unsigned(16,10));
+    log("Rand signed:",eidb.wcrypto.get_random_values_signed(16,10));
+    log("Rand UUID:",eidb.wcrypto.random_uuid());
+    var K  = await eidb.wcrypto.generate_key_aes();    
+    var [Etd,Iv] = await eidb.wcrypto.encrypt_aes("foổbẫr",K);
+    var Dtd = await eidb.wcrypto.decrypt_aes(Etd,Iv,K);
+    log("AES GCM key:",K);
+    log("Encrypted foổbẫr:",Etd);
+    log("Decrypted:",Dtd);
+    var Pw = "123456";
+    var Hash = await eidb.wcrypto.digest_sha256(Pw);
+    var K = await eidb.wcrypto.import_key_raw(Hash);
+    log("Pw:",Pw,"-- Key:",K);
 }
 
 // Programme entry point

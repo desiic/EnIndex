@@ -29,6 +29,7 @@ import idb       from "./eidb/idb.js";
 import idbx      from "./eidb/idbx.js";
 import factory   from "./eidb/idb/factory.js";
 import key_range from "./eidb/idb/key-range.js";
+import wcrypto   from "./eidb/wcrypto.js";
 
 // Shorthands
 var log  = console.log;
@@ -56,6 +57,11 @@ class eidb {
      * Sub-namespace, IndexedDB extended features
      */
     static idbx = idbx;
+
+    /**
+     * Sub-namespace, Web Crypto
+     */ 
+    static wcrypto = wcrypto;
 
     /**
      * _________________________________________________________________________
