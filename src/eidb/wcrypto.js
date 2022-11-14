@@ -499,9 +499,13 @@ class wcrypto {
      * Encryption first, first bit trunk is more important as it's also the 
      * derived bits with half number of bits, and users encrypt data on 
      * client side first before registration with server.
-     * HMAC isn't secure enough as there's an agreed secret: https://stackoverflow.com/a/18693622/5581893
+     * 
+     * HMAC isn't secure enough as there's an agreed secret: 
+     * https://stackoverflow.com/a/18693622/5581893
+     * 
      * This method creates AES key + RSA keys, instead of AES key + HMAC KEY.
      * User keeps RSA priv key, send RSA pub key to server for registration.
+     * Ref: https://stackoverflow.com/a/20484325/5581893
      * @return {Array} 1 AES-GCM 256bit keys for encryption key, 1 RSA key pair 
      *                 for authentication
      */
@@ -511,6 +515,7 @@ class wcrypto {
         var Enc_Key         = await wcrypto.derive_key_pb(Trunk1,Salt,iterations); // AES 256bit
         var Auth_Keys       = await wcrypto.derive_rsa_keys_pb(Trunk2,Salt,iterations); // RSA keypair
         return [Enc_Key,Auth_Keys];
+        // =============================================================DERIVE RSA KEYS AND EDIT NOTES!
     }
 
     /**
