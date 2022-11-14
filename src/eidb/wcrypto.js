@@ -64,6 +64,15 @@ class wcrypto {
     }
 
     /**
+     * Random UUID extended (256 bits, no dashes)
+     */
+    static random_uuidx(){
+        var Left  = window.crypto.randomUUID();
+        var Right = window.crypto.randomUUID();
+        return (Left+Right).replaceAll("-","");
+    }
+
+    /**
      * _________________________________________________________________________
      */
     static UTILS(){}
@@ -205,7 +214,7 @@ class wcrypto {
         var Aes_Gcm = {name:"AES-GCM", length:256};
         var Algorithm,extractable;
         var Usages = ["encrypt","decrypt"]; 
-                      // "sign","verify","deriveKey","deriveBits","wrapKey","unwrapKey"
+                      // "sign","verify","deriveBits","deriveKey","wrapKey","unwrapKey"
 
         return await window.crypto.subtle.generateKey(
             Algorithm   = Aes_Gcm,
@@ -217,15 +226,107 @@ class wcrypto {
     /**
      * Generate key AES-KW (key wrapping)
      */ 
-    static generate_key_aes_kw(){
-        // TO-DO
+    static async generate_key_aes_kw(){
+        var Aes_Gcm = {name:"AES-KW", length:256};
+        var Algorithm,extractable;
+        var Usages = ["wrapKey","unwrapKey"]; 
+                      // "encrypt","decrypt","sign","verify","deriveBits","deriveKey"
+
+        return await window.crypto.subtle.generateKey(
+            Algorithm   = Aes_Gcm,
+            extractable = true,
+            Usages
+        );
     }
 
     /**
-     * Generate key RSA
+     * Generate key RSA for encryption/decryption<br/>
+     * RSA algos: RSASSA-PKCS1-v1_5 (first), RSA-OAEP, RSA-PSS (latest)
+     * Ref: https://medium.com/asecuritysite-when-bob-met-alice/so-what-are-rsa-pcks-1-5-rsa-oaep-and-rsa-pss-and-why-is-it-important-to-pick-the-right-one-e639992fba09
      */ 
-    static generate_keys_rsa(){
-        // TO-DO
+    static async generate_keys_rsa_ed(){ // ed: Encrypt/Decrypt
+        var Algo = {
+            name:           "RSA-OAEP",
+            modulusLength:  2048, // OpenSSL, GitHub, Mozilla: https://expeditedsecurity.com/blog/measuring-ssl-rsa-keys
+            publicExponent: new Uint8Array([0x01, 0x00, 0x01]), // https://developer.mozilla.org/en-US/docs/Web/API/RsaHashedKeyGenParams
+            hash:           "SHA-256"
+        };
+        var extractable;
+        /*
+        Web Crypto API features availability:
+        https://diafygi.github.io/webcrypto-examples/
+        ===================================================================
+                            Encrypt+Decrypt   Sign+Verify   Enc+Dec+Sig+Ver
+        RSASSA-PKCS1-v1_5          -             Yes               -
+        RSA-OAEP                  Yes             -                -
+        RSA-PSS                    -             Yes               -
+        ===================================================================
+        */
+        var Usages = ["encrypt","decrypt"];
+                      // "sign","verify","deriveBits","deriveKey","wrapKey","unwrapKey"
+
+        return await window.crypto.subtle.generateKey(
+                     Algo, extractable=true, Usages);
+    }
+
+    /**
+     * Generate key RSA for sign/verify<br/>
+     * RSA algos: RSASSA-PKCS1-v1_5 (first), RSA-OAEP, RSA-PSS (latest)
+     * Ref: https://medium.com/asecuritysite-when-bob-met-alice/so-what-are-rsa-pcks-1-5-rsa-oaep-and-rsa-pss-and-why-is-it-important-to-pick-the-right-one-e639992fba09
+     */ 
+    static async generate_keys_rsa_sv(){ // sv: Sign/Verify
+        var Algo = {
+            name:           "RSA-PSS",
+            modulusLength:  2048, // OpenSSL, GitHub, Mozilla: https://expeditedsecurity.com/blog/measuring-ssl-rsa-keys
+            publicExponent: new Uint8Array([0x01, 0x00, 0x01]), // https://developer.mozilla.org/en-US/docs/Web/API/RsaHashedKeyGenParams
+            hash:           "SHA-256"
+        };
+        var extractable;
+        /*
+        Web Crypto API features availability:
+        https://diafygi.github.io/webcrypto-examples/
+        ===================================================================
+                            Encrypt+Decrypt   Sign+Verify   Enc+Dec+Sig+Ver
+        RSASSA-PKCS1-v1_5          -             Yes               -
+        RSA-OAEP                  Yes             -                -
+        RSA-PSS                    -             Yes               -
+        ===================================================================
+        */
+        var Usages = ["sign","verify"]; 
+                      // "encrypt","decrypt","deriveBits","deriveKey","wrapKey","unwrapKey"
+
+        return await window.crypto.subtle.generateKey(
+                     Algo, extractable=true, Usages);
+    }
+
+    /**
+     * Generate key EC (elliptic curve) for encryption/decryption<br/>
+     * Ref: https://jameshfisher.com/2017/11/03/web-cryptography-api-asymmetric-encryption-example/
+     * NOTE: NOT IMPLEMENTED, SENDER MAY LEAK HIS/HER OWN PRIVATE KEY AND THE MESSAGE 
+     *       IS NO LONGER ONLY-RECEIVER-CAN-READ.
+     */ 
+    static async generate_keys_ec_ed(){ // ed: Encryption/Decryption
+        /*
+        // 2 EC (ECDH) key pairs:
+        const aliceKeyPair = await genKeyPair();
+        const bobKeyPair   = await genKeyPair();
+        // The same AES key:
+        const aliceSecret  = await deriveKey(aliceKeyPair.privateKey, bobKeyPair.publicKey  );
+        const bobSecret    = await deriveKey(  bobKeyPair.privateKey, aliceKeyPair.publicKey);
+        // JSON web key:
+        console.log((await exportKey(aliceSecret)).k === (await exportKey(bobSecret)).k);
+        */
+    }
+
+    /**
+     * Generate key EC (elliptic curve) for sign/verify<br/>
+     * NOTE: NOT IMPLEMENTED, EC IS NOT AS POPULAR AS RSA.
+     */
+    static async generate_keys_ec_sv(){
+        /*
+        Reading: ECDSA vs ECDH:
+        https://crypto.stackexchange.com/a/12829/99862
+        */
     }
 
     /**
@@ -240,7 +341,7 @@ class wcrypto {
         var extractable;
         var Bytes  = wcrypto.hex_to_bytes(Hex);
         var Usages = ["encrypt","decrypt"]; 
-                      // "sign","verify","deriveKey","deriveBits","wrapKey","unwrapKey"
+                      // "sign","verify","deriveBits","deriveKey","wrapKey","unwrapKey"
 
         var Key = await window.crypto.subtle.
                   importKey("raw",Bytes,{name:"AES-GCM"},extractable=true,Usages);
@@ -253,7 +354,7 @@ class wcrypto {
     static async import_key_raw_pb(Password){
         var extractable;
         var Bytes  = wcrypto.utf8_to_bytes(Password);
-        var Usages = ["deriveKey","deriveBits"];  
+        var Usages = ["deriveBits","deriveKey"];  
                       // "encrypt","decrypt","sign","verify","wrapKey","unwrapKey"
 
         // PBKDF2 keys must set extractable=false                      
@@ -303,7 +404,7 @@ class wcrypto {
         }; 
         var extractable;
         var Usages = ["encrypt","decrypt"]; 
-                      // "sign","verify","deriveKey","deriveBits","wrapKey","unwrapKey"
+                      // "sign","verify","deriveBits","deriveKey","wrapKey","unwrapKey"
 
         var Key = await window.crypto.subtle.deriveKey(Algo,Base_Key,
                       {name:"AES-GCM",length:256},extractable=true,Usages);
@@ -393,28 +494,34 @@ class wcrypto {
     }
 
     /**
+     * =============================================================DERIVE RSA KEYS AND EDIT NOTES!
      * Get encryption key and auth key from password<br/>
      * Encryption first, first bit trunk is more important as it's also the 
      * derived bits with half number of bits, and users encrypt data on 
      * client side first before registration with server.
-     * @return {Array} 2 AES-GCM 256bit keys, encryption key and auth key
+     * HMAC isn't secure enough as there's an agreed secret: https://stackoverflow.com/a/18693622/5581893
+     * This method creates AES key + RSA keys, instead of AES key + HMAC KEY.
+     * User keeps RSA priv key, send RSA pub key to server for registration.
+     * @return {Array} 1 AES-GCM 256bit keys for encryption key, 1 RSA key pair 
+     *                 for authentication
      */
     static async password2keys(Password,Salt,iterations){
-        var Bits_Str        = await wcrypto.derive_bits_pb(Password,Salt,iterations);
-        var [Trunk1,Trunk2] = wcrypto.split_into_2(Bits_Str);
-        var Enc_Key         = await wcrypto.derive_key_pb(Trunk1,Salt,iterations);
-        var Auth_Key        = await wcrypto.derive_key_pb(Trunk2,Salt,iterations);
-        return [Enc_Key,Auth_Key];
+        var Bits_Str        = await wcrypto.derive_bits_pb(Password,Salt,iterations); // 512bits
+        var [Trunk1,Trunk2] = wcrypto.split_into_2(Bits_Str); // 2 x 256bits
+        var Enc_Key         = await wcrypto.derive_key_pb(Trunk1,Salt,iterations); // AES 256bit
+        var Auth_Keys       = await wcrypto.derive_rsa_keys_pb(Trunk2,Salt,iterations); // RSA keypair
+        return [Enc_Key,Auth_Keys];
     }
 
     /**
      * Get static key (for data encryption to avoid decrypt+re-encryption when 
      * password changes); static key is encrypted by enc key by password2keys.
      * Static key should be saved encrypted in `metadata` object store.
+     * @return {Object} AES-GCM 256-bit key
      */
     static async make_static_key(Salt,iterations){
-        var Rand = wcrypto.random_uuid();
-        return await wcrypto.derive_key_pb(Rand,Salt,iterations);
+        var Rand = wcrypto.random_uuidx(); // 256bits
+        return await wcrypto.derive_key_pb(Rand,Salt,iterations); // AES 256bit
     }
 }
 

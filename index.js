@@ -80,7 +80,7 @@ async function main(){
     log("Decrypted:",Dtd);
     var Pw = "123456";
     var Hash = await eidb.wcrypto.digest_sha256(Pw);
-    var K = await eidb.wcrypto.import_key_raw_aes(Hash);
+    var K = await eidb.wcrypto.import_key_raw_aes("abcdef"+Hash.substring(6)); // Any 32byte hex
     log("Pw:",Pw,"-- Direct key:",K);
     var Bk = await eidb.wcrypto.import_key_raw_pb(Pw);
     log("Pw:",Pw,"-- Base key:",Bk);
@@ -93,6 +93,8 @@ async function main(){
     log("Enc key:",await eidb.wcrypto.export_key(Ek));
     log("Auth key:",await eidb.wcrypto.export_key(Ak));
     log("Static key:",await eidb.wcrypto.make_static_key("foobar",1000));
+    log("RSA keys enc/dec:",await eidb.wcrypto.generate_keys_rsa_ed());
+    log("RSA keys sig/ver:",await eidb.wcrypto.generate_keys_rsa_sv());
 }
 
 // Programme entry point
