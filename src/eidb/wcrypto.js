@@ -92,6 +92,21 @@ class wcrypto {
     }
 
     /**
+     * ArrayBuffer to Uint8Array (bytes)
+     */
+    static buff_to_bytes(Buffer){
+        return new Uint8Array(Buffer);
+    }
+
+    /**
+     * Uint8Array (bytes) to ArrayBuffer<br/>
+     * WARN: SOME SIZE PROBLEM ACCESSING .buffer 
+     */ 
+    static bytes_to_buff(Bytes){
+        return Bytes.buffer;
+    }
+
+    /**
      * ArrayBuffer to hex, ref: https://stackoverflow.com/a/40031979/5581893
      */
     static buff_to_hex(Buffer) {
@@ -101,7 +116,8 @@ class wcrypto {
     }
 
     /**
-     * Hex to buff
+     * Hex to buff<br/>
+     * WARN: SOME SIZE PROBLEM ACCESSING .buffer 
      */ 
     static hex_to_buff(Hex){
         return wcrypto.hex_to_bytes(Hex).buffer;
@@ -144,7 +160,8 @@ class wcrypto {
     }
 
     /**
-     * Base64 to buffer
+     * Base64 to buffer<br/>
+     * WARN: SOME SIZE PROBLEM ACCESSING .buffer 
      */
      static base64_to_buff(Base64){
         var Bytes_Str = window.atob(Base64); // ASCII base64 to bytes string
@@ -245,10 +262,12 @@ class wcrypto {
      * Ref: https://medium.com/asecuritysite-when-bob-met-alice/so-what-are-rsa-pcks-1-5-rsa-oaep-and-rsa-pss-and-why-is-it-important-to-pick-the-right-one-e639992fba09
      */ 
     static async generate_keys_rsa_ed(){ // ed: Encrypt/Decrypt
+        // Modulus length: OpenSSL, GitHub, Mozilla: https://expeditedsecurity.com/blog/measuring-ssl-rsa-keys
+        // Pub exponent: // https://developer.mozilla.org/en-US/docs/Web/API/RsaHashedKeyGenParams
         var Algo = {
             name:           "RSA-OAEP",
-            modulusLength:  2048, // OpenSSL, GitHub, Mozilla: https://expeditedsecurity.com/blog/measuring-ssl-rsa-keys
-            publicExponent: new Uint8Array([0x01, 0x00, 0x01]), // https://developer.mozilla.org/en-US/docs/Web/API/RsaHashedKeyGenParams
+            modulusLength:  2048, 
+            publicExponent: new Uint8Array([0x01, 0x00, 0x01]), 
             hash:           "SHA-256"
         };
         var extractable;
@@ -275,10 +294,12 @@ class wcrypto {
      * Ref: https://medium.com/asecuritysite-when-bob-met-alice/so-what-are-rsa-pcks-1-5-rsa-oaep-and-rsa-pss-and-why-is-it-important-to-pick-the-right-one-e639992fba09
      */ 
     static async generate_keys_rsa_sv(){ // sv: Sign/Verify
+        // Modulus length: OpenSSL, GitHub, Mozilla: https://expeditedsecurity.com/blog/measuring-ssl-rsa-keys
+        // Pub exponent: // https://developer.mozilla.org/en-US/docs/Web/API/RsaHashedKeyGenParams
         var Algo = {
             name:           "RSA-PSS",
-            modulusLength:  2048, // OpenSSL, GitHub, Mozilla: https://expeditedsecurity.com/blog/measuring-ssl-rsa-keys
-            publicExponent: new Uint8Array([0x01, 0x00, 0x01]), // https://developer.mozilla.org/en-US/docs/Web/API/RsaHashedKeyGenParams
+            modulusLength:  2048,
+            publicExponent: new Uint8Array([0x01, 0x00, 0x01]),
             hash:           "SHA-256"
         };
         var extractable;
@@ -301,7 +322,9 @@ class wcrypto {
 
     /**
      * Generate key EC (elliptic curve) for encryption/decryption<br/>
-     * Ref: https://jameshfisher.com/2017/11/03/web-cryptography-api-asymmetric-encryption-example/
+     * Web Crypto ECDSA can only sign, Web Crypto ECDH can't en/decrypt or sign/verify<br/>
+     * A solution is at this reference:
+     * https://jameshfisher.com/2017/11/03/web-cryptography-api-asymmetric-encryption-example/
      * NOTE: NOT IMPLEMENTED, SENDER MAY LEAK HIS/HER OWN PRIVATE KEY AND THE MESSAGE 
      *       IS NO LONGER ONLY-RECEIVER-CAN-READ.
      */ 
@@ -319,20 +342,40 @@ class wcrypto {
     }
 
     /**
-     * Generate key EC (elliptic curve) for sign/verify<br/>
-     * NOTE: NOT IMPLEMENTED, EC IS NOT AS POPULAR AS RSA.
+     * Generate key EC (elliptic curve, ECDSA) for sign/verify
      */
-    static async generate_keys_ec_sv(){
-        /*
-        Reading: ECDSA vs ECDH:
-        https://crypto.stackexchange.com/a/12829/99862
-        */
+    static async generate_keys_ec_sv(){ // sv: Sign/Verify
+        var Algo = {
+            name:       "ECDSA",
+            namedCurve: "P-256" // 256 is common
+        };
+        var extractable;
+        var Usages = ["sign","verify"]; 
+                      // "encrypt","decrypt","deriveBits","deriveKey","wrapKey","unwrapKey"
+
+        return await window.crypto.subtle.generateKey(
+                     Algo, extractable=true, Usages);
     }
 
     /**
-     * Import key
+     * Import key from password for derivation
      */ 
-    static async import_key_raw_aes(Hex){
+    static async import_key_pb_raw(Password){
+        var extractable;
+        var Bytes  = wcrypto.utf8_to_bytes(Password);
+        var Usages = ["deriveBits","deriveKey"];  
+                      // "encrypt","decrypt","sign","verify","wrapKey","unwrapKey"
+
+        // PBKDF2 keys must set extractable=false                      
+        var Key = await window.crypto.subtle.
+                  importKey("raw",Bytes,{name:"PBKDF2"},extractable=false,Usages);
+        return Key;
+    }
+
+    /**
+     * Import AES (GCM) key
+     */ 
+    static async import_key_aes_raw(Hex){
         if (Hex.length != 64) { // AES 256-bit
             loge("wcrypto.import_key_raw: Hex of key must be of length 64 chars");
             return null;
@@ -349,32 +392,41 @@ class wcrypto {
     }
 
     /**
-     * Import key from password for derivation
-     */ 
-    static async import_key_raw_pb(Password){
-        var extractable;
-        var Bytes  = wcrypto.utf8_to_bytes(Password);
-        var Usages = ["deriveBits","deriveKey"];  
-                      // "encrypt","decrypt","sign","verify","wrapKey","unwrapKey"
-
-        // PBKDF2 keys must set extractable=false                      
-        var Key = await window.crypto.subtle.
-                  importKey("raw",Bytes,{name:"PBKDF2"},extractable=false,Usages);
-        return Key;
+     * Import RSA key from JWK<br/>
+     * Rsa_Algo: https://developer.mozilla.org/en-US/docs/Web/API/SubtleCrypto/importKey
+     */
+    static async import_key_rsa_jwk(Jwk_Obj, Rsa_Algo){ // Rsa_Algo: String
+        // TO-DO
     }
 
     /**
-     * Export key
+     * Import EC key from JWK<br/>
+     * Ec_Algo: https://developer.mozilla.org/en-US/docs/Web/API/SubtleCrypto/importKey
+     */ 
+    static async import_key_ec_jwk(Jwk_Obj, Ec_Algo){ // Ec_Algo: String
+        // TO-DO
+    }
+
+    /**
+     * Export AES key to hex
      */
-    static async export_key(Key){
+    static async export_key_hex(Key){
         return wcrypto.buff_to_hex(await window.crypto.subtle.exportKey("raw",Key));
+    }
+
+    /**
+     * Export RSA|EC key to JWK
+     */
+    static async export_key_jwk(Key){
+        var Obj = await window.crypto.subtle.exportKey("jwk",Key);
+        return Obj;
     }
 
     /**
      * Derive bits from password
      */
     static async derive_bits_pb(Password,Salt,iterations, bit_count=512){
-        var Base_Key = await wcrypto.import_key_raw_pb(Password);        
+        var Base_Key = await wcrypto.import_key_pb_raw(Password);        
 
         // Create key from base key (which contains password)
         var Algo = {
@@ -389,11 +441,11 @@ class wcrypto {
     }
 
     /**
-     * Derive key from password (password-based)<br/>
+     * Derive AES key from password (password-based)<br/>
      * Ref: https://github.com/infotechinc/password-based-key-derivation-in-browser/blob/master/pbkdf2.js
      */
-    static async derive_key_pb(Password,Salt,iterations){
-        var Base_Key = await wcrypto.import_key_raw_pb(Password);        
+    static async derive_key_pb2aes(Password,Salt,iterations){
+        var Base_Key = await wcrypto.import_key_pb_raw(Password);        
 
         // Create key from base key (which contains password)
         var Algo = {
@@ -409,6 +461,54 @@ class wcrypto {
         var Key = await window.crypto.subtle.deriveKey(Algo,Base_Key,
                       {name:"AES-GCM",length:256},extractable=true,Usages);
         return Key;
+    }
+
+    /**
+     * Derive EC key pair from password<br/>
+     * WARN: 
+     * THIS IS A WORK-AROUND METHOD TO DERIVE EC KEYS FROM PASSWORD
+     * COZ WEB CRYPTO API ONLY DERIVE TO HMAC OR AES. IT'S POSSIBLE TO PROVIDE
+     * RANDFUNC TO RSA OR EC GENERATOR TO DERIVE BUT SUCH FEATURE ISN'T IN WEB CRYPTO YET.
+     * 
+     * Elliptic curve: y² = x³ + ax + b
+     * Theory:         https://cryptobook.nakov.com/asymmetric-key-ciphers/elliptic-curve-cryptography-ecc
+     * Maths:          https://en.wikipedia.org/wiki/Modular_arithmetic
+     * P-256 curve:    https://neuromancer.sk/std/nist/P-256
+     * 
+     * Maths:
+     * ```
+     * y² = x³ + ax + b (mod p)  <=>  y² - (x³ + ax + b) = tp
+     * ```
+     * 
+     * Procedure:<br/>
+     * ECSA -> JWK -> alter -> import<br/>
+     * Pubkey = Privkey * G, Note: This is Elliptic Curve scalar multiplication,
+     * see: https://en.wikipedia.org/wiki/Elliptic_curve_point_multiplication#Point_multiplication
+     * 
+     * EC maths in pure JavaScript:<br/>
+     * https://paulmillr.com/posts/noble-secp256k1-fast-ecc/
+     */
+    static async derive_keys_pb2ec(Password,Salt,iterations){
+        // Constants from the P-256 link in doc block above, key size: 256 bits
+        var p =  BigInt("0xffffffff00000001000000000000000000000000ffffffffffffffffffffffff"); // Prime
+        var a =  BigInt("0xffffffff00000001000000000000000000000000fffffffffffffffffffffffc"); // Param
+        var b =  BigInt("0x5ac635d8aa3a93e7b3ebbd55769886bc651d06b0cc53b0f63bce3c3e27d2604b"); // Param
+        var G = [BigInt("0x6b17d1f2e12c4247f8bce6e563a440f277037d812deb33a0f4a13945d898c296"), // Base point
+                 BigInt("0x4fe342e2fe1a7f9b8ee7eb4a7c0f9e162bce33576b315ececbb6406837bf51f5")];
+        var n =  BigInt("0xffffffff00000000ffffffffffffffffbce6faada7179e84f3b9cac2fc632551"); // Curve order (max key+1)
+        var h =  BigInt("0x01"); // Cofactor
+        
+        // test ---------------------------------------
+        var d = BigInt("0x247f8bce6e5440f27703763945d898c29663ab17d1f2e12c4d812deb33a0f4a1")
+        var x,y;
+
+        // test implementation
+        // https://paulmillr.com/posts/noble-secp256k1-fast-ecc/
+        // ???
+
+        G = [15, 13]; // nakov.com link above * 2 ==> [2,10]
+        d = 2;
+        log(dg(d,G)); // expected to be [2, 10]
     }
 
     /**
@@ -494,17 +594,22 @@ class wcrypto {
     }
 
     /**
-     * =============================================================DERIVE RSA KEYS AND EDIT NOTES!
+     * =============================================================
      * Get encryption key and auth key from password<br/>
      * Encryption first, first bit trunk is more important as it's also the 
      * derived bits with half number of bits, and users encrypt data on 
      * client side first before registration with server.
      * 
-     * HMAC isn't secure enough as there's an agreed secret: 
+     * HMAC isn't secure enough as there's an agreed secret and may leak from server side:<br/>
      * https://stackoverflow.com/a/18693622/5581893
      * 
-     * This method creates AES key + RSA keys, instead of AES key + HMAC KEY.
-     * User keeps RSA priv key, send RSA pub key to server for registration.
+     * Options for E2EE keys: AES+RSApair, AES+ECpair<br/>
+     * However, Web Crypto doesn't provide derivation to RSA or EC;
+     * quite time taking to create RSA pair with pure JS especially the modules and primes;
+     * EC pair will be created instead since any interger below EC:n can be key.
+     * 
+     * This method creates AES key + EC keys, instead of AES key + HMAC key.
+     * User keeps priv key, send pub key to server for registration.<br/>
      * Ref: https://stackoverflow.com/a/20484325/5581893
      * @return {Array} 1 AES-GCM 256bit keys for encryption key, 1 RSA key pair 
      *                 for authentication
@@ -512,10 +617,9 @@ class wcrypto {
     static async password2keys(Password,Salt,iterations){
         var Bits_Str        = await wcrypto.derive_bits_pb(Password,Salt,iterations); // 512bits
         var [Trunk1,Trunk2] = wcrypto.split_into_2(Bits_Str); // 2 x 256bits
-        var Enc_Key         = await wcrypto.derive_key_pb(Trunk1,Salt,iterations); // AES 256bit
-        var Auth_Keys       = await wcrypto.derive_rsa_keys_pb(Trunk2,Salt,iterations); // RSA keypair
+        var Enc_Key         = await wcrypto.derive_key_pb2aes(Trunk1,Salt,iterations); // AES 256bit
+        var Auth_Keys       = await wcrypto.derive_keys_pb2ec(Trunk2,Salt,iterations); // EC keypair
         return [Enc_Key,Auth_Keys];
-        // =============================================================DERIVE RSA KEYS AND EDIT NOTES!
     }
 
     /**
@@ -526,7 +630,7 @@ class wcrypto {
      */
     static async make_static_key(Salt,iterations){
         var Rand = wcrypto.random_uuidx(); // 256bits
-        return await wcrypto.derive_key_pb(Rand,Salt,iterations); // AES 256bit
+        return await wcrypto.derive_key_pb2aes(Rand,Salt,iterations); // AES 256bit
     }
 }
 
