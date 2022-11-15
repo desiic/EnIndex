@@ -1,3 +1,6 @@
+// Paul Miller
+// JS implementations of secp256k1 (aka K256, Bitcoin)
+
 var CURVE;
 
   function mod(a, b = CURVE.P) {
