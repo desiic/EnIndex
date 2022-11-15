@@ -577,7 +577,7 @@ class wcrypto {
         log("xy",x=wcrypto.base64url_to_hex(key.x))
         log("  ",y=wcrypto.base64url_to_hex(key.y))
 
-        var newd = d //"1111"+d.substring(4)
+        var newd = "1234567890"+d.substring(10)
 
         ecc.setCurve(p,n,G[0],G[1])
           var G = new ecc.Point(G[0], G[1]);
@@ -597,8 +597,10 @@ class wcrypto {
         var libc = elliptic.ec("p256")
         var libk = libc.keyFromPrivate(newd)
         var libpub = libk.getPublic()
-        var xlib = BigInt(libpub.x.toString()).toString(16)
-        var ylib = BigInt(libpub.y.toString()).toString(16)
+        var xlib = libpub.getX().toString(16)
+        var ylib = libpub.getY().toString(16)
+        while (xlib.length<64) xlib="0"+xlib;
+        while (ylib.length<64) ylib="0"+ylib;        
 
         log("newd ", newd);
         log("newxy", xstr, "(ecc)")
@@ -612,7 +614,7 @@ class wcrypto {
         log("altered jwk:",key)
         var k2;
         log("altered key:",k2 = await wcrypto.import_key_ec_jwk(key));
-        log("altered2cmp:", await wcrypto.export_key_jwk(k2));          
+        log("back to jwk:", await wcrypto.export_key_jwk(k2));          
         log("2=========================")
     }
 
