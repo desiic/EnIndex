@@ -16,6 +16,33 @@ var loge = console.error;
 class wcrypto {
 
     /**
+     * _________________________________________________________________________
+     */
+    static EXTERNAL_LIBS(){}
+
+    /**
+     * Make ECDSA public key from private key
+     */ 
+    static ec_publickey_from_privatekey(Priv_Hex){
+        // Create curve
+        var Curve = elliptic.ec("p256");
+        // Get private key
+        var Privkey = Curve.keyFromPrivate(Priv_Hex);
+        // Get public key
+        var Pubkey = Privkey.getPublic();
+
+        // Return EC public key as 2 numbers
+        // WARN: Not Pubkey.x, .y, they are different values.
+        // .toString(16) is built-in to get hex.
+        return [Pubkey.getX().toString(16), Pubkey.getY().toString(16)];
+    }
+
+    /**
+     * _________________________________________________________________________
+     */
+    static BASE_FUNCS(){}
+
+    /**
      * Random values (unsigned)
      */ 
     static get_random_values_unsigned(bits,count){ // 8, 16, 32, 64
