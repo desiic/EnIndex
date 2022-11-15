@@ -570,12 +570,12 @@ class wcrypto {
         var d,x,y;
         log("original key:",keyobj)
         log("original jwk:",key)
-        log("d",(key.d))
-        log("x",(key.x))
-        log("y",(key.y))
-        log("d",d=wcrypto.base64url_to_hex(key.d))
-        log("x",x=wcrypto.base64url_to_hex(key.x))
-        log("y",y=wcrypto.base64url_to_hex(key.y))
+        log("d ",(key.d))
+        log("xy",(key.x))
+        log("  ",(key.y))
+        log("d ",d=wcrypto.base64url_to_hex(key.d))
+        log("xy",x=wcrypto.base64url_to_hex(key.x))
+        log("  ",y=wcrypto.base64url_to_hex(key.y))
 
         var newd = d //"1111"+d.substring(4)
 
@@ -592,18 +592,27 @@ class wcrypto {
         var xstr=pub.x.toString(16), ystr=pub.y.toString(16);
         while (xstr.length<64) xstr="0"+xstr;
         while (ystr.length<64) ystr="0"+ystr;        
-        log("newd", newd);
-        log("newx", xstr)
-        log("newy", ystr)
+
+        // elliptic lib
+        var libc = elliptic.ec("p256")
+        var libk = libc.keyFromPrivate(newd)
+        var libpub = libk.getPublic()
+        var xlib = BigInt(libpub.x.toString()).toString(16)
+        var ylib = BigInt(libpub.y.toString()).toString(16)
+
+        log("newd ", newd);
+        log("newxy", xstr, "(ecc)")
+        log("     ", ystr, "(ecc)")
+        log("newxy", xlib, "(lib)")
+        log("     ", ylib, "(lib)")
 
         key.d = wcrypto.hex_to_base64url(newd)        
-        key.x = wcrypto.hex_to_base64url(xstr)
-        key.y = wcrypto.hex_to_base64url(ystr)
+        key.x = wcrypto.hex_to_base64url(xlib) // xstr or xlib
+        key.y = wcrypto.hex_to_base64url(ylib) // xstr or xlib
         log("altered jwk:",key)
         var k2;
         log("altered key:",k2 = await wcrypto.import_key_ec_jwk(key));
-        log("altered2cmp:", await wcrypto.export_key_jwk(k2));
-          
+        log("altered2cmp:", await wcrypto.export_key_jwk(k2));          
         log("2=========================")
     }
 
