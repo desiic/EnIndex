@@ -89,17 +89,18 @@ async function main(){
     log("Derived key (hex):",await eidb.wcrypto.export_key_hex(Dk));
     var Ek, Ak;
     log("Derived bits (hex):",await eidb.wcrypto.derive_bits_pb(Pw,"foobar",1000));
-    log("Pw to keys:",[Ek,Ak]=await eidb.wcrypto.password2keys(Pw,"foobar",1000));
-    log("Enc key:",await eidb.wcrypto.export_key_hex(Ek));
+    // log("Pw to keys:",[Ek,Ak]=await eidb.wcrypto.password2keys(Pw,"foobar",1000));
+    // log("Enc key:",await eidb.wcrypto.export_key_hex(Ek));
     // log("Auth key:",await eidb.wcrypto.export_key_hex(Ak));
     log("Static key:",await eidb.wcrypto.make_static_key("foobar",1000));
     log("RSA keys enc/dec:",await eidb.wcrypto.generate_keys_rsa_ed());
     log("RSA keys sig/ver:",await eidb.wcrypto.generate_keys_rsa_sv());
     var Kpair = await eidb.wcrypto.generate_keys_ec_sv();
     log("EC keys:", Kpair, Kpair.privateKey.algorithm);
-    log("EC priv:", await eidb.wcrypto.export_key_jwk(Kpair.privateKey));
-    log("EC pub: ", await eidb.wcrypto.export_key_jwk(Kpair.publicKey));
-    await eidb.wcrypto.derive_keys_pb2ec();
+    var Priv,Pub;
+    log("EC priv:", Priv=await eidb.wcrypto.export_key_jwk(Kpair.privateKey));
+    log("EC pub: ", Pub=await eidb.wcrypto.export_key_jwk(Kpair.publicKey));
+    await eidb.wcrypto.derive_keys_pb2ec(Kpair.privateKey,Priv);
 }
 
 // Programme entry point

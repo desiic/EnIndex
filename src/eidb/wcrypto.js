@@ -2,6 +2,9 @@
  * @module eidb/wcrypto
  */ 
 
+// Modules
+import * as ecc from "./ecc.js";
+
 // Shorthands
 var log  = console.log;
 var logw = console.warn;
@@ -76,6 +79,20 @@ class wcrypto {
      * _________________________________________________________________________
      */
     static UTILS(){}
+
+    /**
+     * Base64URL to Base64
+     */
+    static base64url_to_base64(Str){
+        return Str.replaceAll("-","+").replaceAll("_","/");
+    }
+
+    /**
+     * Base64 to Base64URL
+     */
+    static base64_to_base64url(Str){
+        return Str.replaceAll("+","-").replaceAll("/","_").replace("=","");
+    }
 
     /**
      * UTF8 to bytes (Uint8Array)
@@ -197,6 +214,36 @@ class wcrypto {
             Bytes[i] = Bytes_Str.charCodeAt(i);
 
         return Bytes;
+    }
+
+    /**
+     * Base64 to hex
+     */
+    static base64_to_hex(Base64){
+        return wcrypto.bytes_to_hex(wcrypto.base64_to_bytes(Base64));
+    }
+
+    /**
+     * Hex to base64
+     */ 
+    static hex_to_base64(Hex){
+        return wcrypto.bytes_to_base64(wcrypto.hex_to_bytes(Hex));
+    }
+
+    /**
+     * Base64URL to hex
+     */
+    static base64url_to_hex(Base64){
+        Base64 = wcrypto.base64url_to_base64(Base64);
+        return wcrypto.bytes_to_hex(wcrypto.base64_to_bytes(Base64));
+    }
+
+    /**
+     * Hex to base64URL
+     */ 
+    static hex_to_base64url(Hex){
+        var Base64 = wcrypto.bytes_to_base64(wcrypto.hex_to_bytes(Hex));
+        return wcrypto.base64_to_base64url(Base64);
     }
 
     /**
@@ -395,8 +442,17 @@ class wcrypto {
      * Import RSA key from JWK<br/>
      * Rsa_Algo: https://developer.mozilla.org/en-US/docs/Web/API/SubtleCrypto/importKey
      */
-    static async import_key_rsa_jwk(Jwk_Obj, Rsa_Algo){ // Rsa_Algo: String
-        // TO-DO
+    static async import_key_rsa_jwk(Jwk_Obj, Rsa_Algo){ // Rsa_Algo: String        
+        var Algo = {name:Rsa_Algo, hash:"SHA-256"};
+        
+        if (Rsa_Algo=="RSA-OAEP")
+            var Usages = ["encrypt","decrypt"];
+        else
+            var Usages = ["sign","verify"];
+
+        var extractable;
+        return await window.crypto.subtle.importKey("jwk",Jwk_Obj,Algo,
+                     extractable=true,Usages);
     }
 
     /**
@@ -404,7 +460,16 @@ class wcrypto {
      * Ec_Algo: https://developer.mozilla.org/en-US/docs/Web/API/SubtleCrypto/importKey
      */ 
     static async import_key_ec_jwk(Jwk_Obj, Ec_Algo){ // Ec_Algo: String
-        // TO-DO
+        var Algo = {name:"ECDSA", namedCurve:"P-256"};
+
+        if (Jwk_Obj.d != null)
+            var Usages = ["sign"]; // Private key
+        else
+            var Usages = ["verify"]; // Public key
+
+        var extractable;
+        return await window.crypto.subtle.importKey("jwk",Jwk_Obj,Algo,
+                     extractable=true,Usages);
     }
 
     /**
@@ -488,7 +553,7 @@ class wcrypto {
      * EC maths in pure JavaScript:<br/>
      * https://paulmillr.com/posts/noble-secp256k1-fast-ecc/
      */
-    static async derive_keys_pb2ec(Password,Salt,iterations){
+    static async derive_keys_pb2ec(keyobj,key,Password,Salt,iterations){
         // Constants from the P-256 link in doc block above, key size: 256 bits
         var p =  BigInt("0xffffffff00000001000000000000000000000000ffffffffffffffffffffffff"); // Prime
         var a =  BigInt("0xffffffff00000001000000000000000000000000fffffffffffffffffffffffc"); // Param
@@ -496,19 +561,50 @@ class wcrypto {
         var G = [BigInt("0x6b17d1f2e12c4247f8bce6e563a440f277037d812deb33a0f4a13945d898c296"), // Base point
                  BigInt("0x4fe342e2fe1a7f9b8ee7eb4a7c0f9e162bce33576b315ececbb6406837bf51f5")];
         var n =  BigInt("0xffffffff00000000ffffffffffffffffbce6faada7179e84f3b9cac2fc632551"); // Curve order (max key+1)
-        var h =  BigInt("0x01"); // Cofactor
-        
-        // test ---------------------------------------
-        var d = BigInt("0x247f8bce6e5440f27703763945d898c29663ab17d1f2e12c4d812deb33a0f4a1")
-        var x,y;
+        var h =  BigInt("0x01"); // Cofactor        
 
         // test implementation
         // https://paulmillr.com/posts/noble-secp256k1-fast-ecc/
-        // ???
+        // ???        
+        log("1=========================")
+        var d,x,y;
+        log("original key:",keyobj)
+        log("original jwk:",key)
+        log("d",(key.d))
+        log("x",(key.x))
+        log("y",(key.y))
+        log("d",d=wcrypto.base64url_to_hex(key.d))
+        log("x",x=wcrypto.base64url_to_hex(key.x))
+        log("y",y=wcrypto.base64url_to_hex(key.y))
 
-        G = [15, 13]; // nakov.com link above * 2 ==> [2,10]
-        d = 2;
-        log(dg(d,G)); // expected to be [2, 10]
+        var newd = d //"1111"+d.substring(4)
+
+        ecc.setCurve(p,n,G[0],G[1])
+          var G = new ecc.Point(G[0], G[1]);
+        
+          log("b4");
+          var pub;
+        console.log(pub = ecc.getPublicKey(G,
+            BigInt(`0x${newd}`)
+        ));  
+        log("af");
+        
+        var xstr=pub.x.toString(16), ystr=pub.y.toString(16);
+        while (xstr.length<64) xstr="0"+xstr;
+        while (ystr.length<64) ystr="0"+ystr;        
+        log("newd", newd);
+        log("newx", xstr)
+        log("newy", ystr)
+
+        key.d = wcrypto.hex_to_base64url(newd)        
+        key.x = wcrypto.hex_to_base64url(xstr)
+        key.y = wcrypto.hex_to_base64url(ystr)
+        log("altered jwk:",key)
+        var k2;
+        log("altered key:",k2 = await wcrypto.import_key_ec_jwk(key));
+        log("altered2cmp:", await wcrypto.export_key_jwk(k2));
+          
+        log("2=========================")
     }
 
     /**
