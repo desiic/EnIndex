@@ -1,39 +1,67 @@
-// Paul Miller
-// JS implementations of secp256k1 (aka K256, Bitcoin)
+/**
+ * JS implementations of secp256k1 (aka K256, Bitcoin)
+ * Ref: https://paulmillr.com/posts/noble-secp256k1-fast-ecc/
+ * 
+ * Terms:<br/>
+ * p:   Prime number, 
+ * n:   Field size (max d+1), 
+ * d:   Decryption key,
+ * a,b: Curve coefficients (or just 2 numbers), 
+ * A,B: 2 points
+ * x,y: 2D coords (also a pair to make public key), 
+ * u,v: ...?
+ * gcd: Greatest common divisor, 
+ * G:   Base point on curve.
+ * 
+ * Lower-case: numbers, upper-case: compounds (eg. points)
+ */
 
-var CURVE;
+// Shorthands
+var log = console.log;
 
-  function mod(a, b = CURVE.P) {
+/**
+ * Elliptic curve
+ */ 
+var Curve = {p:0, n:0, gx:0, gy:0};
+
+/**
+ * Modulo (not remainder %)
+ */ 
+function mod(a, b=Curve.p) {
     const result = a % b;
-    return result >= 0n ? result : b + result;
-  }
+    return result>=0n? result : b+result;
+}
 
-  // Inverses number over modulo
-  function invert(number, modulo = CURVE.P) {
-    if (number === 0n || modulo <= 0n) {
-      throw new Error(`invert: expected positive integers, got n=${number} mod=${modulo}`);
+// Inverses number over modulo
+function invert(number, modulo=Curve.p) {
+    if (number===0n || modulo<=0n) {
+        throw new Error(`invert: Expected positive integers, got n=${number} mod=${modulo}`);
     }
+
     // Eucledian GCD https://brilliant.org/wiki/extended-euclidean-algorithm/
-    let a = mod(number, modulo);
-    let b = modulo;
-    let [x, y, u, v] = [0n, 1n, 1n, 0n];
+    let a         = mod(number, modulo);
+    let b         = modulo;
+    let [x,y,u,v] = [0n, 1n, 1n, 0n];
 
     while (a !== 0n) {
-      const q = b / a;
-      const r = b % a;
-      const m = x - u * q;
-      const n = y - v * q;
-      [b, a] = [a, r];
-      [x, y] = [u, v];
-      [u, v] = [m, n];
+        const q = b / a;
+        const r = b % a;
+        const m = x - u * q;
+        const n = y - v * q;
+        [b,a]   = [a, r];
+        [x,y]   = [u, v];
+        [u,v]   = [m, n];
     }
 
     const gcd = b;
-    if (gcd !== 1n) throw new Error('invert: does not exist');
+    if (gcd !== 1n) throw new Error("invert: Does not exist(?)");
     return mod(x, modulo);
-  }
+}
 
-  class Point {
+/**
+ * Point on elliptic curve
+ */ 
+class Point {
     static ZERO = new Point(0n, 0n); // Point at infinity aka identity point aka zero
 
     constructor(x,y) {
@@ -43,65 +71,62 @@ var CURVE;
 
     // Adds point to itself. http://hyperelliptic.org/EFD/g1p/auto-shortw.html
     double() {
-      const X1 = this.x;
-      const Y1 = this.y;
-      const lam = mod(3n * X1 ** 2n * invert(2n * Y1, CURVE.P));
-      const X3 = mod(lam * lam - 2n * X1);
-      const Y3 = mod(lam * (X1 - X3) - Y1);
-      return new Point(X3, Y3);
+        const x1  = this.x;
+        const y1  = this.y;
+        const lam = mod(3n * x1**2n * invert(2n*y1, Curve.p));
+        const x3  = mod(lam*lam - 2n*x1);
+        const y3  = mod(lam * (x1-x3) - y1);
+        return new Point(x3, y3);
     }
 
     // Adds point to other point. http://hyperelliptic.org/EFD/g1p/auto-shortw.html
-    add(other) {
-      const [a, b] = [this, other];
-      const [X1, Y1, X2, Y2] = [a.x, a.y, b.x, b.y];
-      if (X1 === 0n || Y1 === 0n) return b;
-      if (X2 === 0n || Y2 === 0n) return a;
-      if (X1 === X2 && Y1 === Y2) return this.double();
-      if (X1 === X2 && Y1 === -Y2) return Point.ZERO;
-      const lam = mod((Y2 - Y1) * invert(X2 - X1, CURVE.P));
-      const X3 = mod(lam * lam - X1 - X2);
-      const Y3 = mod(lam * (X1 - X3) - Y1);
-      return new Point(X3, Y3);
+    add(Other) {
+        const [A,B]         = [this, Other];
+        const [x1,y1,x2,y2] = [A.x, A.y, B.x, B.y];
+
+        if (x1 === 0n || y1 ===  0n) return B;
+        if (x2 === 0n || y2 ===  0n) return A;
+        if (x1 === x2 && y1 ===  y2) return this.double();
+        if (x1 === x2 && y1 === -y2) return Point.ZERO;
+
+        const lam = mod((y2-y1) * invert(x2-x1, Curve.p));
+        const x3  = mod(lam*lam - x1 - x2);
+        const y3  = mod(lam * (x1-x3) - y1);
+        return new Point(x3, y3);
     }
 
-    // double&add method, Elliptic curve point multiplication with double-and-add algo.
-    multiplyDA(n) {
-        let p = Point.ZERO;
-        let d = this;
+    // Double&add method, elliptic curve point multiplication with double-and-add algo.
+    multiply_da(n) {
+        let P = Point.ZERO;
+        let D = this;
 
         while (n > 0n) {
-            if (n & 1n) p = p.add(d);
-            d = d.double();
+            if (n & 1n) P=P.add(D);
+            D = D.double();
             n >>= 1n;
         }
-        return p;
-    }
-  }  
 
-  // Example
-function setCurve(P,n,Gx,Gy){
-    CURVE = {P,n,Gx,Gy}
+        return P;
+    }
+}  
+
+/**
+ * Set curve properties before calculation
+ */ 
+function set_curve(p,n,gx,gy){
+    Curve = {p,n,gx,gy};
 }
 
-  function getPublicKey(G,privKey) {
-    return G.multiplyDA(privKey);
-  }
+/**
+ * Get public key point from private key
+ */ 
+function get_pubkey_point(G, d) { // d: Decryption key (a number)
+    if (G instanceof Array)
+        G = new Point(G[0], G[1]);
 
-  var log = console.log;
+    return G.multiply_da(d);
+}
 
-  CURVE = {
-    P: 17n,
-    n: 18n,
-    Gx: 15n, 
-    Gy: 13n
-  };  
-
-  log("b4");
-  var G = new Point(CURVE.Gx, CURVE.Gy);
-    console.log(getPublicKey(G,
-        19n
-    ));  
-  log("af");
-
- export {Point, setCurve, getPublicKey} 
+// ES6 export  
+export {Point, set_curve, get_pubkey_point} ;
+// EOF

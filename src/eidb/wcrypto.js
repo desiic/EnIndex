@@ -11,7 +11,8 @@ var logw = console.warn;
 var loge = console.error;
 
 /**
- * Crypto class
+ * Crypto class<br/>
+ * NOTE: Web Crypto always return ArrayBuffer but receive Uint8Array params.
  */
 class wcrypto {
 
@@ -22,8 +23,11 @@ class wcrypto {
 
     /**
      * Make ECDSA public key from private key
+     * NOTE: THIS IS USING Elliptic LIB, NOT WEB CRYPTO.
+     * @param  {String} Priv_Hex - Private key (number d) 
+     * @return {Array}  Public key point (2 numbers x,y)
      */ 
-    static ec_publickey_from_privatekey(Priv_Hex){
+    static get_pubkey_point(Priv_Hex){
         // Create curve
         var Curve = elliptic.ec("p256");
         // Get private key
@@ -32,7 +36,7 @@ class wcrypto {
         var Pubkey = Privkey.getPublic();
 
         // Return EC public key as 2 numbers
-        // WARN: Not Pubkey.x, .y, they are different values.
+        // WARN: Not Pubkey.x, .y, they are different values compared to getX(), getY().
         // .toString(16) is built-in to get hex.
         return [Pubkey.getX().toString(16), Pubkey.getY().toString(16)];
     }
@@ -447,7 +451,7 @@ class wcrypto {
     }
 
     /**
-     * Import AES (GCM) key
+     * Import AES (GCM) key for en/decryption
      */ 
     static async import_key_aes_raw(Hex){
         if (Hex.length != 64) { // AES 256-bit
@@ -466,10 +470,10 @@ class wcrypto {
     }
 
     /**
-     * Import RSA key from JWK<br/>
+     * Import RSA key from JWK for sign/verify<br/>
      * Rsa_Algo: https://developer.mozilla.org/en-US/docs/Web/API/SubtleCrypto/importKey
      */
-    static async import_key_rsa_jwk(Jwk_Obj, Rsa_Algo){ // Rsa_Algo: String        
+    static async import_key_rsa_jwk(Jwk_Obj, Rsa_Algo="RSA-PSS"){ // Rsa_Algo: String        
         var Algo = {name:Rsa_Algo, hash:"SHA-256"};
         
         if (Rsa_Algo=="RSA-OAEP")
@@ -483,11 +487,11 @@ class wcrypto {
     }
 
     /**
-     * Import EC key from JWK<br/>
+     * Import EC key from JWK for sign/verify<br/>
      * Ec_Algo: https://developer.mozilla.org/en-US/docs/Web/API/SubtleCrypto/importKey
      */ 
-    static async import_key_ec_jwk(Jwk_Obj, Ec_Algo){ // Ec_Algo: String
-        var Algo = {name:"ECDSA", namedCurve:"P-256"};
+    static async import_key_ec_jwk(Jwk_Obj, Ec_Algo="ECDSA"){ // Ec_Algo: String
+        var Algo = {name:Ec_Algo, namedCurve:"P-256"};
 
         if (Jwk_Obj.d != null)
             var Usages = ["sign"]; // Private key
@@ -533,7 +537,7 @@ class wcrypto {
     }
 
     /**
-     * Derive AES key from password (password-based)<br/>
+     * Derive AES key from password (password-based) for en/decrypt<br/>
      * Ref: https://github.com/infotechinc/password-based-key-derivation-in-browser/blob/master/pbkdf2.js
      */
     static async derive_key_pb2aes(Password,Salt,iterations){
@@ -556,8 +560,19 @@ class wcrypto {
     }
 
     /**
-     * Derive EC key pair from password<br/>
-     * WARN: 
+     * Derive RSA key pair from password, for en/decrypt | sign/verify<br/>
+     * OPTION:<br/>
+     * - When Web Crypto support deriving to asymmetric keys, only symmetric now.
+     * - Or when Web Crypto support custom randfunc for using when generating key
+     * - Or use a reliable library to derive (RSA -> JWK -> alter (lib) -> import)
+     */ 
+    static async derive_keys_pb2rsa(Password,Salt,iterations){
+        // TO-DO: NOT URGENT.
+    }
+
+    /**
+     * Derive EC key pair from password, for sign/verify<br/>
+     * WARN:<br/>
      * THIS IS A WORK-AROUND METHOD TO DERIVE EC KEYS FROM PASSWORD
      * COZ WEB CRYPTO API ONLY DERIVE TO HMAC OR AES. IT'S POSSIBLE TO PROVIDE
      * RANDFUNC TO RSA OR EC GENERATOR TO DERIVE BUT SUCH FEATURE ISN'T IN WEB CRYPTO YET.
@@ -577,72 +592,70 @@ class wcrypto {
      * Pubkey = Privkey * G, Note: This is Elliptic Curve scalar multiplication,
      * see: https://en.wikipedia.org/wiki/Elliptic_curve_point_multiplication#Point_multiplication
      * 
-     * EC maths in pure JavaScript:<br/>
+     * EC maths (secp256k1) in pure JavaScript:<br/>
      * https://paulmillr.com/posts/noble-secp256k1-fast-ecc/
+     * 
+     * Notation:<br/>
+     * d:   Decryption key (private key)
+     * x,y: Encryption key (public key)
      */
-    static async derive_keys_pb2ec(keyobj,key,Password,Salt,iterations){
+    static async derive_keys_pb2ec(Password,Salt,iterations){
         // Constants from the P-256 link in doc block above, key size: 256 bits
         var p =  BigInt("0xffffffff00000001000000000000000000000000ffffffffffffffffffffffff"); // Prime
         var a =  BigInt("0xffffffff00000001000000000000000000000000fffffffffffffffffffffffc"); // Param
         var b =  BigInt("0x5ac635d8aa3a93e7b3ebbd55769886bc651d06b0cc53b0f63bce3c3e27d2604b"); // Param
         var G = [BigInt("0x6b17d1f2e12c4247f8bce6e563a440f277037d812deb33a0f4a13945d898c296"), // Base point
                  BigInt("0x4fe342e2fe1a7f9b8ee7eb4a7c0f9e162bce33576b315ececbb6406837bf51f5")];
-        var n =  BigInt("0xffffffff00000000ffffffffffffffffbce6faada7179e84f3b9cac2fc632551"); // Curve order (max key+1)
+        var n =  BigInt("0xffffffff00000000ffffffffffffffffbce6faada7179e84f3b9cac2fc632551"); // Curve order (max d+1)
         var h =  BigInt("0x01"); // Cofactor        
 
-        // test implementation
-        // https://paulmillr.com/posts/noble-secp256k1-fast-ecc/
-        // ???        
-        log("1=========================")
-        var d,x,y;
-        log("original key:",keyobj)
-        log("original jwk:",key)
-        log("d ",(key.d))
-        log("xy",(key.x))
-        log("  ",(key.y))
-        log("d ",d=wcrypto.base64url_to_hex(key.d))
-        log("xy",x=wcrypto.base64url_to_hex(key.x))
-        log("  ",y=wcrypto.base64url_to_hex(key.y))
+        // Bitcoin curve (secp256k1, aka K256) not working with P-256,
+        // keep the constants above to work with code in file ecc.js
+        // after altering it to work with P-256. 2 code lines right below here
+        // are commented out.
+        /*
+        ecc.set_curve(p,n,G[0],G[1]);
+        var Pubkey = ecc.get_pubkey_point(G, d);  
+        */
 
-        var newd = "1234567890"+d.substring(10)
+        // (1) Get random ECDSA keypair ==========
+        // Generate EC key pair by Web Crypto to be compatible with Web Crypto 
+        // for sign and verify only
+        var Keypair = await wcrypto.generate_keys_ec_sv();
 
-        ecc.setCurve(p,n,G[0],G[1])
-          var G = new ecc.Point(G[0], G[1]);
-        
-          log("b4");
-          var pub;
-        console.log(pub = ecc.getPublicKey(G,
-            BigInt(`0x${newd}`)
-        ));  
-        log("af");
-        
-        var xstr=pub.x.toString(16), ystr=pub.y.toString(16);
-        while (xstr.length<64) xstr="0"+xstr;
-        while (ystr.length<64) ystr="0"+ystr;        
+        // Convert to JWK to alter
+        var Jwk_Priv = await wcrypto.export_key_jwk(Keypair.privateKey);
+        var Jwk_Pub  = await wcrypto.export_key_jwk(Keypair.publicKey);
 
-        // elliptic lib
-        var libc = elliptic.ec("p256")
-        var libk = libc.keyFromPrivate(newd)
-        var libpub = libk.getPublic()
-        var xlib = libpub.getX().toString(16)
-        var ylib = libpub.getY().toString(16)
-        while (xlib.length<64) xlib="0"+xlib;
-        while (ylib.length<64) ylib="0"+ylib;        
+        // (2) Derive private & public key ==========
+        // Hash to get EC private key d (decryption key)
+        var d = Password+Salt;
 
-        log("newd ", newd);
-        log("newxy", xstr, "(ecc)")
-        log("     ", ystr, "(ecc)")
-        log("newxy", xlib, "(lib)")
-        log("     ", ylib, "(lib)")
+        for (let i=0; i<iterations; i++)
+            d = await wcrypto.digest_sha256(d);
 
-        key.d = wcrypto.hex_to_base64url(newd)        
-        key.x = wcrypto.hex_to_base64url(xlib) // xstr or xlib
-        key.y = wcrypto.hex_to_base64url(ylib) // xstr or xlib
-        log("altered jwk:",key)
-        var k2;
-        log("altered key:",k2 = await wcrypto.import_key_ec_jwk(key));
-        log("back to jwk:", await wcrypto.export_key_jwk(k2));          
-        log("2=========================")
+        // Use lib to make public key, point(x,y)
+        var [x,y] = wcrypto.get_pubkey_point(d);
+
+        // (3) Put private & public key into JWKs ==========
+        // Convert d, x, y to base64url format to put back to JWK object
+        d = wcrypto.hex_to_base64url(d);
+        x = wcrypto.hex_to_base64url(x);
+        y = wcrypto.hex_to_base64url(y);
+
+        Jwk_Priv.d = d; 
+        Jwk_Priv.x = x;
+        Jwk_Priv.y = y;
+        Jwk_Pub. x = x;
+        Jwk_Pub. y = y;
+
+        // (4) Convert JWKs back to keys ==========
+        var Privkey = await wcrypto.import_key_ec_jwk(Jwk_Priv,"ECDSA");
+        var Pubkey  = await wcrypto.import_key_ec_jwk(Jwk_Pub, "ECDSA");
+
+        // (5) Make derived ECDSA keypair ==========
+        var Derived_Keypair = {privateKey:Privkey, publicKey:Pubkey};
+        return Derived_Keypair;
     }
 
     /**
@@ -659,10 +672,15 @@ class wcrypto {
     }
 
     /**
-     * Encrypt with RSA key
+     * Encrypt with RSA key to base64
      */ 
-    static async encrypt_rsa(){
-        // TO-DO
+    static async encrypt_rsa(Text, Key){
+        var Bytes      = wcrypto.utf8_to_bytes(Text); // Always UTF-8 to bytes
+        var Algo       = {name:"RSA-OAEP"};
+        var Cipherbuff = await window.crypto.subtle.encrypt(Algo,Key,Bytes); // ArrayBuffer
+        var Ciphertext = wcrypto.buff_to_base64(Cipherbuff);
+
+        return Ciphertext;
     }
 
     /**
@@ -678,37 +696,63 @@ class wcrypto {
     }
 
     /**
-     * Decrypt (RSA)
+     * Decrypt (RSA) from base64
      */
-    static decrypt_rsa(){
-        // TO-DO
+    static async decrypt_rsa(Ciphertext){
+        var Bytes = wcrypto.base64_to_bytes(Ciphertext);
+        var Algo  = {name:"RSA-OAEP"};
+        var Buff  = await window.crypto.subtle.decrypt(Algo,Key,Bytes);
+        var Text  = wcrypto.bytes_to_utf8(new Uint8Array(Buff));
+
+        return Text;
     }
 
     /**
-     * Sign
+     * Sign and get a signature (a hash in hex) using RSA-PSS or ECDSA private key
+     * @param  {String} Text    - UTF8 text
+     * @param  {Object} Privkey - A private key
+     * @return {String} Hash string
      */ 
-    static sign(){
-        // TO-DO
+    static async sign(Text, Privkey){
+        if (Privkey.algorithm.name=="RSA-PSS")
+            var Algo = {name:"RSA-PSS", saltLength:256}; // RSA defaulted to SHA-256 in this module.
+        else
+            var Algo = {name:"ECDSA", hash:"SHA-256"};
+            
+        var Bytes = wcrypto.utf8_to_bytes(Text);
+        var Buff  = await window.crypto.subtle.sign(Algo,Privkey,Bytes);
+        return wcrypto.buff_to_hex(Buff);
     }
 
     /**
-     * Verify
+     * Verify cipher text (base64) using RSA-PSS or ECDSA public key
+     * @param  {String}  Text      - Any text
+     * @param  {String}  Signature - The signature hash obtained after signing in hex string
+     * @param  {Object}  Pubkey    - A public key matching the priv key used when sign
+     * @return {Boolean} true if the signature is ok, false otherwise
      */ 
-    static verify(){
-        // TO-DO
+    static async verify(Text, Signature, Pubkey){
+        if (Pubkey.algorithm.name=="RSA-PSS")
+            var Algo = {name:"RSA-PSS", saltLength:256}; // RSA defaulted to SHA-256 in this module.
+        else
+            var Algo = {name:"ECDSA", hash:"SHA-256"};
+
+        var Text_Bytes = wcrypto.utf8_to_bytes(Text);
+        var Sig_Bytes  = wcrypto.hex_to_bytes(Signature);
+        return await window.crypto.subtle.verify(Algo,Pubkey,Sig_Bytes,Text_Bytes);
     }
 
     /**
      * Wrap key
      */
-    static wrap_key(){
+    static async wrap_key(){
         // TO-DO
     }
 
     /**
      * Unwrap key
      */ 
-    static unwrap_key(){
+    static async unwrap_key(){
         // TO-DO
     }
 
@@ -728,7 +772,6 @@ class wcrypto {
     }
 
     /**
-     * =============================================================
      * Get encryption key and auth key from password<br/>
      * Encryption first, first bit trunk is more important as it's also the 
      * derived bits with half number of bits, and users encrypt data on 
@@ -738,20 +781,21 @@ class wcrypto {
      * https://stackoverflow.com/a/18693622/5581893
      * 
      * Options for E2EE keys: AES+RSApair, AES+ECpair<br/>
-     * However, Web Crypto doesn't provide derivation to RSA or EC;
+     * However, Web Crypto doesn't provide derivation method to RSA or EC;
      * quite time taking to create RSA pair with pure JS especially the modules and primes;
      * EC pair will be created instead since any interger below EC:n can be key.
      * 
      * This method creates AES key + EC keys, instead of AES key + HMAC key.
      * User keeps priv key, send pub key to server for registration.<br/>
      * Ref: https://stackoverflow.com/a/20484325/5581893
-     * @return {Array} 1 AES-GCM 256bit keys for encryption key, 1 RSA key pair 
-     *                 for authentication
+     * @return {Array} 1 AES-GCM 256bit keys for encryption key, 1 EC key pair 
+     *                 for authentication (upon handshake server should send some text 
+     *                 for client to sign).
      */
     static async password2keys(Password,Salt,iterations){
-        var Bits_Str        = await wcrypto.derive_bits_pb(Password,Salt,iterations); // 512bits
-        var [Trunk1,Trunk2] = wcrypto.split_into_2(Bits_Str); // 2 x 256bits
-        var Enc_Key         = await wcrypto.derive_key_pb2aes(Trunk1,Salt,iterations); // AES 256bit
+        var Bits_Str        = await wcrypto.derive_bits_pb(Password,Salt,iterations); // 512 bits
+        var [Trunk1,Trunk2] = wcrypto.split_into_2(Bits_Str); // 2 x 256 bits
+        var Enc_Key         = await wcrypto.derive_key_pb2aes(Trunk1,Salt,iterations); // AES 256-bit
         var Auth_Keys       = await wcrypto.derive_keys_pb2ec(Trunk2,Salt,iterations); // EC keypair
         return [Enc_Key,Auth_Keys];
     }
