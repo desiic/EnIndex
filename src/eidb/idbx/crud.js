@@ -3,7 +3,8 @@
  */
 
 // Modules
-import base from "../base.js";
+import base  from "../base.js";
+import utils from "../utils.js";
 
 // Shorthands
 var log      = console.log;
@@ -93,15 +94,6 @@ class crud {
     }
 
     /**
-     * Intersect arrays
-     */ 
-    static intersect_arrs(Arrays){
-        // Ref: https://stackoverflow.com/a/51874332/5581893
-        // Note: Id_Arrays.length MUST BE >0
-        return Arrays.reduce((t,a) => t.filter(b => a.includes(b)));
-    }
-
-    /**
      * Intersect conditions (key values) to get ids, eg. Cond {foo:"a", bar:"b"},
      * key foo gives multiple items of value 'a', key bar gives multiple items
      * of value 'b', intersect these 2 for id list.
@@ -128,7 +120,7 @@ class crud {
             Id_Arrays.push(Ids);
         }
         
-        return crud.intersect_arrs(Id_Arrays);
+        return utils.intersect_arrs(Id_Arrays);
     }
 
     /**
@@ -164,7 +156,7 @@ class crud {
             Id_Arrays.push(Ids);
         }
         
-        var Id_Intersection = crud.intersect_arrs(Id_Arrays);
+        var Id_Intersection = utils.intersect_arrs(Id_Arrays);
         return Id_Intersection.map(id => Id2Objs[id]);
     }
 

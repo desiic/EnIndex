@@ -2,8 +2,10 @@
  * @module eidb/idbx
  */
 // Modules
-import idb  from "./idb.js";
-import crud from "./idbx/crud.js";
+import idb     from "./idb.js";
+import crud    from "./idbx/crud.js";
+import op_hist from "./idbx/op-hist.js";
+import fts     from "./idbx/fts.js";
 
 // Shorthands
 var log      = console.log;
@@ -26,6 +28,16 @@ class idbx {
      * CRUD functionalities
      */
     static crud = crud;
+
+    /**
+     * Op history features
+     */ 
+    static op_hist = op_hist;
+
+    /**
+     * FTS features
+     */
+    static fts = fts;
 
     /*
      * _________________________________________________________________________

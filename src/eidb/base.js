@@ -1,6 +1,7 @@
 /**
  * @module eidb/base
  */
+
 // Shorthands
 var log  = console.log;
 var logw = console.warn;

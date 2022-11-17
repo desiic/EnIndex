@@ -113,6 +113,11 @@ class eidb {
      */
     static delete_database = idb.delete_database;
 
+    /**
+     * Alias of `eidb.idb.num_cons`
+     */
+    static num_db_cons = idb.num_db_cons;
+
     // EXTENDED OPS **********:
     /**
      * Alias of `eidb.idbx.open_av` [See here](module-eidb_idbx-idbx.html#.open_av)
@@ -223,7 +228,28 @@ class eidb {
      * Alias of `eidb.idbx.crud.remove_many` [See here](module-eidb_idbx_crud-crud.html#.remove_many)</br>
      * CRUD/DELETE
      */
-    static remove_many = idbx.crud.remove_many;    
+    static remove_many = idbx.crud.remove_many;   
+    
+    // OP HISTORY **********:
+    /**
+     * Alias of `eidb.idbx.op_hist.set_max_history`
+     */
+    static set_max_history = idbx.op_hist.set_max_history;
+
+    /**
+     * Alias of `eidb.idbx.op_hist.get_op_hist_stat`
+     */
+    static get_op_hist_stat = idbx.op_hist.get_op_hist_stat;
+
+    /**
+     * Alias of `eidb.idbx.op_hist.enable_history`
+     */
+    static enable_op_hist = idbx.op_hist.enable_op_hist;
+
+    /**
+     * Alias of `eidb.idbx.op_hist.enable_history`
+     */
+    static disable_op_hist = idbx.op_hist.disable_op_hist;
 }
 
 /**

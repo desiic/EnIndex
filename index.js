@@ -69,7 +69,9 @@ async function main(){
     Db.close();
 
     logw("Test history/FTS");
-    // ...
+    log("Num connections:",eidb.num_db_cons())
+    await eidb.enable_op_hist();
+    log("Op-history stat:",eidb.get_op_hist_stat());
 
     logw("Test CRUD ops (secure)");    
     // ...

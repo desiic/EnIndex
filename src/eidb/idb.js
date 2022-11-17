@@ -20,7 +20,7 @@ class idb{
      * Get the list of databases, using the default instance of IDBFactory at `window.indexedDB`
      * @return {Array} See `eidb.idb.factory` class [here](module-eidb_idb_factory-factory.html#databases)
      */
-     static async databases(){
+    static async databases(){
         return await eidb.Factory.databases();
     }
 
@@ -44,6 +44,18 @@ class idb{
      */
     static async delete_database(Name){
         return await eidb.Factory.delete_database(Name);
+    }
+
+    /**
+     * _________________________________________________________________________
+     */ 
+    EXTENDED(){}
+
+    /**
+     * Get number of db connections
+     */ 
+    static num_db_cons(){
+        return window._num_db_cons;
     }
 }
 

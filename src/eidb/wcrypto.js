@@ -10,9 +10,13 @@ var log  = console.log;
 var logw = console.warn;
 var loge = console.error;
 
+// Constants
+const BIT_LEN = 256;
+
 /**
  * Crypto class<br/>
  * NOTE: Web Crypto always return ArrayBuffer but receive Uint8Array params.
+ *       ALL ARE DEFAULTED TO 256-BIT IN THIS MODULE (EXCEPT RSA).
  */
 class wcrypto {
 
@@ -306,7 +310,7 @@ class wcrypto {
      * AES-GCM is better, used in TLS 1.2 https://stackoverflow.com/a/22958889/5581893
      */ 
     static async generate_key_aes(){
-        var Aes_Gcm = {name:"AES-GCM", length:256};
+        var Aes_Gcm = {name:"AES-GCM", length:BIT_LEN};
         var Algorithm,extractable;
         var Usages = ["encrypt","decrypt"]; 
                       // "sign","verify","deriveBits","deriveKey","wrapKey","unwrapKey"
@@ -322,7 +326,7 @@ class wcrypto {
      * Generate key AES-KW (key wrapping)
      */ 
     static async generate_key_aes_kw(){
-        var Aes_Gcm = {name:"AES-KW", length:256};
+        var Aes_Gcm = {name:"AES-KW", length:BIT_LEN};
         var Algorithm,extractable;
         var Usages = ["wrapKey","unwrapKey"]; 
                       // "encrypt","decrypt","sign","verify","deriveBits","deriveKey"
@@ -454,7 +458,7 @@ class wcrypto {
      * Import AES (GCM) key for en/decryption
      */ 
     static async import_key_aes_raw(Hex){
-        if (Hex.length != 64) { // AES 256-bit
+        if (Hex.length != BIT_LEN/8 * 2) { // AES 256-bit
             loge("wcrypto.import_key_raw: Hex of key must be of length 64 chars");
             return null;
         }
@@ -521,7 +525,7 @@ class wcrypto {
     /**
      * Derive bits from password
      */
-    static async derive_bits_pb(Password,Salt,iterations, bit_count=512){
+    static async derive_bits_pb(Password,Salt,iterations, bit_count=BIT_LEN){
         var Base_Key = await wcrypto.import_key_pb_raw(Password);        
 
         // Create key from base key (which contains password)
@@ -555,7 +559,7 @@ class wcrypto {
                       // "sign","verify","deriveBits","deriveKey","wrapKey","unwrapKey"
 
         var Key = await window.crypto.subtle.deriveKey(Algo,Base_Key,
-                      {name:"AES-GCM",length:256},extractable=true,Usages);
+                      {name:"AES-GCM",length:BIT_LEN},extractable=true,Usages);
         return Key;
     }
 
@@ -715,7 +719,7 @@ class wcrypto {
      */ 
     static async sign(Text, Privkey){
         if (Privkey.algorithm.name=="RSA-PSS")
-            var Algo = {name:"RSA-PSS", saltLength:256}; // RSA defaulted to SHA-256 in this module.
+            var Algo = {name:"RSA-PSS", saltLength:BIT_LEN}; // RSA defaulted to SHA-256 in this module.
         else
             var Algo = {name:"ECDSA", hash:"SHA-256"};
             
@@ -733,7 +737,7 @@ class wcrypto {
      */ 
     static async verify(Text, Signature, Pubkey){
         if (Pubkey.algorithm.name=="RSA-PSS")
-            var Algo = {name:"RSA-PSS", saltLength:256}; // RSA defaulted to SHA-256 in this module.
+            var Algo = {name:"RSA-PSS", saltLength:BIT_LEN}; // RSA defaulted to SHA-256 in this module.
         else
             var Algo = {name:"ECDSA", hash:"SHA-256"};
 
@@ -788,15 +792,15 @@ class wcrypto {
      * This method creates AES key + EC keys, instead of AES key + HMAC key.
      * User keeps priv key, send pub key to server for registration.<br/>
      * Ref: https://stackoverflow.com/a/20484325/5581893
-     * @return {Array} 1 AES-GCM 256bit keys for encryption key, 1 EC key pair 
+     * @return {Array} 1 AES-GCM 256-bit key for encryption key, 1 EC 256-bit key pair 
      *                 for authentication (upon handshake server should send some text 
      *                 for client to sign).
      */
     static async password2keys(Password,Salt,iterations){
-        var Bits_Str        = await wcrypto.derive_bits_pb(Password,Salt,iterations); // 512 bits
+        var Bits_Str        = await wcrypto.derive_bits_pb(Password,Salt,iterations,2*BIT_LEN);
         var [Trunk1,Trunk2] = wcrypto.split_into_2(Bits_Str); // 2 x 256 bits
-        var Enc_Key         = await wcrypto.derive_key_pb2aes(Trunk1,Salt,iterations); // AES 256-bit
-        var Auth_Keys       = await wcrypto.derive_keys_pb2ec(Trunk2,Salt,iterations); // EC keypair
+        var Enc_Key         = await wcrypto.derive_key_pb2aes(Trunk1,Salt,iterations); // AES 256-bit key
+        var Auth_Keys       = await wcrypto.derive_keys_pb2ec(Trunk2,Salt,iterations); // EC 256-bit keypair
         return [Enc_Key,Auth_Keys];
     }
 
@@ -807,8 +811,8 @@ class wcrypto {
      * @return {Object} AES-GCM 256-bit key
      */
     static async make_static_key(Salt,iterations){
-        var Rand = wcrypto.random_uuidx(); // 256bits
-        return await wcrypto.derive_key_pb2aes(Rand,Salt,iterations); // AES 256bit
+        var Rand = wcrypto.random_uuidx(); // 256 bits
+        return await wcrypto.derive_key_pb2aes(Rand,Salt,iterations); // AES 256-bit
     }
 }
 

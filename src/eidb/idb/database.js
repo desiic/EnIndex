@@ -89,6 +89,9 @@ class database {
      * @return {null}
      */
     close(){
+        // Reduce number of db cons
+        window._num_db_cons -= 1;
+
         return this.self.close(); // No exceptions
     }
 
