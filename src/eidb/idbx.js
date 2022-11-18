@@ -45,15 +45,41 @@ class idbx {
     METHODS;
 
     /**
-     * Check if is unused store
+     * Check if is unused store (=is an existing store + is flagged as unused)
      * @private
      */
-    static #is_unused_store(Store_Name){
+    static #is_unused_store(Db,Store_Name){
         if (localStorage.Unused_Stores==null || localStorage.Unused_Stores.trim().length==0)
             return false;
 
+        // Not an actual store
+        if (Db.Object_Store_Names.indexOf(Store_Name) == -1)
+            return false;
+
+        // Check flag
         let Unused_Stores = json2obj(localStorage.Unused_Stores);
         return Unused_Stores.indexOf(Store_Name)>=0;
+    }
+
+    /**
+     * Fix unused store list, if lower calls to IndexedDB altered it inc. calls to idb.*
+     */ 
+    static #fix_unused_store_list(Db){
+        if (localStorage.Unused_Stores==null || localStorage.Unused_Stores.trim().length==0)
+            return false;
+
+        var Store_Names = Db.Object_Store_Names;
+
+        // Remove trash flags (ignored stores but actually don't exist)
+        var Names      = json2obj(localStorage.Unused_Stores);
+        var Keep_Names = [];
+
+        for (let Name of Names)
+            if (Store_Names.indexOf(Name) >= 0)
+                Keep_Names.push(Name);
+
+        // Set back to localStorage
+        localStorage.Unused_Stores = obj2json(Keep_Names);
     }
 
     /**
@@ -104,7 +130,7 @@ class idbx {
 
         for (let Store_Name of Db.Object_Store_Names){
             // Ignore unused store to avoid upgrade being triggered again and again
-            if (idbx.#is_unused_store(Store_Name))
+            if (idbx.#is_unused_store(Db,Store_Name))
                 continue;
 
             // Make index schema
@@ -186,7 +212,7 @@ class idbx {
             // WARN: AVOID LOSING USERS' DATA, WON'T DELETE, COMMENTED OUT:
             // Db.delete_object_store(Store_Name); // Indices are deleted together
 
-            // Mark unused store not to trigger upgrade again
+            // Mark unused store as kinda deleted, not to trigger upgrade again
             idbx.#update_unused_store_list("add",Store_Name);
         }
         
@@ -195,7 +221,7 @@ class idbx {
 
         for (let Store_Name of New_Stores)
             if (Cur_Stores.indexOf(Store_Name)==-1){                
-                if (!idbx.#is_unused_store(Store_Name))
+                if (!idbx.#is_unused_store(Db,Store_Name))
                     Cre_Stores.push(Store_Name); // Not existing, create
                 else{
                     // Existing, but current index schema ignored Store_Name, 
@@ -269,6 +295,7 @@ class idbx {
                 }    
         }         
             
+        // Close the db connection with upgrade transaction
         Db.close();
     }
 
@@ -304,8 +331,15 @@ class idbx {
             return await idb.open(Db_Name);
 
         // Indices changed, upgrade
-        await idbx.upgrade_db(Db_Name, Cur_Indices, New_Indices);
-        return await idb.open(Db_Name);
+        await idbx.upgrade_db(Db_Name, Cur_Indices, New_Indices); // Open+close inside
+
+        // Open db
+        var Db = await idb.open(Db_Name);
+
+        // Remove trash flags
+        idbx.#fix_unused_store_list(Db); // No db ops in here
+
+        return Db;
     }
 
     /**
@@ -313,6 +347,13 @@ class idbx {
      */
     static async reopen(){
         return await idb.open(window._Db_Name);
+    }
+
+    /**
+     * Get number of db connections
+     */ 
+    static num_db_cons(){
+        return window._num_db_cons;
     }
 
     /**
@@ -355,6 +396,33 @@ class idbx {
         var S      = T.store1();
         var Result = await S[Op_Name](...Args);
         return Result;
+    }
+
+    /**
+     * Delete object store
+     * WARN: AVOID USING THIS, SPECIAL OPERATIONS ON DB ONLY.
+     */ 
+    static async del_obj_store(Db_Name,Store_Name){
+        var cur_ver = await idbx.get_cur_db_ver(Db_Name);
+        var new_ver = cur_ver+1;
+
+        // Trigger upgrade
+        var Db = await idb.open(Db_Name, new_ver);
+
+        if (Db instanceof Error){
+            loge(`idbx.del_obj_store: Failed to delete object store '${Store_Name}' `+
+                 `in db '${Db_Name}', error:`,Db);
+            return;
+        }
+
+        // Del the store
+        await Db.delete_object_store(Store_Name);
+
+        // Update unused store list if deleted store is in that list
+        idbx.#update_unused_store_list("remove", Store_Name);
+
+        // Close the upgraded db
+        Db.close();
     }
 }
 

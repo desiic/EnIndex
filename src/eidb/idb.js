@@ -45,18 +45,6 @@ class idb{
     static async delete_database(Name){
         return await eidb.Factory.delete_database(Name);
     }
-
-    /**
-     * _________________________________________________________________________
-     */ 
-    EXTENDED(){}
-
-    /**
-     * Get number of db connections
-     */ 
-    static num_db_cons(){
-        return window._num_db_cons;
-    }
 }
 
 // Module export

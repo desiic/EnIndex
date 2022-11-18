@@ -155,6 +155,11 @@ class factory {
             let Db = new database(Req.result); // .result is IDBDatabase object    
             Db.to_upgrade  = true;
             Db.Transaction = new transaction(Req.transaction);
+
+            // Count number of connections
+            if (window._num_db_cons==null) window._num_db_cons =1;
+            else                           window._num_db_cons+=1;
+
             return Db;
         }
 

@@ -209,7 +209,7 @@ class object_store {
      * Delete index (DELETE INDEX)
      * @return {Object} Error or null
      */
-    async delete_index(Name){
+    delete_index(Name){
         try {
             this.self.deleteIndex(Name);
         }

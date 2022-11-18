@@ -81,6 +81,31 @@ class eidb {
     /**
      * _________________________________________________________________________
      */
+    LITERALS;
+
+    /**
+     * Field type, non-unique + single value
+     */
+    static n1 = 1;
+
+    /**
+     * Field type, non-unique + multiple values (array)
+     */
+    static n2 = 2;
+
+    /**
+     * Field type, unique + single value
+     */
+    static u1 = 3;
+
+    /**
+     * Field type, unique + multiple values (array)
+     */
+    static u2 = 4;
+
+    /**
+     * _________________________________________________________________________
+     */
     PROPERTIES;
 
     /**
@@ -93,7 +118,7 @@ class eidb {
      */
     METHODS;
 
-    // BASE OPS **********:
+    // BASE OPS ****************************************************************
     /**
      * Alias of `eidb.idb.databases` [See here](module-eidb_idb-idb.html#.databases)
      */
@@ -113,12 +138,7 @@ class eidb {
      */
     static delete_database = idb.delete_database;
 
-    /**
-     * Alias of `eidb.idb.num_cons`
-     */
-    static num_db_cons = idb.num_db_cons;
-
-    // EXTENDED OPS **********:
+    // EXTENDED OPS ************************************************************
     /**
      * Alias of `eidb.idbx.open_av` [See here](module-eidb_idbx-idbx.html#.open_av)
      */
@@ -128,6 +148,11 @@ class eidb {
      * Alias of `eidb.idbx.reopen` [See here](module-eidb_idbx-idbx.html#.reopen)
      */
     static reopen = idbx.reopen;
+
+    /**
+     * Alias of `eidb.idbx.num_db_cons`
+     */
+    static num_db_cons = idbx.num_db_cons;
 
     /**
      * Alias of `eidb.idbx.set_db` [See here](module-eidb_idbx-idbx.html#.set_db)
@@ -144,7 +169,12 @@ class eidb {
      */
     static do_op = idbx.do_op;
 
-    // CRUD OPS **********:
+    /**
+     * Alias of `eidb.idbx.del_obj_store`
+     */
+    static del_obj_store = idbx.del_obj_store;
+
+    // CRUD OPS ****************************************************************
     /**
      * Alias of `eidb.idbx.crud.insert_one` [See here](module-eidb_idbx_crud-crud.html#.insert_one)</br>
      * CRUD/CREATE
@@ -255,7 +285,32 @@ class eidb {
 /**
  * _____________________________________________________________________________
  */
-var CONSTANTS;
+var EXPORTS_LITERALS; // Kinda keywords
+
+/**
+ * Key type literal: non-unique, single-entry
+ */ 
+window.n1 = eidb.n1; // Index schema, use 1 for syntax colouring, eg. field:1
+
+/**
+ * Key type literal: non-unique, multi-entry
+ */ 
+window.n2 = eidb.n2; // Index schema, use 2 for syntax colouring, eg. field:2
+ 
+/**
+ * Key type literal: unique, single-entry
+ */ 
+window.u1 = eidb.u1; // Index schema eg. field:u1
+ 
+/**
+ * Key type literal: non-unique, single-entry
+ */ 
+window.u2 = eidb.u2; // Index schema eg. field:u2
+
+/**
+ * _____________________________________________________________________________
+ */
+var EXPORTS_CONSTANTS;
 
 /**
  * Read-only transaction mode
@@ -268,30 +323,6 @@ window.RO = RO;
  */
 const RW = eidb.RW;
 window.RW = RW;
-
-/**
- * Key type literal: non-unique, single-entry
- */ 
-const n1 = 1; // Index schema, use 1 for syntax colouring, eg. field:1
-window.n1 = n1;
-
-/**
- * Key type literal: non-unique, multi-entry
- */ 
-const n2 = 2; // Index schema, use 2 for syntax colouring, eg. field:2
-window.n2 = n2;
-
-/**
- * Key type literal: unique, single-entry
- */ 
-const u1 = 3; // Index schema eg. field:u1
-window.u1 = u1;
-
-/**
- * Key type literal: non-unique, single-entry
- */ 
-const u2 = 4; // Index schema eg. field:u2
-window.u2 = u2;
 
 /*
 Range	            Code
@@ -332,7 +363,7 @@ window.NO_RIGHT = NO_RIGHT;
 /**
  * _____________________________________________________________________________
  */
-var OP_NAMES;
+var EXPORTS_OP_NAMES;
 
 /**
  * Operation name to work with eidb.do_op, eg.: `eidb.do_op("my-store",_add,{})`
@@ -421,7 +452,7 @@ window._put = _put;
 /*
  * _____________________________________________________________________________
  */
-var METHODS;
+var EXPORTS_METHODS;
 
 /**
  * Key range (greater than or equal)
@@ -477,7 +508,7 @@ window.new_lock = new_lock;
 /*
  * _____________________________________________________________________________
  */
-var EXPORT;
+var EXPORTS_CLASS;
 
 // Global bindings, whole lib
 // EnIndex library global object

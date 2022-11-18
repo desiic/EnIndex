@@ -3,6 +3,7 @@
  */ 
 
 // Modules
+import eidb from "../../eidb.js";
 import idbx from "../idbx.js";
 
 // Shorthands
@@ -11,10 +12,17 @@ var logw = console.warn;
 var loge = console.error;
 
 // Constants
-const OP_HIST_STORE = "op_hist";
+const OP_HIST_STORE = "op_hist"; // Use _, the same as other stores in index schema
+                                 // as regular object property instead of quotes.
 
-// 4 arrays of ids, supposed to be unique but laxed
-const OP_HIST_INDICES = {Create:2, Read:2, Update:2, Delete:2}; 
+// Docmetas array is supposed to contain unique values but laxed, this array is
+// sorted to have most recent items first, no duplication.<br/>
+// One docmeta is one object with these fields: 
+//   - {id:Integer, op_timestamp:Integer}
+// Type: Only 4 values: 
+//   - 'create', 'read', 'update', 'delete'
+const OP_HIST_INDICES = {Type:null, Docmetas:null}; // Will be set to u1, n2 in enable_op_hist,
+                                                    // can't use eidb. here, init'ing.
 
 /**
  * CRUD operation history
@@ -44,7 +52,7 @@ class op_hist {
      *       IF NOT EXISTING.
      */
     static async enable_op_hist(){
-        // Check if store `history` exists
+        // Check if store `op_hist` exists
         var Db          = await eidb.reopen();
         var Store_Names = Db.Object_Store_Names;
         Db.close();
@@ -56,6 +64,9 @@ class op_hist {
         }
 
         // Not existing, create the store
+        OP_HIST_INDICES.Type     = u1;
+        OP_HIST_INDICES.Docmetas = n2; // Supposed to be u2, but laxed.
+
         var Db_Name     = window._Db_Name;
         var Cur_Indices = await idbx.get_cur_indices(Db_Name);
         var New_Indices = Cur_Indices;
