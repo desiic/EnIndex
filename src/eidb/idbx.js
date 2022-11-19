@@ -166,6 +166,7 @@ class idbx {
      * Add op hist & FTS to indices
      */
     static add_ophist_fts(Indices){
+        // OPERATION HISTORY STORE:
         // Docmetas array is supposed to contain unique values but laxed, this array is
         // sorted to have most recent items first, no duplication.<br/>
         // Type: Only 4 values: 
@@ -181,14 +182,28 @@ class idbx {
         //     Recent_Updates: ...,
         //     Recent_Deletes: ...
         // }
-
-        // Operation history store indices
+        // Operation history store indices:
         Indices["op_hist"] = {
             Store_Name:1
         };
 
-        // Full text search store indices
-        Indices["fts"] = {};   
+        // FULL-TEXT SEARCH STORE:
+        // Sample fts object:
+        // {
+        //     Word: "foo",
+        //     Id_Tree: { // Navigate until value==1, not object, 1 is shorter than 'true'
+        //         1: {
+        //             1:1, // id == 11
+        //             6:1  // id == 16
+        //         }
+        //         5:...
+        //     }
+        // }
+        // Full text search store indices:
+        // with Id_tree to facilitate nlog(n) set intersection.
+        Indices["fts"] = {
+            Word:1
+        };   
 
         return Indices;     
     }
