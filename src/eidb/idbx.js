@@ -163,9 +163,13 @@ class idbx {
     }
 
     /**
-     * Add op hist & FTS to indices
+     * Add more indices, including op hist & FTS to indices<br/>
+     * Internal-use stores (private): _*, for example: _my_store<br/>
+     * encrypted stores    (hashed):  #*, for example: #my_store
      */
-    static add_ophist_fts(Indices){
+    static add_more_indices(Indices){
+        Indices["_meta"] = {};
+
         // OPERATION HISTORY STORE:
         // Docmetas array is supposed to contain unique values but laxed, this array is
         // sorted to have most recent items first, no duplication.<br/>
@@ -183,7 +187,7 @@ class idbx {
         //     Recent_Deletes: ...
         // }
         // Operation history store indices:
-        Indices["op_hist"] = {
+        Indices["_op_hist"] = {
             Store_Name:1
         };
 
@@ -201,7 +205,7 @@ class idbx {
         // }
         // Full text search store indices:
         // with Id_tree to facilitate nlog(n) set intersection.
-        Indices["fts"] = {
+        Indices["_fts"] = {
             Word:1
         };   
 
@@ -363,7 +367,7 @@ class idbx {
         }        
 
         // Add schema for operation history and full-text search
-        Indices = idbx.add_ophist_fts(Indices);
+        Indices = idbx.add_more_indices(Indices);
 
         // All id is primary field of u1 type (unique, single value)
         for (let Store_Name in Indices)
