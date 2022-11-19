@@ -23,7 +23,7 @@ var loge = console.error;
 // Constants
 // Private, use _ first, inner: the same as other stores in index schema
 // as regular object property instead of quotes.
-const OP_HIST_STORE = "_op_hist"; 
+const OP_HIST_STORE = "op_hist"; 
 
 const OP2FIELDNAME = {
     "create": "Recent_Creates",

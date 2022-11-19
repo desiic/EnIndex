@@ -168,7 +168,7 @@ class idbx {
      * encrypted stores    (hashed):  #*, for example: #my_store
      */
     static add_more_indices(Indices){
-        Indices["_meta"] = {};
+        Indices["_meta"] = {}; // Internal data for both unencrypted & encrypted
 
         // OPERATION HISTORY STORE:
         // Docmetas array is supposed to contain unique values but laxed, this array is
@@ -187,7 +187,10 @@ class idbx {
         //     Recent_Deletes: ...
         // }
         // Operation history store indices:
-        Indices["_op_hist"] = {
+        Indices["op_hist"] = {
+            Store_Name:1
+        };
+        Indices["#op_hist"] = { // Encrypted
             Store_Name:1
         };
 
@@ -205,9 +208,12 @@ class idbx {
         // }
         // Full text search store indices:
         // with Id_tree to facilitate nlog(n) set intersection.
-        Indices["_fts"] = {
+        Indices["fts"] = {
             Word:1
         };   
+        Indices["#fts"] = { // Encrypted
+            Word:1
+        };
 
         return Indices;     
     }
