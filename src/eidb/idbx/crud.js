@@ -3,8 +3,9 @@
  */
 
 // Modules
-import base  from "../base.js";
-import utils from "../utils.js";
+import base    from "../base.js";
+import utils   from "../utils.js";
+import op_hist from "./op-hist.js";
 
 // Shorthands
 var log      = console.log;
@@ -15,7 +16,9 @@ var json2obj = JSON.parse;
 var obj2json = JSON.stringify;
 
 /**
- * CRUD op class
+ * CRUD op class<br/>
+ * NOTE: ONLY insert_one, find_one, update_one, upsert_one, remove_one WILL 
+ *       AFFECT THE OP HISTORY.
  */
 class crud {
 
@@ -26,7 +29,17 @@ class crud {
     static async insert_one(Store,Obj){
         var Obj_ = {...Obj}; // Clone to delete id
         delete Obj_.id;      // Id is auto-incremented
-        return await Store.add(Obj_);
+
+        // Insert
+        var new_id = await Store.add(Obj_);
+
+        if (new_id instanceof Error){
+            loge("crud.insert_one: Failed, error:",new_id);
+            return null;
+        }
+
+        op_hist.update_op_hist_c(Store.Name, [new_id]);
+        return new_id;
     }
 
     /**
@@ -161,7 +174,8 @@ class crud {
     }
 
     /**
-     * Check existence of obj
+     * Check existence of obj<br/>
+     * Note: Read but no fetching data, no op history
      * @return {Boolean}
      */
     static async exists(Store,Cond){
@@ -180,7 +194,8 @@ class crud {
     }
 
     /**
-     * Count
+     * Count<br/>
+     * Note: Read but no fetching data, no op history
      * @return {Number}
      */
     static async count(Store,Cond){
@@ -199,7 +214,8 @@ class crud {
     }
 
     /**
-     * Count all
+     * Count all<br/>
+     * Note: Read but no fetching data, no op history
      * @return {Number}
      */
     static async count_all(Store){
@@ -207,7 +223,7 @@ class crud {
     }
 
     /**
-     * Find one
+     * Find one, avoid using multiple conditions in Cond coz it's slow
      * @return {Object}
      */
     static async find_one(Store,Cond){
@@ -217,6 +233,9 @@ class crud {
         // Single cond
         if (Keys.length==1){
             let Obj = await crud.get_1stcond_obj(Store,Cond);
+
+            // Update op history and return
+            op_hist.update_op_hist_r(Store.Name, [Obj.id]);
             return Obj;
         }
 
@@ -224,11 +243,13 @@ class crud {
         var Ids = await crud.intersect_cond(Store,Cond);
         if (Ids.length==0) return null;
 
+        // Update op history & return
+        op_hist.update_op_hist_r(Store.Name, Ids);
         return await Store.get(value_is(Ids[0]));
     }
 
     /**
-     * Find many
+     * Find many, avoid using multiple conditions in Cond coz it's slow
      * @return {Object}
      */
     static async find_many(Store,Cond){
@@ -259,8 +280,8 @@ class crud {
                 Objs.push(Ev.target.result);
                 if (Objs.length == Ids.length) unlock();
             };
-        }
-        
+        }        
+
         await Lock;
         return Objs;
     }
@@ -323,7 +344,7 @@ class crud {
     }
 
     /**
-     * Update one
+     * Update one, avoid using multiple conditions in Cond coz it's slow
      * @return {Object}
      */
     static async update_one(Store,Cond,Changes){
@@ -340,6 +361,7 @@ class crud {
 
             Obj = {...Obj,...Changes_};
             Store.put(Obj);
+            op_hist.update_op_hist_u(Store.Name, [Obj.id]);
             return Obj;
         }
 
@@ -353,11 +375,12 @@ class crud {
 
         Obj = {...Obj,...Changes_};
         Store.put(Obj);
+        op_hist.update_op_hist_u(Store.Name, [Obj.id]);
         return Obj;
     }
 
     /**
-     * Update many
+     * Update many, avoid using multiple conditions in Cond coz it's slow
      * @return {Object}
      */
     static async update_many(Store,Cond,Changes){
@@ -404,7 +427,7 @@ class crud {
     }
 
     /**
-     * Upsert one
+     * Upsert one, avoid using multiple conditions in Cond coz it's slow
      * @return {Object}
      */
     static async upsert_one(Store,Cond,Changes){
@@ -420,13 +443,16 @@ class crud {
 
             // Insert
             if (Obj==null){
-                return await Store.add(Changes_);
+                let id = await Store.add(Changes_);
+                op_hist.update_op_hist_c(Store.Name, [id]);
+                return id;
             };
 
             // Update
             Obj = {...Obj,...Changes_};
             Store.put(Obj);
-            return Obj;
+            op_hist.update_op_hist_u(Store.Name, [Obj.id]);
+            return Obj.id;
         }
 
         // Multiple conds
@@ -438,17 +464,20 @@ class crud {
         var Obj = await Store.get(value_is(Ids[0]));
 
         if (Obj==null){
-            return await Store.add(Changes_);
+            let id = await Store.add(Changes_);
+            op_hist.update_op_hist_c(Store.Name, [id]);
+            return id;
         };
 
         // Update
         Obj = {...Obj,...Changes_};
         Store.put(Obj);
-        return Obj;
+        op_hist.update_op_hist_u(Store.Name, [Obj.id]);
+        return Obj.id;
     }
 
     /**
-     * Remove one
+     * Remove one, avoid using multiple conditions in Cond coz it's slow
      * @return {null}
      */
      static async remove_one(Store,Cond){
@@ -459,6 +488,8 @@ class crud {
         if (Keys.length==1){
             let Obj = await crud.get_1stcond_obj(Store,Cond);
             if (Obj==null) return null;
+
+            op_hist.update_op_hist_d(Store.Name, [Obj.id]);
             return await Store.delete(value_is(Obj.id));
         }
 
@@ -467,11 +498,12 @@ class crud {
         if (Ids==null)     return null;
         if (Ids.length==0) return null;
 
+        op_hist.update_op_hist_d(Store.Name, [Ids[0]]);
         return await Store.delete(value_is(Ids[0]));
     }
 
     /**
-     * Remove many
+     * Remove many, avoid using multiple conditions in Cond coz it's slow
      * @return {null}
      */
     static async remove_many(Store,Cond){

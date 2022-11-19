@@ -18,17 +18,17 @@ async function main(){
     log("Testing...");
     log("Recommended to reopen db again and again for operations to avoid upgrade being blocked.");
 
-    logw("Test db open");
+    logw("Test db open"); // ---------------------------------------------------
     var Db = await eidb.open_av("my_db", _Test_Indices);
     log("Db:",Db);
     Db.close();
 
-    logw("Test db reopen");
+    logw("Test db reopen"); // -------------------------------------------------
     Db = await eidb.reopen();
     log("Reopened db:",Db);
     Db.close();
 
-    logw("Test CREATE");
+    logw("Test CREATE"); // ----------------------------------------------------
     Db = await eidb.reopen();
     var T = Db.transaction("my_store",RW);
     var S = T.store1();
@@ -36,7 +36,7 @@ async function main(){
     log("Inserted ids:", await eidb.insert_many(S,[{foo:"bar"},{bar:"foo",a:"b"}]));
     Db.close();
 
-    logw("Test READ");
+    logw("Test READ"); // ------------------------------------------------------
     Db = await eidb.reopen();
     var T = Db.transaction("my_store",RW);
     var S = T.store1();
@@ -48,7 +48,7 @@ async function main(){
     log("Filter:   ", await eidb.filter(S,{foo:"bar",id:1}));
     Db.close();
 
-    logw("Test UPDATE");
+    logw("Test UPDATE"); // ----------------------------------------------------
     Db = await eidb.reopen();
     var T = Db.transaction("my_store",RW);
     var S = T.store1();
@@ -57,7 +57,7 @@ async function main(){
     log("Upsert (one):", await eidb.upsert_one(S,{foo:"bar",bar:"foo"}, {fooxy:"barxy"}));
     Db.close();
 
-    logw("Test DELETE");
+    logw("Test DELETE"); // ----------------------------------------------------
     Db = await eidb.reopen();
     var T = Db.transaction("my_store",RW);
     var S = T.store1();
@@ -68,19 +68,30 @@ async function main(){
     log("Count:      ", await eidb.count_all(S));
     Db.close();
 
-    logw("Test history/FTS");
-    log("Num connections:",eidb.num_db_cons())
+    logw("Test history/FTS"); // -----------------------------------------------
+    log("Num connections:  ",eidb.num_db_cons())
     await eidb.enable_op_hist();
-    log("Op-history stat:",eidb.get_op_hist_stat());
+    log("Op-history status:",eidb.get_op_hist_status());
+    // await eidb.clear_op_hist();
 
-    logw("Test CRUD ops (secure)");    
+    Db = await eidb.reopen();
+    var T = Db.transaction("my_store",RW);
+    var S = T.store1();
+    await eidb.insert_one(S,{foo:"bar"});
+
+    await stay_idle(1000); // Op hist works in background, wait a second after insert
+    var Hist = await eidb.get_op_hist("my_store",10); // Only 1, cleared above
+    log("Op-history CRUD/C:", Hist.Recent_Creates);
+    Db.close();
+
+    logw("Test CRUD ops (secure)"); // -----------------------------------------    
     // ...
 
-    logw("Test history/FTS (secure)");    
+    logw("Test history/FTS (secure)"); // --------------------------------------    
     // ...
     return;
 
-    logw("Test Web Crypto");
+    logw("Test Web Crypto"); // ------------------------------------------------
     logw("Randomisation");
     log("Rand unsigned:",eidb.wcrypto.get_random_values_unsigned(16,10));
     log("Rand signed:  ",eidb.wcrypto.get_random_values_signed(16,10));

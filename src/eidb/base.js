@@ -19,6 +19,19 @@ class base{
         var unlock, Lock=new Promise((res,rej)=>{ unlock=res; });
         return [Lock, unlock];
     }
+
+    /**
+     * Stay idle for a number of milliseconds (similar to sleep but the thread
+     * is actually still running, so it's not sleep)
+     */ 
+    static async stay_idle(ms){
+        var Lock = new Promise((res,rej)=>{
+            setTimeout(()=>{
+                res();
+            },ms);
+        });
+        await Lock;
+    }
 }
 
 // Module export

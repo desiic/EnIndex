@@ -2,6 +2,7 @@
  * @module eidb/idbx
  */
 // Modules
+import eidb    from "../eidb.js";
 import idb     from "./idb.js";
 import crud    from "./idbx/crud.js";
 import op_hist from "./idbx/op-hist.js";
@@ -162,6 +163,37 @@ class idbx {
     }
 
     /**
+     * Add op hist & FTS to indices
+     */
+    static add_ophist_fts(Indices){
+        // Docmetas array is supposed to contain unique values but laxed, this array is
+        // sorted to have most recent items first, no duplication.<br/>
+        // Type: Only 4 values: 
+        //   - 'create', 'read', 'update', 'delete'
+        // Sample op_hist object:
+        // {
+        //     Store_Name: String, 
+        //     Recent_Creates: [{
+        //         id:        Integer,
+        //         Timestamp: Date
+        //     }],
+        //     Recent_Reads: ...,
+        //     Recent_Updates: ...,
+        //     Recent_Deletes: ...
+        // }
+
+        // Operation history store indices
+        Indices["op_hist"] = {
+            Store_Name:1
+        };
+
+        // Full text search store indices
+        Indices["fts"] = {};   
+
+        return Indices;     
+    }
+
+    /**
      * Convert index schema to string to diff
      */
     static indices2str(Indices){
@@ -314,6 +346,9 @@ class idbx {
             loge("idbx.open_av: Indices name cannot be null");
             return;
         }        
+
+        // Add schema for operation history and full-text search
+        Indices = idbx.add_ophist_fts(Indices);
 
         // All id is primary field of u1 type (unique, single value)
         for (let Store_Name in Indices)

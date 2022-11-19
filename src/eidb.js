@@ -267,19 +267,29 @@ class eidb {
     static set_max_history = idbx.op_hist.set_max_history;
 
     /**
-     * Alias of `eidb.idbx.op_hist.get_op_hist_stat`
+     * Alias of `eidb.idbx.op_hist.get_op_hist_status`
      */
-    static get_op_hist_stat = idbx.op_hist.get_op_hist_stat;
+    static get_op_hist_status = idbx.op_hist.get_op_hist_status;
 
     /**
-     * Alias of `eidb.idbx.op_hist.enable_history`
+     * Alias of `eidb.idbx.op_hist.enable_op_hist`
      */
     static enable_op_hist = idbx.op_hist.enable_op_hist;
 
     /**
-     * Alias of `eidb.idbx.op_hist.enable_history`
+     * Alias of `eidb.idbx.op_hist.enable_op_hist`
      */
     static disable_op_hist = idbx.op_hist.disable_op_hist;
+
+    /**
+     * Alias of `eidb.idbx.op_hist.get_op_hist`
+     */
+    static get_op_hist = idbx.op_hist.get_op_hist;
+
+    /**
+     * Alias of `eidb.idbx.op_hist.clear_op_hist`
+     */
+    static clear_op_hist = idbx.op_hist.clear_op_hist;
 }
 
 /**
@@ -504,6 +514,14 @@ window.value_is = value_is;
 /** @func new_lock */
 const new_lock = base.new_lock;
 window.new_lock = new_lock;
+
+/** 
+ * Stay idle for a number of milliseconds (similar to sleep but the thread
+ * is actually still running, so it's not sleep)
+ */
+/** @func stay_idle */
+const stay_idle = base.stay_idle;
+window.stay_idle = stay_idle;
 
 /*
  * _____________________________________________________________________________
