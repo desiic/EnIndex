@@ -103,6 +103,7 @@ class object_store {
             return await Lock;
         }
         catch (Dom_Exception){
+            loge("object_store.add: Error:",Dom_Exception);
             return Dom_Exception;
         }
     }
@@ -125,6 +126,7 @@ class object_store {
             return await Lock;
         }
         catch (Dom_Exception){
+            loge("object_store.clear: Error:",Dom_Exception);
             return Dom_Exception;
         }
     }
@@ -152,6 +154,7 @@ class object_store {
             return await Lock;
         }
         catch (Dom_Exception){
+            loge("object_store.count: Error:",Dom_Exception);
             return Dom_Exception;
         }
     }
@@ -178,6 +181,7 @@ class object_store {
             return new index(this.self.createIndex(Name,Key_Path,Params));
         }
         catch (Dom_Exception){
+            loge("object_store.create_index: Error:",Dom_Exception);
             return Dom_Exception;
         }
     }
@@ -201,6 +205,7 @@ class object_store {
             return await Lock;
         }
         catch (Dom_Exception){
+            loge("object_store.delete: Error:",Dom_Exception);
             return Dom_Exception;
         }
     }
@@ -214,6 +219,7 @@ class object_store {
             this.self.deleteIndex(Name);
         }
         catch (Dom_Exception){
+            loge("object_store.delete_index: Error:",Dom_Exception);
             return Dom_Exception;
         }
     }
@@ -240,6 +246,7 @@ class object_store {
             return await Lock;
         }
         catch (Dom_Exception){
+            loge("object_store.get: Error:",Dom_Exception);
             return Dom_Exception;
         }
     }
@@ -266,6 +273,7 @@ class object_store {
             return await Lock;
         }
         catch (Dom_Exception){
+            loge("object_store.get_all: Error:",Dom_Exception);
             return Dom_Exception;
         }
     }
@@ -292,6 +300,7 @@ class object_store {
             return await Lock;
         }
         catch (Dom_Exception){
+            loge("object_store.get_all_keys: Error:",Dom_Exception);
             return Dom_Exception;
         }
     }
@@ -318,6 +327,7 @@ class object_store {
             return await Lock;
         }
         catch (Dom_Exception){
+            loge("object_store.get_key: Error:",Dom_Exception);
             return Dom_Exception;
         }
     }
@@ -330,6 +340,7 @@ class object_store {
             return new index(this.self.index(Name));
         }
         catch (Dom_Exception){
+            loge("object_store.index: Error:",Dom_Exception);
             return Dom_Exception;
         }
     }
@@ -364,6 +375,7 @@ class object_store {
             return await Lock;
         }
         catch (Dom_Exception){
+            loge("object_store.open_cursor: Error:",Dom_Exception);
             return Dom_Exception;
         }
     }
@@ -398,6 +410,7 @@ class object_store {
             return await Lock;
         }
         catch (Dom_Exception){
+            loge("object_store.open_key_cursor: Error:",Dom_Exception);
             return Dom_Exception;
         }
     }
@@ -425,6 +438,7 @@ class object_store {
             return await Lock;
         }
         catch (Dom_Exception){
+            loge("object_store.put: Error:",Dom_Exception);
             return Dom_Exception;
         }
     }

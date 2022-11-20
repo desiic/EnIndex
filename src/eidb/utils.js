@@ -8,7 +8,7 @@
 class utils {
 
     /**
-     * Intersect arrays (used for intersecting id arrays in CRUD, FTS)
+     * Intersect arrays (used for intersecting id arrays in CRUD)
      * TO-DO: THIS reduce=>filter=>includes METHOD IS SUPER NEAT BUT THE WORST
      *        CASE IS N^2, NOT URGENT BUT TO CHANGE TO N*LOG(N) IF
      *        ALL ARRAYS COULD BE ALREADY PREPARED AS TREES, 
@@ -21,34 +21,41 @@ class utils {
     }
 
     /**
-     * Intersect 2 id trees
+     * Object to string of words, used by FTS<br/>
+     * This returns a string with extra space at end
      */ 
-    static intersect_2idtrees(Tree1,Tree2){
-        ???
-    }
+    static #obj_to_valuestr(Obj){ // Recursion
+        if (Obj.constructor != Object) return "";
+
+        // Iterate thru' fields
+        var Str = "";
+
+        for (let Field in Obj){
+            let Value = Obj[Field];
+            if (Value==null) continue;
+
+            // Value is not raw Object
+            if (Value.constructor != Object){
+                if (typeof Value == "string")
+                    Str += Value+" ";
+
+                continue;
+            }
+
+            // Value is raw Object {...}
+            Str += utils.obj_to_valuestr(Value);
+        }        
+
+        return Str;
+    } 
 
     /**
-     * Intersect a list of id trees
+     * Object to string of words, used by FTS<br/>
+     * This returns a string WITHOUT extra space at end
      */ 
-    static intersect_idtrees(Trees){
-        // Sample tree:
-        // Id_Tree: { // Navigate until value==1, not object, 1 is shorter than 'true'
-        //     1: {
-        //         1:1, // id == 11
-        //         6:1  // id == 16
-        //     }
-        //     5:...
-        // }
-        if (Trees==null || Trees.length==0) return [];
-        if (Trees.length==1)                return Trees[0];
-
-        // Start intersecting
-        var Inter = Trees[0]; // Intersection
-
-        for (let i=1; i<Trees.length; i++)
-            Inter = utils.intersect_2idtrees(Inter,Trees[i]);
-
-        return Inter;
+    static obj_to_valuestr(Obj){
+        var Str = utils.#obj_to_valuestr(Obj);
+        return Str.trim();
     }
 }
 

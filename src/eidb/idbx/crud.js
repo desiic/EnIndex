@@ -6,6 +6,7 @@
 import base    from "../base.js";
 import utils   from "../utils.js";
 import op_hist from "./op-hist.js";
+import fts     from "./fts.js";
 
 // Shorthands
 var log      = console.log;
@@ -18,7 +19,8 @@ var obj2json = JSON.stringify;
 /**
  * CRUD op class<br/>
  * NOTE: ONLY insert_one, find_one, update_one, upsert_one, remove_one WILL 
- *       AFFECT THE OP HISTORY.
+ *       AFFECT THE OP HISTORY.<br/>
+ * NOTE: ONLY OPERATIONS THOSE CHANGE DATA AFFECT FTS, ie. insert, update, upsert, remove.
  */
 class crud {
 
@@ -26,7 +28,12 @@ class crud {
      * Insert one
      * @return {Number} Id of the new obj
      */
-    static async insert_one(Store,Obj){
+    static async insert_one(Store_Name,Obj){
+        var Db    = await eidb.reopen();
+        var T     = Db.transaction(Store_Name,RW);
+        var Store = T.store1();
+
+        // Got store, next
         var Obj_ = {...Obj}; // Clone to delete id
         delete Obj_.id;      // Id is auto-incremented
 
@@ -35,10 +42,13 @@ class crud {
 
         if (new_id instanceof Error){
             loge("crud.insert_one: Failed, error:",new_id);
+            Db.close();
             return null;
         }
 
         op_hist.update_op_hist_c(Store.Name, [new_id]);
+        fts.update_fts_c(Store.Name, new_id, Obj);
+        Db.close();
         return new_id;
     }
 
@@ -46,10 +56,15 @@ class crud {
      * Insert many
      * @return {Array} List of inserted object ids
      */
-    static async insert_many(Store,Objs){
+    static async insert_many(Store_Name,Objs){
+        var Db    = await eidb.reopen();
+        var T     = Db.transaction(Store_Name,RW);
+        var Store = T.store1();
+
+        // Got store, next
         var Ids           = [];
         var [Lock,unlock] = new_lock();
-        if (Objs==null || Objs.length==0) return [];
+        if (Objs==null || Objs.length==0) { Db.close(); return []; }
         
         // Add all objects till all added
         for (let Obj of Objs){
@@ -67,8 +82,12 @@ class crud {
                 if (Ids.length == Objs.length) unlock();
             };            
         }
-
         await Lock;
+
+        for (let i=0; i<Ids.length; i++)
+            fts.update_fts_c(Store.Name, Ids[i], Objs[i]);
+
+        Db.close();        
         return Ids;
     }
 
@@ -178,18 +197,25 @@ class crud {
      * Note: Read but no fetching data, no op history
      * @return {Boolean}
      */
-    static async exists(Store,Cond){
+    static async exists(Store_Name,Cond){
+        var Db    = await eidb.reopen();
+        var T     = Db.transaction(Store_Name,RO);
+        var Store = T.store1();
+
+        // Got store, next
         var Keys = Object.keys(Cond);
-        if (Keys.length==0) return [];
+        if (Keys.length==0) { Db.close(); return []; }
 
         // Single cond
         if (Keys.length==1){
             let Obj = await crud.get_1stcond_obj(Store,Cond);
+            Db.close();
             return Obj!=null;
         }
 
         // Multiple conds
         var Ids = await crud.intersect_cond(Store,Cond);
+        Db.close();
         return Ids.length>0;
     }
 
@@ -198,18 +224,25 @@ class crud {
      * Note: Read but no fetching data, no op history
      * @return {Number}
      */
-    static async count(Store,Cond){
+    static async count(Store_Name,Cond){
+        var Db    = await eidb.reopen();
+        var T     = Db.transaction(Store_Name,RO);
+        var Store = T.store1();
+
+        // Got store, next
         var Keys = Object.keys(Cond);
-        if (Keys.length==0) return null;
+        if (Keys.length==0) { Db.close(); return null; }
 
         // Single cond
         if (Keys.length==1){
             let Objs = await crud.get_1stcond_objs(Store,Cond);
+            Db.close();
             return Objs.length;
         }
 
         // Multiple conds
         var Ids = await crud.intersect_cond(Store,Cond);
+        Db.close();
         return Ids.length;
     }
 
@@ -218,17 +251,29 @@ class crud {
      * Note: Read but no fetching data, no op history
      * @return {Number}
      */
-    static async count_all(Store){
-        return await Store.count();
+    static async count_all(Store_Name){
+        var Db    = await eidb.reopen();
+        var T     = Db.transaction(Store_Name,RO);
+        var Store = T.store1();
+
+        // Got store, next
+        var count = await Store.count();
+        Db.close();
+        return count;
     }
 
     /**
      * Find one, avoid using multiple conditions in Cond coz it's slow
      * @return {Object}
      */
-    static async find_one(Store,Cond){
+    static async find_one(Store_Name,Cond){
+        var Db    = await eidb.reopen();
+        var T     = Db.transaction(Store_Name,RO);
+        var Store = T.store1();
+
+        // Got store, next
         var Keys = Object.keys(Cond);
-        if (Keys.length==0) return null;
+        if (Keys.length==0) { Db.close(); return null; }
 
         // Single cond
         if (Keys.length==1){
@@ -236,35 +281,44 @@ class crud {
 
             // Update op history and return
             op_hist.update_op_hist_r(Store.Name, [Obj.id]);
+            Db.close();
             return Obj;
         }
 
         // Multiple conds
         var Ids = await crud.intersect_cond(Store,Cond);
-        if (Ids.length==0) return null;
+        if (Ids.length==0) { Db.close(); return null; }
 
-        // Update op history & return
+        // Update op history & return        
+        var Obj = await Store.get(value_is(Ids[0]));
         op_hist.update_op_hist_r(Store.Name, Ids);
-        return await Store.get(value_is(Ids[0]));
+        Db.close();
+        return Obj;
     }
 
     /**
      * Find many, avoid using multiple conditions in Cond coz it's slow
      * @return {Object}
      */
-    static async find_many(Store,Cond){
+    static async find_many(Store_Name,Cond){
+        var Db    = await eidb.reopen();
+        var T     = Db.transaction(Store_Name,RO);
+        var Store = T.store1();
+
+        // Got store, next
         var Keys = Object.keys(Cond);
-        if (Keys.length==0) return null;
+        if (Keys.length==0) { Db.close(); return null; }
 
         // Single cond
         if (Keys.length==1){
             let Objs = await crud.get_1stcond_objs(Store,Cond);
+            Db.close();
             return Objs;
         }
 
         // Multiple conds
         var Ids = await crud.intersect_cond(Store,Cond);
-        if (Ids==null || Ids.length==0) return [];
+        if (Ids==null || Ids.length==0) { Db.close(); return []; }
 
         var Objs          = [];
         var [Lock,unlock] = new_lock();
@@ -283,6 +337,7 @@ class crud {
         }        
 
         await Lock;
+        Db.close();
         return Objs;
     }
 
@@ -290,8 +345,15 @@ class crud {
      * Find all
      * @return {Array}
      */
-    static async find_all(Store){
-        return await Store.get_all();
+    static async find_all(Store_Name){
+        var Db    = await eidb.reopen();
+        var T     = Db.transaction(Store_Name,RO);
+        var Store = T.store1();
+
+        // Got store, next
+        var Objs = await Store.get_all();
+        Db.close();
+        return Objs;
     }
 
     /**
@@ -330,7 +392,12 @@ class crud {
     /**
      * Filter (value contain, for exact match: use find, find_many)
      */ 
-    static async filter(Store,Cond){
+    static async filter(Store_Name,Cond){
+        var Db    = await eidb.reopen();
+        var T     = Db.transaction(Store_Name,RO);
+        var Store = T.store1();
+
+        // Got store, next
         var Objs = [];
 
         await Store.open_cursor(range_gte(0),"next",Cursor=>{
@@ -340,6 +407,7 @@ class crud {
                 Objs.push(Value);
         });
 
+        Db.close();
         return Objs;
     }
 
@@ -347,9 +415,14 @@ class crud {
      * Update one, avoid using multiple conditions in Cond coz it's slow
      * @return {Object}
      */
-    static async update_one(Store,Cond,Changes){
+    static async update_one(Store_Name,Cond,Changes){
+        var Db    = await eidb.reopen();
+        var T     = Db.transaction(Store_Name,RW);
+        var Store = T.store1();
+
+        // Got store, next
         var Keys = Object.keys(Cond);
-        if (Keys.length==0) return null;
+        if (Keys.length==0) { Db.close(); return null; }
 
         let Changes_ = {...Changes}; // Clone to delete id
         delete Changes_.id;          // Id is auto-incremented
@@ -357,25 +430,28 @@ class crud {
         // Single cond
         if (Keys.length==1){
             let Obj = await crud.get_1stcond_obj(Store,Cond);
-            if (Obj==null) return null;
+            if (Obj==null) { Db.close(); return null; }
 
             Obj = {...Obj,...Changes_};
             Store.put(Obj);
             op_hist.update_op_hist_u(Store.Name, [Obj.id]);
+            fts.update_fts_u(Store.Name, Obj.id, Obj);
+            Db.close();
             return Obj;
         }
 
         // Multiple conds
         var Ids = await crud.intersect_cond(Store,Cond);
-        if (Ids==null)     return null;
-        if (Ids.length==0) return null;
+        if (Ids==null || Ids.length==0) { Db.close(); return null; }
 
         var Obj = await Store.get(value_is(Ids[0]));
-        if (Obj==null) return null;
+        if (Obj==null) { Db.close(); return null; }
 
         Obj = {...Obj,...Changes_};
         Store.put(Obj);
         op_hist.update_op_hist_u(Store.Name, [Obj.id]);
+        fts.update_fts_u(Store.Name, Obj.id, Obj);
+        Db.close();
         return Obj;
     }
 
@@ -383,9 +459,14 @@ class crud {
      * Update many, avoid using multiple conditions in Cond coz it's slow
      * @return {Object}
      */
-    static async update_many(Store,Cond,Changes){
+    static async update_many(Store_Name,Cond,Changes){
+        var Db    = await eidb.reopen();
+        var T     = Db.transaction(Store_Name,RW);
+        var Store = T.store1();
+
+        // Got store, next
         var Keys = Object.keys(Cond);
-        if (Keys.length==0) return null;
+        if (Keys.length==0) { Db.close(); return null; }
 
         let Changes_ = {...Changes}; // Clone to delete id
         delete Changes_.id;          // Id is auto-incremented
@@ -393,14 +474,14 @@ class crud {
         // Single cond
         if (Keys.length==1){
             var Objs = await crud.get_1stcond_objs(Store,Cond);
-            if (Objs==null)     return null;
-            if (Objs.length==0) return [];
+            if (Objs==null)     { Db.close(); return null; }
+            if (Objs.length==0) { Db.close(); return []; }
         }
         // Multiple conds
         else{        
             var Objs = await crud.intersect_cond_getobjs(Store,Cond);
-            if (Objs==null)     return null;
-            if (Objs.length==0) return [];
+            if (Objs==null)     { Db.close(); return null; }
+            if (Objs.length==0) { Db.close(); return []; }
         }
 
         // Update
@@ -421,8 +502,12 @@ class crud {
                 if (Updated_Objs.length == Objs.length) unlock();
             }
         }
-
         await Lock;
+
+        for (let i=0; i<Updated_Objs.length; i++)
+            fts.update_fts_u(Store.Name, Updated_Objs[i].id, Updated_Objs[i]);
+
+        Db.close();        
         return Updated_Objs;
     }
 
@@ -430,9 +515,14 @@ class crud {
      * Upsert one, avoid using multiple conditions in Cond coz it's slow
      * @return {Object}
      */
-    static async upsert_one(Store,Cond,Changes){
+    static async upsert_one(Store_Name,Cond,Changes){
+        var Db    = await eidb.reopen();
+        var T     = Db.transaction(Store_Name,RW);
+        var Store = T.store1();
+
+        // Got store, next
         var Keys = Object.keys(Cond);
-        if (Keys.length==0) return null;
+        if (Keys.length==0) { Db.close(); return null; }
 
         let Changes_ = {...Changes}; // Clone to delete id
         delete Changes_.id;          // Id is auto-incremented
@@ -445,6 +535,8 @@ class crud {
             if (Obj==null){
                 let id = await Store.add(Changes_);
                 op_hist.update_op_hist_c(Store.Name, [id]);
+                fts.update_fts_c(Store.Name, id, Changes);
+                Db.close();
                 return id;
             };
 
@@ -452,13 +544,14 @@ class crud {
             Obj = {...Obj,...Changes_};
             Store.put(Obj);
             op_hist.update_op_hist_u(Store.Name, [Obj.id]);
+            fts.update_fts_u(Store.Name, Obj.id, Obj);
+            Db.close();
             return Obj.id;
         }
 
         // Multiple conds
         var Ids = await crud.intersect_cond(Store,Cond);
-        if (Ids==null)     return null;
-        if (Ids.length==0) return null;
+        if (Ids==null || Ids.length==0) { Db.close(); return null; }
 
         // Insert
         var Obj = await Store.get(value_is(Ids[0]));
@@ -466,6 +559,8 @@ class crud {
         if (Obj==null){
             let id = await Store.add(Changes_);
             op_hist.update_op_hist_c(Store.Name, [id]);
+            fts.update_fts_c(Store.Name, id, Changes);
+            Db.close();
             return id;
         };
 
@@ -473,6 +568,8 @@ class crud {
         Obj = {...Obj,...Changes_};
         Store.put(Obj);
         op_hist.update_op_hist_u(Store.Name, [Obj.id]);
+        fts.update_fts_u(Store.Name, Obj.id, Obj);
+        Db.close();
         return Obj.id;
     }
 
@@ -480,48 +577,66 @@ class crud {
      * Remove one, avoid using multiple conditions in Cond coz it's slow
      * @return {null}
      */
-     static async remove_one(Store,Cond){
+    static async remove_one(Store_Name,Cond){
+        var Db    = await eidb.reopen();
+        var T     = Db.transaction(Store_Name,RW);
+        var Store = T.store1();
+
+        // Got store, next
         var Keys = Object.keys(Cond);
-        if (Keys.length==0) return null;
+        if (Keys.length==0) { Db.close(); return null; }
 
         // Single cond
         if (Keys.length==1){
             let Obj = await crud.get_1stcond_obj(Store,Cond);
-            if (Obj==null) return null;
-
+            if (Obj==null) { Db.close(); return null; }
+            
+            let id = await Store.delete(value_is(Obj.id));
             op_hist.update_op_hist_d(Store.Name, [Obj.id]);
-            return await Store.delete(value_is(Obj.id));
+            fts.update_fts_d(Store.Name, Obj.id, Obj);
+            Db.close();
+            return id; // Always null, from IDBObjectStore.delete
         }
 
         // Multiple conds
-        var Ids = await crud.intersect_cond(Store,Cond);
-        if (Ids==null)     return null;
-        if (Ids.length==0) return null;
-
+        var Objs = await crud.intersect_cond_getobjs(Store,Cond);
+        var Ids  = Objs.map(X=>X.id);
+        if (Ids==null || Ids.length==0) { Db.close(); return null; }
+        
+        var id = await Store.delete(value_is(Ids[0]));
         op_hist.update_op_hist_d(Store.Name, [Ids[0]]);
-        return await Store.delete(value_is(Ids[0]));
+        fts.update_fts_d(Store.Name, Ids[0], Objs[0]);
+        Db.close();
+        return id; // Always null, from IDBObjectStore.delete
     }
 
     /**
      * Remove many, avoid using multiple conditions in Cond coz it's slow
      * @return {null}
      */
-    static async remove_many(Store,Cond){
+    static async remove_many(Store_Name,Cond){
+        var Db    = await eidb.reopen();
+        var T     = Db.transaction(Store_Name,RW);
+        var Store = T.store1();
+
+        // Got store, next
         var Keys = Object.keys(Cond);
-        if (Keys.length==0) return null;
+        if (Keys.length==0) { Db.close(); return null; }
 
         // Single cond
-        var Ids = [];
+        var Objs = [];
+        var Ids  = [];
 
         if (Keys.length==1){
-            let Objs = await crud.get_1stcond_objs(Store,Cond);
-            if (Objs==null || Objs.length==0) return null;
+            Objs = await crud.get_1stcond_objs(Store,Cond);            
             Ids = Objs.map(Obj=>Obj.id);
+            if (Objs==null || Objs.length==0) { Db.close(); return null; }            
         }
         else{
             // Multiple conds
-            var Ids = await crud.intersect_cond(Store,Cond);
-            if (Ids==null || Ids.length==0) return null;
+            Objs = await crud.intersect_cond_getobjs(Store,Cond);
+            Ids  = Objs.map(X=>X.id);
+            if (Ids==null || Ids.length==0) { Db.close(); return null; }
         }
 
         var [Lock,unlock] = new_lock();
@@ -538,9 +653,13 @@ class crud {
                 count++;
                 if (count == Ids.length) unlock();
             };
-        }
-        
+        }        
         await Lock;
+
+        for (let i=0; i<Ids.length; i++)
+            fts.update_fts_d(Store.Name, Ids[i], Objs[i]);
+
+        Db.close();
         return null;
     }
 }

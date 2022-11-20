@@ -9,7 +9,8 @@ if (window.eidb==null) { setTimeout(wait4modules,0); return; }
 // Test values
 var _Test_Indices = {
     my_store: { 
-        foo:1, bar:2, foobar:u1, barfoo:u2, "foo.bar":1, "bar.foo":2         
+        foo:1, bar:2, foobar:u1, barfoo:u2, "foo.bar":1, "bar.foo":2,
+        "foo,bar":1 // Compound index, remember compound indices can't be 2, or u2
     }
 };
 
@@ -28,68 +29,74 @@ async function main(){
     log("Reopened db:",Db);
     Db.close();
 
-    logw("Test CREATE"); // ----------------------------------------------------
-    Db = await eidb.reopen();
-    var T = Db.transaction("my_store",RW);
-    var S = T.store1();
-    log("Inserted id: ", await eidb.insert_one(S,{foo:"bar",bar:"foo",r:Math.random()}));
-    log("Inserted ids:", await eidb.insert_many(S,[{foo:"bar"},{bar:"foo",a:"b"}]));
-    Db.close();
+    logw("Test CRUD ops"); // --------------------------------------------------
+    logw("Test CREATE");
+    var Sname = "my_store";
+    log("Inserted id: ", await eidb.insert_one(Sname,{foo:"bar",bar:"foo",r:Math.random()}));
+    log("Inserted ids:", await eidb.insert_many(Sname,[{foo:"bar"},{bar:"foo",a:"b"}]));
 
-    logw("Test READ"); // ------------------------------------------------------
-    Db = await eidb.reopen();
-    var T = Db.transaction("my_store",RW);
-    var S = T.store1();
-    log("Exists:   ", await eidb.exists(S,{bar:"foo",foo:"bar"}));
-    log("Count:    ", await eidb.count (S,{bar:"foo",foo:"bar"}));
-    log("Find one: ", await eidb.find_one(S,{bar:"foo",foo:"bar"}));
-    log("Find many:", await eidb.find_many(S,{bar:"foo",foo:"bar"}));
-    log("Find all: ", (await eidb.find_all(S)).length, "items");
-    log("Filter:   ", await eidb.filter(S,{foo:"bar",id:1}));
-    Db.close();
+    logw("Test READ");
+    var Sname = "my_store";
+    log("Exists:   ", await eidb.exists(Sname,{bar:"foo",foo:"bar"}));
+    log("Count:    ", await eidb.count (Sname,{bar:"foo",foo:"bar"}));
+    log("Find one: ", await eidb.find_one(Sname,{bar:"foo",foo:"bar"}));
+    log("Find many:", await eidb.find_many(Sname,{bar:"foo",foo:"bar"}));
+    log("Find all: ", (await eidb.find_all(Sname)).length, "items");
+    log("Filter:   ", await eidb.filter(Sname,{foo:"bar",id:1}));
 
-    logw("Test UPDATE"); // ----------------------------------------------------
-    Db = await eidb.reopen();
-    var T = Db.transaction("my_store",RW);
-    var S = T.store1();
-    log("Update one:  ", await eidb.update_one(S,{foo:"bar",bar:"foo"}, {foo3:"bar3"}));
-    log("Update many: ", await eidb.update_many(S,{foo:"bar",bar:"foo"}, {foox:"barx"}));
-    log("Upsert (one):", await eidb.upsert_one(S,{foo:"bar",bar:"foo"}, {fooxy:"barxy"}));
-    Db.close();
+    logw("Test UPDATE");
+    var Sname = "my_store";
+    log("Update one:  ", await eidb.update_one(Sname,{foo:"bar",bar:"foo"}, {foo3:"bar3"}));
+    log("Update many: ", await eidb.update_many(Sname,{foo:"bar",bar:"foo"}, {foox:"barx"}));
+    log("Upsert (one):", await eidb.upsert_one(Sname,{foo:"bar",bar:"foo"}, {fooxy:"barxy"}));
 
-    logw("Test DELETE"); // ----------------------------------------------------
-    Db = await eidb.reopen();
-    var T = Db.transaction("my_store",RW);
-    var S = T.store1();
-    log("Count all:  ", await eidb.count_all(S));
-    log("Remove one: ", await eidb.remove_one(S,{foo:"bar",bar:"foo"}));
-    log("Count all:  ", await eidb.count_all(S));
-    log("Remove many:", await eidb.remove_many(S,{foo:"bar",bar:"foo"}));
-    log("Count:      ", await eidb.count_all(S));
-    Db.close();
+    logw("Test DELETE");
+    var Sname = "my_store";
+    log("Count all:  ", await eidb.count_all(Sname));
+    log("Remove one: ", await eidb.remove_one(Sname,{foo:"bar",bar:"foo"}));
+    log("Count all:  ", await eidb.count_all(Sname));
+    log("Remove many:", await eidb.remove_many(Sname,{foo:"bar",bar:"foo"}));
+    log("Count:      ", await eidb.count_all(Sname));
 
-    logw("Test history/FTS"); // -----------------------------------------------
+    logw("Test op history"); // ------------------------------------------------
     log("Num connections:  ",eidb.num_db_cons())
     await eidb.enable_op_hist();
     log("Op-history status:",eidb.get_op_hist_status());
     // await eidb.clear_op_hist();
-
-    Db = await eidb.reopen();
-    var T = Db.transaction("my_store",RW);
-    var S = T.store1();
-    await eidb.insert_one(S,{foo:"bar"});
+    
+    var Sname = "my_store";
+    await eidb.insert_one(Sname,{foo:"foo bar foobar barfoo"});
 
     await stay_idle(1000); // Op hist works in background, wait a second after insert
     var Hist = await eidb.get_op_hist("my_store",10); // Only 1, cleared above
     log("Op-history CRUD/C:", Hist.Recent_Creates);
-    Db.close();
+
+    logw("Test full-text search"); // ------------------------------------------
+    eidb.enable_fts();
+    await eidb.insert_one(Sname,{foo:"foo bar foobar barfoox"});
+    var Sname = "my_store";
+    var Result = await eidb.find_many_by_terms(Sname,"bar barfoox");
+    log("FTS result:",Result);
+    return;
 
     logw("Test CRUD ops (secure)"); // -----------------------------------------    
+    logw("Test CREATE (secure)");
     // ...
 
-    logw("Test history/FTS (secure)"); // --------------------------------------    
+    logw("Test READ (secure)");
     // ...
-    return;
+
+    logw("Test UPDATE (secure)");
+    // ...
+
+    logw("Test DELETE (secure)");
+    // ...
+
+    logw("Test op history (secure)"); // ---------------------------------------
+    // ...
+
+    logw("Test full-text search (secure)"); // ---------------------------------
+    // ...
 
     logw("Test Web Crypto"); // ------------------------------------------------
     logw("Randomisation");

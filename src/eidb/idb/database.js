@@ -106,6 +106,7 @@ class database {
             return new object_store(this.self.createObjectStore(Name,Options));
         }
         catch (Dom_Exception){
+            loge("database.create_object_store: Error:",Dom_Exception);
             return Dom_Exception;
         }
     }
@@ -119,6 +120,7 @@ class database {
             return this.self.deleteObjectStore(Name);
         }
         catch (Dom_Exception){
+            loge("database.delete_object_store: Error:",Dom_Exception);
             return Dom_Exception;
         }
     }
@@ -140,6 +142,7 @@ class database {
             return new transaction(this.self.transaction(Store_Names, Mode, Options));
         }
         catch (Dom_Exception){
+            loge("database.transaction: Error:",Dom_Exception);
             return Dom_Exception;
         }
     }

@@ -6,6 +6,9 @@
 import base from "../base.js";
 
 // Shorthands
+var log      = console.log;
+var logw     = console.warn;
+var loge     = console.error;
 var new_lock = base.new_lock;
 
 /**
@@ -77,6 +80,7 @@ var new_lock = base.new_lock;
             this.self.advance(count);
         }
         catch (Dom_Exception){
+            loge("cursor.advance: Error:",Dom_Exception);
             return Dom_Exception;
         }
     }
@@ -89,6 +93,7 @@ var new_lock = base.new_lock;
             this.self.continue(Key);
         }
         catch (Dom_Exception){
+            loge("cursor.continue(K): Error:",Dom_Exception);
             return Dom_Exception;
         }
     }
@@ -101,6 +106,7 @@ var new_lock = base.new_lock;
             this.self.continuePrimaryKey(Key,Prim_Key);
         }
         catch (Dom_Exception){
+            loge("cursor.continue(K,Pk): Error:",Dom_Exception);
             return Dom_Exception;
         }
     }
@@ -122,6 +128,7 @@ var new_lock = base.new_lock;
             return await Lock;
         }
         catch (Dom_Exception){
+            loge("cursor.delete: Error:",Dom_Exception);
             return Dom_Exception;
         }
     }
@@ -143,6 +150,7 @@ var new_lock = base.new_lock;
             return await Lock;
         }
         catch (Dom_Exception){
+            loge("cursor.update: Error:",Dom_Exception);
             return Dom_Exception;
         }
     }

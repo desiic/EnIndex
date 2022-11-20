@@ -120,6 +120,36 @@ class idbx {
     }
 
     /**
+     * Index name to keypath
+     * ```
+     * foobar -> foobar
+     * foo,bar -> ["foo","bar"]
+     * ```
+     */
+    static indexname_to_keypath(Indexname){
+        if (Indexname.indexOf(",") >= 0)
+            return Indexname.split(",");
+
+        return Indexname;    
+    }
+
+    /**
+     * Keypath to index name
+     * ```
+     * ["foo","bar"] -> "foo,bar"
+     * "foobar -> "foobar"
+     * "foo,bar" -> "foo,bar"
+     * ```
+     */ 
+    static keypath_to_indexname(Keypath){
+        if (Keypath.constructor === Array)
+            return Keypath.join(",");
+        
+        // String keypath
+        return Keypath;
+    }
+
+    /**
      * Get current indices
      */
     static async get_cur_indices(Db_Name){
@@ -141,6 +171,7 @@ class idbx {
             for (let Index_Name of S.Index_Names){
                 let I          = S.index(Index_Name);
                 let Key_Path   = I.Key_Path;
+                var Key_Name   = idbx.keypath_to_indexname(Key_Path);
                 let unique     = I.unique;
                 let multientry = I.multientry;
                 let type;
@@ -154,7 +185,7 @@ class idbx {
                 if (unique==true  && multientry==true)  type=4; // u2
                 else{}
 
-                Indices[Store_Name][Key_Path] = type;
+                Indices[Store_Name][Key_Name] = type;
             }
         }
 
@@ -189,31 +220,49 @@ class idbx {
         // Operation history store indices:
         Indices["op_hist"] = {
             Store_Name:1
-        };
-        Indices["#op_hist"] = { // Encrypted
-            Store_Name:1
+            // Non indexed: Recent_*
         };
 
-        ???
-        // FULL-TEXT SEARCH STORE:
-        // Sample fts object:
-        // {
-        //     Word: "foo",
-        //     Id_Tree: { // Navigate until value==1, not object, 1 is shorter than 'true'
-        //         1: {
-        //             1:1, // id == 11
-        //             6:1  // id == 16
-        //         }
-        //         5:...
-        //     }
-        // }
+        // Encrypted
+        Indices["#op_hist"] = { 
+        };
+
+        // FULL-TEXT SEARCH STORE
+        // Algorithm complexity: O(n * logn * m)
         // Full text search store indices:
-        // with Id_tree to facilitate nlog(n) set intersection.
-        Indices["fts"] = {
-            Word:1
-        };   
-        Indices["#fts"] = { // Encrypted
-            Word:1
+        Indices["fts_counts"] = {   // FTS find step1: O(1)
+            Store:         1,       // Store name
+            Word:          1,       // A single-word term to search            
+            "Store,Word":  u1,      // Compound to look up
+
+            // Other indices:
+            num_obj_ids: 1          // To select the first term with fewest ids
+        };
+        Indices["fts_sets"] = {     // FTS find step2: O(n), n is number of ids in a set
+            Store:         1,       // Store name
+            Word:          1,       // A single-word term to search            
+            "Store,Word":  u1,      // Compound to look up
+
+            // Non-indexed field:
+            // Obj_Ids: 2,          // For fast loading of the set of all ids of first term.            
+        };
+        Indices["fts_pairs"] = {    // FTS find step3: O(logn)*m, m is number of input terms.
+            Store:         1,       // Store name
+            Word:          1,       // A single-word term to search            
+            "Store,Word":  1,       // Not unique due to multiple obj_id(s)
+
+            // Other indices:
+            obj_id: 1,              // A single object id of object containing Word
+            "Store,Word,obj_id": u1 // Compound index to find if pair Word+obj_id exists (set intersection),
+                                    // this compound value is always true, or doesn't exist.
+        };        
+
+        // Encrypted
+        Indices["#fts_counts"] = { 
+        };
+        Indices["#fts_sets"] = {
+        };
+        Indices["#fts_pairs"] = {
         };
 
         return Indices;     
@@ -295,9 +344,10 @@ class idbx {
             let S = Db.create_object_store(Store_Name);
 
             for (let Index_Name in New_Indices[Store_Name]){
-                let type = New_Indices[Store_Name][Index_Name];
+                let type          = New_Indices[Store_Name][Index_Name];
+                let Index_Keypath = idbx.indexname_to_keypath(Index_Name);
                 log("idbx.upgrade_db: Creating new index:",Store_Name,"/",Index_Name);
-                S.create_index(Index_Name,Index_Name,type);
+                S.create_index(Index_Name,Index_Keypath,type);
             }
         }
 
@@ -330,9 +380,10 @@ class idbx {
             // Create new
             for (let Idx_Name of New_Idx_Names)
                 if (Cur_Idx_Names.indexOf(Idx_Name)==-1){
-                    let type = New_Indices[Store_Name][Idx_Name];
+                    let type        = New_Indices[Store_Name][Idx_Name];
+                    let Idx_Keypath = idbx.indexname_to_keypath(Idx_Name);
                     log("idbx.upgrade_db: Creating new index:",Store_Name,"/",Idx_Name);
-                    S.create_index(Idx_Name,Idx_Name,type);
+                    S.create_index(Idx_Name,Idx_Keypath,type);
                     Cre_Idx_Names.push(Idx_Name);
                 }
 
@@ -346,10 +397,11 @@ class idbx {
 
             for (let Idx_Name of Same_Idx_Names)
                 if (New_Indices[Store_Name][Idx_Name] != Cur_Indices[Store_Name][Idx_Name]){
-                    let type = New_Indices[Store_Name][Idx_Name];
+                    let type        = New_Indices[Store_Name][Idx_Name];
+                    let Idx_Keypath = idbx.indexname_to_keypath(Idx_Name);
                     log("idbx.upgrade_db: Updating index to new type:",Store_Name,"/",Idx_Name+":"+type);
                     S.delete_index(Idx_Name);
-                    S.create_index(Idx_Name,Idx_Name, type); // New type
+                    S.create_index(Idx_Name,Idx_Keypath, type); // New type
                 }    
         }         
             

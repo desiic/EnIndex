@@ -266,7 +266,7 @@ class eidb {
      */
     static remove_many = idbx.crud.remove_many;   
     
-    // OP HISTORY **********:
+    // OP HISTORY **************************************************************
     /**
      * Alias of `eidb.idbx.op_hist.set_max_history`
      */
@@ -296,6 +296,22 @@ class eidb {
      * Alias of `eidb.idbx.op_hist.clear_op_hist`
      */
     static clear_op_hist = idbx.op_hist.clear_op_hist;
+
+    // FULL-TEXT SEARCH ********************************************************
+    /**
+     * Alias of `eidb.idbx.fts.enable_fts`
+     */
+    static enable_fts = idbx.fts.enable_fts;
+
+    /**
+     * Alias of `eidb.idbx.fts.disable_fts`
+     */
+    static disable_fts = idbx.fts.disable_fts;
+
+    /**
+     * Alias of `eidb.idbx.fts.find_many_by_terms`
+     */
+    static find_many_by_terms = idbx.fts.find_many_by_terms;
 }
 
 /**

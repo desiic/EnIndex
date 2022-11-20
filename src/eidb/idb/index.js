@@ -10,6 +10,8 @@ import cursor_with_value from "./cursor-with-value.js";
 
 // Shorthands
 var   log      = console.log;
+var   logw     = console.warn;
+var   loge     = console.error;
 const new_lock = base.new_lock;
 
 /**
@@ -91,6 +93,7 @@ class index {
             return await Lock;
         }
         catch (Dom_Exception){
+            loge("index.count: Error:",Dom_Exception);
             return Dom_Exception;
         }            
     }
@@ -116,6 +119,7 @@ class index {
             return await Lock;
         }
         catch (Dom_Exception){
+            loge("index.get: Error:",Dom_Exception);
             return Dom_Exception;
         }            
     }
@@ -141,6 +145,7 @@ class index {
             return await Lock;
         }
         catch (Dom_Exception){
+            loge("index.get_all: Error:",Dom_Exception);
             return Dom_Exception;
         }            
     }
@@ -166,6 +171,7 @@ class index {
             return await Lock;
         }
         catch (Dom_Exception){
+            loge("index.get_all_keys: Error:",Dom_Exception);
             return Dom_Exception;
         }            
     }
@@ -191,6 +197,7 @@ class index {
             return await Lock;
         }
         catch (Dom_Exception){
+            loge("index.get_key: Error:",Dom_Exception);
             return Dom_Exception;
         }            
     }
@@ -224,6 +231,7 @@ class index {
             return await Lock;
         }
         catch (Dom_Exception){
+            loge("index.open_cursor: Error:",Dom_Exception);
             return Dom_Exception;
         }            
     }
@@ -257,6 +265,7 @@ class index {
             return await Lock;
         }
         catch (Dom_Exception){
+            loge("index.open_key_cursor: Error:",Dom_Exception);
             return Dom_Exception;
         }            
     }

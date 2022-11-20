@@ -40,6 +40,7 @@ class factory {
             return await this.self.databases();
         }
         catch (Dom_Exception){
+            loge("factory.databases: Error:",Dom_Exception);
             return Dom_Exception;
         }
     }
