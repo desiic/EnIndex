@@ -65,32 +65,30 @@ class fts {
      * Update FTS data, CRUD/C
      */ 
     static async update_fts_c(Store_Name, id, Obj){
-        var Db = await idbx.reopen();
-        var T  = Db.transaction(["fts_counts", "fts_sets", "fts_pairs"],RW);
+        // var Db = await idbx.reopen();
+        // var T  = Db.transaction(["fts_counts", "fts_sets", "fts_pairs"],RW);
 
-        // To get first id set which has fewest ids, see idbx.add_more_indices
-        var Scounts = T.object_store("fts_counts"); 
-        // To get first id set quick at 1 op, see idbx.add_more_indices
-        var Ssets   = T.object_store("fts_sets");   
-        // To check if id is related to a word, see idbx.add_more_indices
-        var Spairs  = T.object_store("fts_pairs");  
+        // // To get first id set which has fewest ids, see idbx.add_more_indices
+        // var Scounts = T.object_store("fts_counts"); 
+        // // To check if id is related to a word, see idbx.add_more_indices
+        // var Spairs  = T.object_store("fts_pairs");  
 
-        // Get unique words from Obj
-        var Words = fts.obj_to_unique_words(Obj);
+        // // Get unique words from Obj
+        // var Words = fts.obj_to_unique_words(Obj);
 
-        // Create FTS data for words not yet in db
-        for (let Word of Words){
-            if (await obj_exists(Scounts, "Word", Word)) continue;
+        // // Create FTS data for words not yet in db
+        // for (let Word of Words){
+        //     if (await obj_exists(Scounts, "Word", Word)) continue;
 
-            await Scounts.add({ Store:Store_Name, Word:Word, num_obj_ids:1 });
-            await Ssets.  add({ Store:Store_Name, Word:Word, Obj_Ids:[id]  });
-            await Spairs. add({ Store:Store_Name, Word:Word, obj_id:id     });
-        }
+        //     await Scounts.add({ Store:Store_Name, Word:Word, num_obj_ids:1 });
+        //     await Ssets.  add({ Store:Store_Name, Word:Word, Obj_Ids:[id]  });
+        //     await Spairs. add({ Store:Store_Name, Word:Word, obj_id:id     });
+        // }
 
-        // Now all words are existing
-        ???
+        // // Now all words are existing
+        // ???
 
-        Db.close();
+        // Db.close();
     }
 
     /**

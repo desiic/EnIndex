@@ -15,6 +15,69 @@ var loge     = console.error;
 var obj2json = JSON.stringify;
 var json2obj = JSON.parse;
 
+// Literals
+const n1=1, n2=2, u1=3, u2=4; // Match values in eidb.js
+
+// Constants
+// Default indices
+var _DEFAULT_INDICES = {};
+_DEFAULT_INDICES["_meta"] = {}; // Internal data for both unencrypted & encrypted
+
+// OPERATION HISTORY STORE:
+// Docmetas array is supposed to contain unique values but laxed, this array is
+// sorted to have most recent items first, no duplication.<br/>
+// Sample op_hist object:
+// {
+//     Store_Name: String, 
+//     Recent_Creates: [{
+//         id:        Integer,
+//         Timestamp: Date
+//     }],
+//     Recent_Reads: ...,
+//     Recent_Updates: ...,
+//     Recent_Deletes: ...
+// }
+// Operation history store indices:
+_DEFAULT_INDICES["op_hist"] = {
+    Store_Name:1
+    // Non indexed: Recent_*
+};
+
+// Encrypted
+_DEFAULT_INDICES["#op_hist"] = { 
+};
+
+// FULL-TEXT SEARCH STORE
+// Algorithm complexity: O(n * logn)
+// Full text search store indices, data about words & ids:
+_DEFAULT_INDICES["fts_words"] = {
+    Store:              1,  // Store name, FTS find step1: O(1)
+    Word:               1,  // A single-word term to search            
+    "Store,Word":       u1, // Compound to look up
+
+    // Other indices:
+    num_obj_ids:        1,  // To select the first term with fewest ids
+    create_count:       1,  // No 'read', read ops don't change FTS data,
+    update_count:       1,  // these counts are for measuring importantness of terms,
+    delete_count:       1,  // bigger count sum means not important.
+};
+_DEFAULT_INDICES["fts_ids"] = {    
+    Store:              1,  // Store name, FTS outer loop O(n), in-next-set operation O(logn)
+    Word:               1,  // A single-word term to search            
+    "Store,Word":       1,  // Not unique due to multiple obj_id(s)
+
+    // Other indices:
+    obj_id: 1,              // A single object id of object containing Word
+    "Store,Word,obj_id":u1  // Compound index to find if Store+Word+obj_id exists (set intersection),
+                            // this compound value is always true, or doesn't exist.
+};        
+
+// Encrypted
+_DEFAULT_INDICES["#fts_words"] = { 
+};
+_DEFAULT_INDICES["#fts_ids"] = {
+};
+
 /** 
  * `eidb.idbx` IndexedDB extended feature class
  */ 
@@ -198,74 +261,8 @@ class idbx {
      * Internal-use stores (private): _*, for example: _my_store<br/>
      * encrypted stores    (hashed):  #*, for example: #my_store
      */
-    static add_more_indices(Indices){
-        Indices["_meta"] = {}; // Internal data for both unencrypted & encrypted
-
-        // OPERATION HISTORY STORE:
-        // Docmetas array is supposed to contain unique values but laxed, this array is
-        // sorted to have most recent items first, no duplication.<br/>
-        // Type: Only 4 values: 
-        //   - 'create', 'read', 'update', 'delete'
-        // Sample op_hist object:
-        // {
-        //     Store_Name: String, 
-        //     Recent_Creates: [{
-        //         id:        Integer,
-        //         Timestamp: Date
-        //     }],
-        //     Recent_Reads: ...,
-        //     Recent_Updates: ...,
-        //     Recent_Deletes: ...
-        // }
-        // Operation history store indices:
-        Indices["op_hist"] = {
-            Store_Name:1
-            // Non indexed: Recent_*
-        };
-
-        // Encrypted
-        Indices["#op_hist"] = { 
-        };
-
-        // FULL-TEXT SEARCH STORE
-        // Algorithm complexity: O(n * logn * m)
-        // Full text search store indices:
-        Indices["fts_counts"] = {   // FTS find step1: O(1)
-            Store:         1,       // Store name
-            Word:          1,       // A single-word term to search            
-            "Store,Word":  u1,      // Compound to look up
-
-            // Other indices:
-            num_obj_ids: 1          // To select the first term with fewest ids
-        };
-        Indices["fts_sets"] = {     // FTS find step2: O(n), n is number of ids in a set
-            Store:         1,       // Store name
-            Word:          1,       // A single-word term to search            
-            "Store,Word":  u1,      // Compound to look up
-
-            // Non-indexed field:
-            // Obj_Ids: 2,          // For fast loading of the set of all ids of first term.            
-        };
-        Indices["fts_pairs"] = {    // FTS find step3: O(logn)*m, m is number of input terms.
-            Store:         1,       // Store name
-            Word:          1,       // A single-word term to search            
-            "Store,Word":  1,       // Not unique due to multiple obj_id(s)
-
-            // Other indices:
-            obj_id: 1,              // A single object id of object containing Word
-            "Store,Word,obj_id": u1 // Compound index to find if pair Word+obj_id exists (set intersection),
-                                    // this compound value is always true, or doesn't exist.
-        };        
-
-        // Encrypted
-        Indices["#fts_counts"] = { 
-        };
-        Indices["#fts_sets"] = {
-        };
-        Indices["#fts_pairs"] = {
-        };
-
-        return Indices;     
+    static add_more_indices(Indices){                
+        return {...Indices,..._DEFAULT_INDICES};     
     }
 
     /**
