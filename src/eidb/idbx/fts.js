@@ -53,7 +53,7 @@ class fts {
     }
 
     /**
-     * Check if object exists using an index
+     * Check if object exists using an index, any store
      */ 
     static async obj_exists(Store,Index_Name,Value){
         var Index = Store.index(Index_Name);
@@ -62,52 +62,146 @@ class fts {
     }
 
     /**
+     * Increase number of object counter for a word<br/>
+     * Requirement: Pair Store_Name & Word must be already in fts_words store
+     */ 
+    static async increase_num_objs(Swords, Store_Name, Word){
+        var Entry = await Swords.index("Store,Word").get(value_is([Store_Name,Word]));
+        Entry.num_obj_ids += 1;
+        await Swords.put(Entry);
+    }
+
+    /**
+     * Decrease number of object counter for a word<br/>
+     * Requirement: Pair Store_Name & Word must be already in fts_words store
+     */ 
+    static async decrease_num_objs(Swords, Store_Name, Word, dec_count=1){
+        var Entry = await Swords.index("Store,Word").get(value_is([Store_Name,Word]));
+
+        if (Entry.num_obj_ids >= dec_count)
+            Entry.num_obj_ids -= dec_count;
+
+        await Swords.put(Entry);
+    }
+
+    /**
+     * Update FTS
+     */ 
+    static async update_fts(Op, Store_Name, id, Obj){
+        var Db = await idbx.reopen();
+        var T  = Db.transaction(["fts_words", "fts_ids"],RW);
+
+        // Word data store
+        var Swords = T.object_store("fts_words"); 
+        // Id data store
+        var Sids   = T.object_store("fts_ids");  
+
+        // Get unique words from Obj
+        var Words           = fts.obj_to_unique_words(Obj);
+        var update_deldone  = false;
+        var Update_Delwords = [];        
+        var delete_deldone  = false;
+        var Delete_Delwords = [];
+
+        // Update FTS data for words already in db
+        for (let Word of Words){
+            let word_exists = await fts.obj_exists(Swords, "Store,Word", [Store_Name,Word]);            
+
+            if (!word_exists) 
+                await Swords.add({ Store:Store_Name, Word:Word, num_obj_ids:0 });            
+
+            // Op 'create'
+            if (Op=="create"){                
+                // Tuple (store,word,id) is new (coz store is never with id before)
+                await Sids.add({ Store:Store_Name, Word:Word, obj_id:id });
+                await fts.increase_num_objs(Swords, Store_Name, Word);
+            }
+            else
+            
+            // Op 'update'
+            if (Op=="update"){ ???check
+                // Store is always with id, check wordid pair
+                let wordid_exists = await fts.obj_exists(Sids, "Store,Word,obj_id", [Store_Name,Word,id]);    
+
+                // New word
+                if (!wordid_exists){
+                    await Sids.add({ Store:Store_Name, Word:Word, obj_id:id });
+                    await fts.increase_num_objs(Swords, Store_Name, Word);
+                }
+                
+                // Remove words no longer in object by Store_Name/id
+                if (!update_deldone){ // Del once only
+                    await Sids.index("Store,obj_id").open_cursor(
+                            value_is([Store_Name,id]),"next",Cursor=>{
+                        if (Words.indexOf(Cursor.value.Word) == -1){
+                            Update_Delwords.push(Cursor.value.Word);
+                            Cursor.delete();
+                        }
+                    });
+                    update_deldone = true;
+                }
+
+                if (Update_Delwords.indexOf(Word) >= 0)
+                    await fts.decrease_num_objs(Swords, Store_Name, Word);
+            }
+
+            // Op 'delete
+            else{
+                // Tuple (store,*,id) is no longer existing (coz store is no more with id)
+                if (!delete_deldone){ // Del once only
+                    await Sids.index("Store,obj_id").open_cursor(
+                            value_is([Store_Name,id]),"next",Cursor=>{
+                        if (Words.indexOf(Cursor.value.Word) == -1){
+                            Delete_Delwords.push(Cursor.value.Word);
+                            Cursor.delete();
+                        }
+                    });
+                    delete_deldone = true;
+                }
+
+                if (Delete_Delwords.indexOf(Word) >= 0)
+                    await fts.decrease_num_objs(Swords, Store_Name, Word);
+            }
+        }
+
+        Db.close();
+    }
+
+    /**
      * Update FTS data, CRUD/C
      */ 
-    static async update_fts_c(Store_Name, id, Obj){
-        // var Db = await idbx.reopen();
-        // var T  = Db.transaction(["fts_counts", "fts_sets", "fts_pairs"],RW);
+    static update_fts_c(Store_Name, id, Obj){
+        if (!fts.enabled) return;
 
-        // // To get first id set which has fewest ids, see idbx.add_more_indices
-        // var Scounts = T.object_store("fts_counts"); 
-        // // To check if id is related to a word, see idbx.add_more_indices
-        // var Spairs  = T.object_store("fts_pairs");  
-
-        // // Get unique words from Obj
-        // var Words = fts.obj_to_unique_words(Obj);
-
-        // // Create FTS data for words not yet in db
-        // for (let Word of Words){
-        //     if (await obj_exists(Scounts, "Word", Word)) continue;
-
-        //     await Scounts.add({ Store:Store_Name, Word:Word, num_obj_ids:1 });
-        //     await Ssets.  add({ Store:Store_Name, Word:Word, Obj_Ids:[id]  });
-        //     await Spairs. add({ Store:Store_Name, Word:Word, obj_id:id     });
-        // }
-
-        // // Now all words are existing
-        // ???
-
-        // Db.close();
+        // Run in background, no await
+        fts.update_fts("create", Store_Name, id, Obj);
     }
 
     /**
      * Update FTS data, CRUD/R
      */ 
-    static async update_fts_r(Store_Name, id, Obj){
+    static update_fts_r(Store_Name, id, Obj){
         // NO POINTS TO UPDATE FTS ON READ, NOTHING CHANGES.
     }
 
     /**
      * Update FTS data, CRUD/U
      */ 
-    static async update_fts_u(Store_Name, id, Obj){
+    static update_fts_u(Store_Name, id, Obj){
+        if (!fts.enabled) return;
+
+        // Run in background, no await
+        fts.update_fts("update", Store_Name, id, Obj);
     }
 
     /**
      * Update FTS data, CRUD/D
      */ 
-    static async update_fts_d(Store_Name, id, Obj){
+    static update_fts_d(Store_Name, id, Obj){
+        if (!fts.enabled) return;
+
+        // Run in background, no await
+        fts.update_fts("delete", Store_Name, id, Obj);
     }
 
     /**

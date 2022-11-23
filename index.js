@@ -72,8 +72,17 @@ async function main(){
     log("Op-history CRUD/C:", Hist.Recent_Creates);
 
     logw("Test full-text search"); // ------------------------------------------
-    eidb.enable_fts();
+    var Db = await eidb.reopen(); // Clear fts_words, fts_ids stores first to test
+    var T  = Db.transaction(["my_store","fts_words","fts_ids"],RW);
+    await T.object_store("my_store").clear();
+    await T.object_store("fts_words").clear();
+    await T.object_store("fts_ids").clear();
+    Db.close();
+
+    eidb.enable_fts(); // Should be right after open_av in production
     await eidb.insert_one(Sname,{foo:"foo bar foobar barfoox"});
+    await eidb.insert_one(Sname,{foo:"foo foobar"});
+    await eidb.update_one(Sname,{foo:"foo foobar"}, {foo:"foo abcxyz"});
     var Sname = "my_store";
     var Result = await eidb.find_many_by_terms(Sname,"bar barfoox");
     log("FTS result:",Result);

@@ -269,6 +269,25 @@ class index {
             return Dom_Exception;
         }            
     }
+
+    /**
+     * _________________________________________________________________________
+     */ 
+    EXTENDED_METHODS(){}
+
+    /**
+     * Delete using index instead of primary key
+     */
+    async delete(Range){
+        var count = 0;
+
+        await this.open_cursor(Range,"next",(Cursor)=>{
+            Cursor.delete();
+            count++;
+        });
+
+        return count;
+    }
 }
 
 export default index;
