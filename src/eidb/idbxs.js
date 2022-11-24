@@ -9,7 +9,7 @@
 class idbxs {
 
     /**
-     * Get new static key (AES-GCM 256)<br/>
+     * Get new random static key (AES-GCM 256)<br/>
      * Static key concept: Use static key to encrypt data, use Enc_Key to 
      * encrypt static key; Enc_Key is changed when password is changed, but
      * static key stays the same to avoid decrypt/re-encrypt all data.
