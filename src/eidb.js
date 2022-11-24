@@ -27,6 +27,7 @@
 import base      from "./eidb/base.js";
 import idb       from "./eidb/idb.js";
 import idbx      from "./eidb/idbx.js";
+import idbxs     from "./eidb/idbxs.js";
 import factory   from "./eidb/idb/factory.js";
 import key_range from "./eidb/idb/key-range.js";
 import wcrypto   from "./eidb/wcrypto.js";
@@ -58,6 +59,12 @@ class eidb {
      * Sub-namespace, IndexedDB extended features
      */
     static idbx = idbx;
+
+    /**
+     * Sub-namespace, IndexedDB extended features (secure, encrypted)
+     */
+    static idbxs = idbxs;
+    static sec   = idbxs;
 
     /**
      * Sub-namespace, Web Crypto
@@ -340,6 +347,11 @@ window.u1 = eidb.u1; // Index schema eg. field:u1
 window.u2 = eidb.u2; // Index schema eg. field:u2
 
 /**
+ * Result of cursor callback to stop iterating
+ */ 
+window._stop = "stop";
+
+/**
  * _____________________________________________________________________________
  */
 var EXPORTS_CONSTANTS;
@@ -588,6 +600,8 @@ log("EnIndex loaded");
  * if (Db instanceof Error){
  *     ...
  * }
+ * eidb.enable_op_hist();
+ * eidb.enable_fts();
  * 
  * // Do some ops
  * ...

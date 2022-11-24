@@ -204,7 +204,9 @@ class index {
 
     /**
      * Open cursor<br>
-     * Use callback `func` with cursor coz `.onsuccess` is fired multiple times
+     * Use callback `func` with cursor coz `.onsuccess` is fired multiple times.
+     * There's no cursor close in IndexedDB, callback returns "stop" to stop the cursor, 
+     * will be terminated by transaction end.
      */
     async open_cursor(Range,Direction="next",func){ 
         try {         
@@ -215,15 +217,20 @@ class index {
 
             var [Lock,unlock] = new_lock();
 
+            // Events
             Req.onerror = function(Ev){
                 unlock(Ev.target.error);
             };
-            Req.onsuccess = function(Ev){
+            Req.onsuccess = async function(Ev){
                 var Cursor = Ev.target.result;
 
                 if (Cursor!=null){ 
-                    func(Cursor);
-                    Cursor.continue();
+                    let guide = await func(Cursor);
+
+                    if (guide=="stop")
+                        unlock(); // Don't call Cursor.continue()
+                    else
+                        Cursor.continue();
                 }
                 else 
                     unlock(null);
@@ -238,7 +245,9 @@ class index {
 
     /**
      * Open key cursor<br>
-     * Use callback `func` with cursor coz `.onsuccess` is fired multiple times
+     * Use callback `func` with cursor coz `.onsuccess` is fired multiple times.
+     * There's no cursor close in IndexedDB, callback returns "stop" to stop the cursor, 
+     * will be terminated by transaction end.
      */
     async open_key_cursor(Range,Direction="next",func){
         try {         
@@ -249,15 +258,20 @@ class index {
 
             var [Lock,unlock] = new_lock();
 
+            // Events
             Req.onerror = function(Ev){
                 unlock(Ev.target.error);
             };
-            Req.onsuccess = function(Ev){
+            Req.onsuccess = async function(Ev){
                 var Cursor = Ev.target.result;
 
                 if (Cursor!=null){ 
-                    func(Cursor);
-                    Cursor.continue();
+                    let guide = await func(Cursor);
+
+                    if (guide=="stop")
+                        unlock(); // Don't call Cursor.continue()
+                    else
+                        Cursor.continue();
                 }
                 else 
                     unlock(null);

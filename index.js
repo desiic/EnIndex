@@ -83,14 +83,20 @@ async function main(){
     await eidb.insert_one(Sname,{foo:"foo bar foobar barfoox"});
     await eidb.insert_one(Sname,{foo:"foo foobar"});
     await eidb.update_one(Sname,{foo:"foo foobar"}, {foo:"foo abcxyz"});
-    var Sname = "my_store";
-    var Result = await eidb.find_many_by_terms(Sname,"bar barfoox");
+    await eidb.remove_one(Sname,{foo:"foo abcxyz"});
+    await eidb.insert_one(Sname,{foo:"foo foo foo foo abcxyz"});
+    var Sname  = "my_store";
+    var Result = await eidb.find_many_by_terms(Sname,"xxx fff");
     log("FTS result:",Result);
-    return;
+    var Result = await eidb.find_many_by_terms(Sname,"foo fff");
+    log("FTS result:",Result);
+    var Result = await eidb.find_many_by_terms(Sname,"foo foobar fff");
+    log("FTS result:",Result);    
 
     logw("Test CRUD ops (secure)"); // -----------------------------------------    
     logw("Test CREATE (secure)");
     // ...
+    return;
 
     logw("Test READ (secure)");
     // ...

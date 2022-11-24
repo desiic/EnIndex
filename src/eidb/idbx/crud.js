@@ -194,6 +194,7 @@ class crud {
 
     /**
      * Check existence of obj<br/>
+     * Avoid multiple conds in Cond, use compound index.<br/>
      * Note: Read but no fetching data, no op history
      * @return {Boolean}
      */
@@ -221,6 +222,7 @@ class crud {
 
     /**
      * Count<br/>
+     * Avoid multiple conds in Cond, use compound index<br/>
      * Note: Read but no fetching data, no op history
      * @return {Number}
      */
@@ -297,10 +299,11 @@ class crud {
     }
 
     /**
-     * Find many, avoid using multiple conditions in Cond coz it's slow
+     * Find many, avoid using multiple conditions in Cond coz it's slow,
+     * USE COMPOUND INDEX INSTEAD.
      * @return {Object}
      */
-    static async find_many(Store_Name,Cond){
+    static async find_many(Store_Name,Cond, limit=Number.MAX_SAFE_INTEGER){
         var Db    = await eidb.reopen();
         var T     = Db.transaction(Store_Name,RO);
         var Store = T.store1();
@@ -329,10 +332,12 @@ class crud {
             Req.onerror = (Ev)=>{
                 Objs.push(null);
                 if (Objs.length == Ids.length) unlock();
+                if (Objs.length >= limit)      unlock();
             };
             Req.onsuccess = (Ev)=>{
                 Objs.push(Ev.target.result);
                 if (Objs.length == Ids.length) unlock();
+                if (Objs.length >= limit)      unlock();
             };
         }        
 
@@ -392,7 +397,7 @@ class crud {
     /**
      * Filter (value contain, for exact match: use find, find_many)
      */ 
-    static async filter(Store_Name,Cond){
+    static async filter(Store_Name,Cond, limit=Number.MAX_SAFE_INTEGER){
         var Db    = await eidb.reopen();
         var T     = Db.transaction(Store_Name,RO);
         var Store = T.store1();
@@ -405,6 +410,8 @@ class crud {
 
             if (crud.obj_matches_cond(Value,Cond))
                 Objs.push(Value);
+            if (Objs.length >= limit)
+                return _stop;
         });
 
         Db.close();
@@ -412,7 +419,8 @@ class crud {
     }
 
     /**
-     * Update one, avoid using multiple conditions in Cond coz it's slow
+     * Update one, avoid using multiple conditions in Cond coz it's slow,
+     * USE COMPOUND INDEX INSTEAD.
      * @return {Object}
      */
     static async update_one(Store_Name,Cond,Changes){
@@ -456,10 +464,11 @@ class crud {
     }
 
     /**
-     * Update many, avoid using multiple conditions in Cond coz it's slow
+     * Update many, avoid using multiple conditions in Cond coz it's slow,
+     * USE COMPOUND INDEX INSTEAD.
      * @return {Object}
      */
-    static async update_many(Store_Name,Cond,Changes){
+    static async update_many(Store_Name,Cond,Changes, limit=Number.MAX_SAFE_INTEGER){
         var Db    = await eidb.reopen();
         var T     = Db.transaction(Store_Name,RW);
         var Store = T.store1();
@@ -496,10 +505,12 @@ class crud {
                 loge("crud.update_many: Failed to update object:",Obj);
                 Updated_Objs.push(null);
                 if (Updated_Objs.length == Objs.length) unlock();
+                if (Updated_Objs.length >= limit)       unlock();
             };
             Req.onsuccess = (Ev)=>{
                 Updated_Objs.push(Replacement);
                 if (Updated_Objs.length == Objs.length) unlock();
+                if (Updated_Objs.length >= limit)       unlock();
             }
         }
         await Lock;
@@ -512,7 +523,8 @@ class crud {
     }
 
     /**
-     * Upsert one, avoid using multiple conditions in Cond coz it's slow
+     * Upsert one, avoid using multiple conditions in Cond coz it's slow,
+     * USE COMPOUND INDEX INSTEAD
      * @return {Object}
      */
     static async upsert_one(Store_Name,Cond,Changes){
@@ -574,7 +586,8 @@ class crud {
     }
 
     /**
-     * Remove one, avoid using multiple conditions in Cond coz it's slow
+     * Remove one, avoid using multiple conditions in Cond coz it's slow,
+     * USE COMPOUND INDEX INSTEAD
      * @return {null}
      */
     static async remove_one(Store_Name,Cond){
@@ -611,7 +624,8 @@ class crud {
     }
 
     /**
-     * Remove many, avoid using multiple conditions in Cond coz it's slow
+     * Remove many, avoid using multiple conditions in Cond coz it's slow,
+     * USE COMPOUND INDEX INSTEAD
      * @return {null}
      */
     static async remove_many(Store_Name,Cond){
