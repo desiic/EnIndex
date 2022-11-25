@@ -85,6 +85,8 @@ async function main(){
     await eidb.update_one(Sname,{foo:"foo foobar"}, {foo:"foo abcxyz"});
     await eidb.remove_one(Sname,{foo:"foo abcxyz"});
     await eidb.insert_one(Sname,{foo:"foo foo foo foo abcxyz"});
+    
+    await stay_idle(1000); // FTS works in background, wait a second after insert
     var Sname  = "my_store";
     var Result = await eidb.find_many_by_terms(Sname,"xxx fff");
     log("FTS result:",Result);
@@ -92,6 +94,17 @@ async function main(){
     log("FTS result:",Result);
     var Result = await eidb.find_many_by_terms(Sname,"foo foobar fff");
     log("FTS result:",Result);    
+
+    logw("Test sec module"); //-------------------------------------------------
+    eidb.sec.ITERATIONS = 1000; // Default: 100,000; here using smaller value for fast testing
+    var Ek,Aks;
+    log("Key chain:     ",[Ek,Aks]=await eidb.sec.get_key_chain("foobar","foobarspassword"));
+    log("Static key:    ",await eidb.sec.get_new_static_key("foobar"));
+    log("Recovery info: ",{Recovery_Key,Ciphertext,Iv}=await eidb.sec.gen_recovery_info(Ek,Aks));
+    var Rtext,Rkey;
+    log("Recovery text: ",Rtext=await eidb.sec.key_to_text(Recovery_Key));
+    log("Back to key:   ",Rkey=await eidb.sec.text_to_key(Rtext));
+    log("Recovered keys:",await eidb.sec.recover_key_chain(Ciphertext,Iv,Rkey));
 
     logw("Test CRUD ops (secure)"); // -----------------------------------------    
     logw("Test CREATE (secure)");

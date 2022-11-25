@@ -604,6 +604,8 @@ log("EnIndex loaded");
  * eidb.enable_fts();
  * 
  * // Do some ops
+ * // Use eidb.sec.* instead of eidb.idbxs.* for secure ops,
+ * // they are the same alias but eidb.sec has better clarity.
  * ...
  * Db.close();
  * ```
