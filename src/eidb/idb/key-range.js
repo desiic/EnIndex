@@ -2,6 +2,11 @@
  * @module eidb/idb/key_range
  */
 
+// Shorthands
+var log  = console.log;
+var logw = console.warn;
+var loge = console.error;
+
 /**
  * IDBKeyRange wrapper class
  */
@@ -62,6 +67,7 @@ class key_range {
             return this.self.includes(Range.self);
         }
         catch (Dom_Exception){
+            loge("key_range.includes: Error:",Dom_Exception);
             return Dom_Exception;
         }
     }

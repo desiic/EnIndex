@@ -10,6 +10,8 @@ import cursor_with_value from "./cursor-with-value.js";
 
 // Shorthands
 var   log      = console.log;
+var   logw     = console.warn;
+var   loge     = console.error;
 const new_lock = base.new_lock;
 
 /**
@@ -91,6 +93,7 @@ class index {
             return await Lock;
         }
         catch (Dom_Exception){
+            loge("index.count: Error:",Dom_Exception);
             return Dom_Exception;
         }            
     }
@@ -116,6 +119,7 @@ class index {
             return await Lock;
         }
         catch (Dom_Exception){
+            loge("index.get: Error:",Dom_Exception);
             return Dom_Exception;
         }            
     }
@@ -141,6 +145,7 @@ class index {
             return await Lock;
         }
         catch (Dom_Exception){
+            loge("index.get_all: Error:",Dom_Exception);
             return Dom_Exception;
         }            
     }
@@ -166,6 +171,7 @@ class index {
             return await Lock;
         }
         catch (Dom_Exception){
+            loge("index.get_all_keys: Error:",Dom_Exception);
             return Dom_Exception;
         }            
     }
@@ -191,12 +197,16 @@ class index {
             return await Lock;
         }
         catch (Dom_Exception){
+            loge("index.get_key: Error:",Dom_Exception);
             return Dom_Exception;
         }            
     }
 
     /**
-     * Open cursor
+     * Open cursor<br>
+     * Use callback `func` with cursor coz `.onsuccess` is fired multiple times.
+     * There's no cursor close in IndexedDB, callback returns "stop" to stop the cursor, 
+     * will be terminated by transaction end.
      */
     async open_cursor(Range,Direction="next",func){ 
         try {         
@@ -207,15 +217,20 @@ class index {
 
             var [Lock,unlock] = new_lock();
 
+            // Events
             Req.onerror = function(Ev){
                 unlock(Ev.target.error);
             };
-            Req.onsuccess = function(Ev){
+            Req.onsuccess = async function(Ev){
                 var Cursor = Ev.target.result;
 
                 if (Cursor!=null){ 
-                    func(Cursor);
-                    Cursor.continue();
+                    let guide = await func(Cursor);
+
+                    if (guide=="stop")
+                        unlock(); // Don't call Cursor.continue()
+                    else
+                        Cursor.continue();
                 }
                 else 
                     unlock(null);
@@ -223,12 +238,16 @@ class index {
             return await Lock;
         }
         catch (Dom_Exception){
+            loge("index.open_cursor: Error:",Dom_Exception);
             return Dom_Exception;
         }            
     }
 
     /**
-     * Open key cursor
+     * Open key cursor<br>
+     * Use callback `func` with cursor coz `.onsuccess` is fired multiple times.
+     * There's no cursor close in IndexedDB, callback returns "stop" to stop the cursor, 
+     * will be terminated by transaction end.
      */
     async open_key_cursor(Range,Direction="next",func){
         try {         
@@ -239,15 +258,20 @@ class index {
 
             var [Lock,unlock] = new_lock();
 
+            // Events
             Req.onerror = function(Ev){
                 unlock(Ev.target.error);
             };
-            Req.onsuccess = function(Ev){
+            Req.onsuccess = async function(Ev){
                 var Cursor = Ev.target.result;
 
                 if (Cursor!=null){ 
-                    func(Cursor);
-                    Cursor.continue();
+                    let guide = await func(Cursor);
+
+                    if (guide=="stop")
+                        unlock(); // Don't call Cursor.continue()
+                    else
+                        Cursor.continue();
                 }
                 else 
                     unlock(null);
@@ -255,8 +279,28 @@ class index {
             return await Lock;
         }
         catch (Dom_Exception){
+            loge("index.open_key_cursor: Error:",Dom_Exception);
             return Dom_Exception;
         }            
+    }
+
+    /**
+     * _________________________________________________________________________
+     */ 
+    EXTENDED_METHODS(){}
+
+    /**
+     * Delete using index instead of primary key
+     */
+    async delete(Range){
+        var count = 0;
+
+        await this.open_cursor(Range,"next",(Cursor)=>{
+            Cursor.delete();
+            count++;
+        });
+
+        return count;
     }
 }
 

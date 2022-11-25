@@ -103,6 +103,7 @@ class object_store {
             return await Lock;
         }
         catch (Dom_Exception){
+            loge("object_store.add: Error:",Dom_Exception);
             return Dom_Exception;
         }
     }
@@ -125,6 +126,7 @@ class object_store {
             return await Lock;
         }
         catch (Dom_Exception){
+            loge("object_store.clear: Error:",Dom_Exception);
             return Dom_Exception;
         }
     }
@@ -152,6 +154,7 @@ class object_store {
             return await Lock;
         }
         catch (Dom_Exception){
+            loge("object_store.count: Error:",Dom_Exception);
             return Dom_Exception;
         }
     }
@@ -178,6 +181,7 @@ class object_store {
             return new index(this.self.createIndex(Name,Key_Path,Params));
         }
         catch (Dom_Exception){
+            loge("object_store.create_index: Error:",Dom_Exception);
             return Dom_Exception;
         }
     }
@@ -201,6 +205,7 @@ class object_store {
             return await Lock;
         }
         catch (Dom_Exception){
+            loge("object_store.delete: Error:",Dom_Exception);
             return Dom_Exception;
         }
     }
@@ -209,11 +214,12 @@ class object_store {
      * Delete index (DELETE INDEX)
      * @return {Object} Error or null
      */
-    async delete_index(Name){
+    delete_index(Name){
         try {
             this.self.deleteIndex(Name);
         }
         catch (Dom_Exception){
+            loge("object_store.delete_index: Error:",Dom_Exception);
             return Dom_Exception;
         }
     }
@@ -240,6 +246,7 @@ class object_store {
             return await Lock;
         }
         catch (Dom_Exception){
+            loge("object_store.get: Error:",Dom_Exception);
             return Dom_Exception;
         }
     }
@@ -266,6 +273,7 @@ class object_store {
             return await Lock;
         }
         catch (Dom_Exception){
+            loge("object_store.get_all: Error:",Dom_Exception);
             return Dom_Exception;
         }
     }
@@ -292,6 +300,7 @@ class object_store {
             return await Lock;
         }
         catch (Dom_Exception){
+            loge("object_store.get_all_keys: Error:",Dom_Exception);
             return Dom_Exception;
         }
     }
@@ -318,6 +327,7 @@ class object_store {
             return await Lock;
         }
         catch (Dom_Exception){
+            loge("object_store.get_key: Error:",Dom_Exception);
             return Dom_Exception;
         }
     }
@@ -330,15 +340,19 @@ class object_store {
             return new index(this.self.index(Name));
         }
         catch (Dom_Exception){
+            loge("object_store.index: Error:",Dom_Exception);
             return Dom_Exception;
         }
     }
 
     /**
-     * Open cursor (normal cursor with .value)
+     * Open cursor (normal cursor with .value)<br>
+     * Use callback `func` with cursor coz `.onsuccess` is fired multiple times.
+     * There's no cursor close in IndexedDB, callback returns "stop" to stop the cursor, 
+     * will be terminated by transaction end.
      * @return {Object} Error or null
      */
-    async open_cursor(Range,Direction="next",func){ // "nextunique", "prev", "prevunique"
+    async open_cursor(Range,Direction="next", func){ // "nextunique", "prev", "prevunique"
         try {         
             if (Range==null)   
                 var Req = this.self.openCursor();
@@ -347,15 +361,20 @@ class object_store {
 
             var [Lock,unlock] = new_lock();
 
+            // Events
             Req.onerror = function(Ev){
                 unlock(Ev.target.error);
             };
-            Req.onsuccess = function(Ev){
+            Req.onsuccess = async function(Ev){
                 var Cursor = Ev.target.result;
 
                 if (Cursor!=null){ 
-                    func(Cursor);
-                    Cursor.continue();
+                    let guide = await func(Cursor);
+
+                    if (guide=="stop")
+                        unlock(); // Don't call Cursor.continue()
+                    else
+                        Cursor.continue();
                 }
                 else 
                     unlock(null);
@@ -363,12 +382,16 @@ class object_store {
             return await Lock;
         }
         catch (Dom_Exception){
+            loge("object_store.open_cursor: Error:",Dom_Exception);
             return Dom_Exception;
         }
     }
 
     /**
-     * Open key cursor (cursor with no .value)
+     * Open key cursor (cursor with no .value)<br>
+     * Use callback `func` with cursor coz `.onsuccess` is fired multiple times.
+     * There's no cursor close in IndexedDB, callback returns "stop" to stop the cursor, 
+     * will be terminated by transaction end.
      * @return {Object} Error or null
      */
     async open_key_cursor(Range,Direction="next", func){ // "nextunique", "prev", "prevunique"
@@ -380,15 +403,20 @@ class object_store {
 
             var [Lock,unlock] = new_lock();
 
+            // Events
             Req.onerror = function(Ev){
                 unlock(Ev.target.error);
             };
-            Req.onsuccess = function(Ev){
+            Req.onsuccess = async function(Ev){
                 var Cursor = Ev.target.result;
 
                 if (Cursor!=null){ 
-                    func(Cursor);
-                    Cursor.continue();
+                    let guide = await func(Cursor);
+
+                    if (guide=="stop")
+                        unlock(); // Don't call Cursor.continue()
+                    else
+                        Cursor.continue();
                 }
                 else 
                     unlock(null);
@@ -396,6 +424,7 @@ class object_store {
             return await Lock;
         }
         catch (Dom_Exception){
+            loge("object_store.open_key_cursor: Error:",Dom_Exception);
             return Dom_Exception;
         }
     }
@@ -423,6 +452,7 @@ class object_store {
             return await Lock;
         }
         catch (Dom_Exception){
+            loge("object_store.put: Error:",Dom_Exception);
             return Dom_Exception;
         }
     }

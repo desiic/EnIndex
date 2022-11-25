@@ -1,15 +1,18 @@
 EnIndex
 =======
+
 Encrypted IndexedDB - Designed for convenience of use, using Promise instead
 of callback or multiple callbacks for events.
 
 Git Clone
 =========
+
 Repository
   * [https://github.com/desiic/enindex](https://github.com/desiic/enindex)
 
 Coding Convention
 =================
+
 Similar to C++ STL with one exceptional rule for compound properties/variables.
   * my_namespace
   * my_class
@@ -20,10 +23,14 @@ Similar to C++ STL with one exceptional rule for compound properties/variables.
 
 Database Convention
 ===================
+
 Primary field `id` (auto-incremented) is always added by default to all object stores.
+Special object stores such as `op_hist` (operation history), `fts` (full-text search)
+are added to index schema by default when using those features too.
 
 Documentation
 =============
+
 Usage
   * Use `eidb` class in global scope; see doc: [eidb](http://doc.desiic.com/enindex/module-eidb.html)
   
@@ -35,4 +42,13 @@ Source Code Documentation
 
 Tools
   * JSDoc, clean-jsdoc-theme Template
-___  
+
+Dependencies
+============
+
+Generate/Encryption/Decryption
+  * Web Crypto API
+
+Generate/Sign/Verify
+  * Elliptic
+___

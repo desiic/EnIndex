@@ -20,7 +20,7 @@ class idb{
      * Get the list of databases, using the default instance of IDBFactory at `window.indexedDB`
      * @return {Array} See `eidb.idb.factory` class [here](module-eidb_idb_factory-factory.html#databases)
      */
-     static async databases(){
+    static async databases(){
         return await eidb.Factory.databases();
     }
 

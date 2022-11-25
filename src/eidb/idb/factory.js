@@ -40,6 +40,7 @@ class factory {
             return await this.self.databases();
         }
         catch (Dom_Exception){
+            loge("factory.databases: Error:",Dom_Exception);
             return Dom_Exception;
         }
     }
@@ -155,6 +156,11 @@ class factory {
             let Db = new database(Req.result); // .result is IDBDatabase object    
             Db.to_upgrade  = true;
             Db.Transaction = new transaction(Req.transaction);
+
+            // Count number of connections
+            if (window._num_db_cons==null) window._num_db_cons =1;
+            else                           window._num_db_cons+=1;
+
             return Db;
         }
 
@@ -162,6 +168,11 @@ class factory {
         if (Result=="opened"){ 
             let Db = new database(Req.result); // .result is IDBDatabase object    
             Db.to_upgrade = false;
+
+            // Count number of connections
+            if (window._num_db_cons==null) window._num_db_cons =1;
+            else                           window._num_db_cons+=1;
+            
             return Db;
         }
     }

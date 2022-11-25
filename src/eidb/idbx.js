@@ -2,8 +2,11 @@
  * @module eidb/idbx
  */
 // Modules
-import idb  from "./idb.js";
-import crud from "./idbx/crud.js";
+import eidb    from "../eidb.js";
+import idb     from "./idb.js";
+import crud    from "./idbx/crud.js";
+import op_hist from "./idbx/op-hist.js";
+import fts     from "./idbx/fts.js";
 
 // Shorthands
 var log      = console.log;
@@ -11,6 +14,67 @@ var logw     = console.warn;
 var loge     = console.error;
 var obj2json = JSON.stringify;
 var json2obj = JSON.parse;
+
+// Literals
+const n1=1, n2=2, u1=3, u2=4; // Match values in eidb.js
+
+// Constants
+// Default indices
+var _DEFAULT_INDICES = {};
+_DEFAULT_INDICES["_meta"] = {}; // Internal data for both unencrypted & encrypted
+
+// OPERATION HISTORY STORE:
+// Docmetas array is supposed to contain unique values but laxed, this array is
+// sorted to have most recent items first, no duplication.<br/>
+// Sample op_hist object:
+// {
+//     Store_Name: String, 
+//     Recent_Creates: [{
+//         id:        Integer,
+//         Timestamp: Date
+//     }],
+//     Recent_Reads: ...,
+//     Recent_Updates: ...,
+//     Recent_Deletes: ...
+// }
+// Operation history store indices:
+_DEFAULT_INDICES["op_hist"] = {
+    Store_Name:1
+    // Non indexed: Recent_*
+};
+
+// Encrypted
+_DEFAULT_INDICES["#op_hist"] = { 
+};
+
+// FULL-TEXT SEARCH STORE
+// Algorithm complexity: O(n * logn)
+// Full text search store indices, data about words & ids:
+_DEFAULT_INDICES["fts_words"] = {
+    Store:              1,  // Store name, FTS find step1: O(1)
+    Word:               1,  // A single-word term to search            
+    "Store,Word":       u1, // Compound to look up
+
+    // Other indices:
+    num_obj_ids:        1,  // To select the first term with fewest ids
+};
+_DEFAULT_INDICES["fts_ids"] = {    
+    Store:              1,  // Store name, FTS outer loop O(n), in-next-set operation O(logn)
+    Word:               1,  // A single-word term to search            
+    "Store,Word":       1,  // Not unique due to multiple obj_id(s)
+
+    // Other indices:
+    obj_id:             1,  // A single object id of object containing Word
+    "Store,obj_id":     1,  // To remove all unused words on 'update', 'delete'
+    "Store,Word,obj_id":u1  // Compound index to find if Store+Word+obj_id exists (set intersection),
+                            // this compound value is always true, or doesn't exist.
+};        
+
+// Encrypted
+_DEFAULT_INDICES["#fts_words"] = { 
+};
+_DEFAULT_INDICES["#fts_ids"] = {
+};
 
 /** 
  * `eidb.idbx` IndexedDB extended feature class
@@ -27,21 +91,57 @@ class idbx {
      */
     static crud = crud;
 
+    /**
+     * Op history features
+     */ 
+    static op_hist = op_hist;
+
+    /**
+     * FTS features
+     */
+    static fts = fts;
+
     /*
      * _________________________________________________________________________
      */
     METHODS;
 
     /**
-     * Check if is unused store
+     * Check if is unused store (=is an existing store + is flagged as unused)
      * @private
      */
-    static #is_unused_store(Store_Name){
+    static #is_unused_store(Db,Store_Name){
         if (localStorage.Unused_Stores==null || localStorage.Unused_Stores.trim().length==0)
             return false;
 
+        // Not an actual store
+        if (Db.Object_Store_Names.indexOf(Store_Name) == -1)
+            return false;
+
+        // Check flag
         let Unused_Stores = json2obj(localStorage.Unused_Stores);
         return Unused_Stores.indexOf(Store_Name)>=0;
+    }
+
+    /**
+     * Fix unused store list, if lower calls to IndexedDB altered it inc. calls to idb.*
+     */ 
+    static #fix_unused_store_list(Db){
+        if (localStorage.Unused_Stores==null || localStorage.Unused_Stores.trim().length==0)
+            return false;
+
+        var Store_Names = Db.Object_Store_Names;
+
+        // Remove trash flags (ignored stores but actually don't exist)
+        var Names      = json2obj(localStorage.Unused_Stores);
+        var Keep_Names = [];
+
+        for (let Name of Names)
+            if (Store_Names.indexOf(Name) >= 0)
+                Keep_Names.push(Name);
+
+        // Set back to localStorage
+        localStorage.Unused_Stores = obj2json(Keep_Names);
     }
 
     /**
@@ -81,6 +181,36 @@ class idbx {
     }
 
     /**
+     * Index name to keypath
+     * ```
+     * foobar -> foobar
+     * foo,bar -> ["foo","bar"]
+     * ```
+     */
+    static indexname_to_keypath(Indexname){
+        if (Indexname.indexOf(",") >= 0)
+            return Indexname.split(",");
+
+        return Indexname;    
+    }
+
+    /**
+     * Keypath to index name
+     * ```
+     * ["foo","bar"] -> "foo,bar"
+     * "foobar -> "foobar"
+     * "foo,bar" -> "foo,bar"
+     * ```
+     */ 
+    static keypath_to_indexname(Keypath){
+        if (Keypath.constructor === Array)
+            return Keypath.join(",");
+        
+        // String keypath
+        return Keypath;
+    }
+
+    /**
      * Get current indices
      */
     static async get_cur_indices(Db_Name){
@@ -92,7 +222,7 @@ class idbx {
 
         for (let Store_Name of Db.Object_Store_Names){
             // Ignore unused store to avoid upgrade being triggered again and again
-            if (idbx.#is_unused_store(Store_Name))
+            if (idbx.#is_unused_store(Db,Store_Name))
                 continue;
 
             // Make index schema
@@ -102,6 +232,7 @@ class idbx {
             for (let Index_Name of S.Index_Names){
                 let I          = S.index(Index_Name);
                 let Key_Path   = I.Key_Path;
+                var Key_Name   = idbx.keypath_to_indexname(Key_Path);
                 let unique     = I.unique;
                 let multientry = I.multientry;
                 let type;
@@ -115,12 +246,21 @@ class idbx {
                 if (unique==true  && multientry==true)  type=4; // u2
                 else{}
 
-                Indices[Store_Name][Key_Path] = type;
+                Indices[Store_Name][Key_Name] = type;
             }
         }
 
         Db.close();
         return Indices;
+    }
+
+    /**
+     * Add more indices, including op hist & FTS to indices<br/>
+     * Internal-use stores (private): _*, for example: _my_store<br/>
+     * encrypted stores    (hashed):  #*, for example: #my_store
+     */
+    static add_more_indices(Indices){                
+        return {...Indices,..._DEFAULT_INDICES};     
     }
 
     /**
@@ -174,7 +314,7 @@ class idbx {
             // WARN: AVOID LOSING USERS' DATA, WON'T DELETE, COMMENTED OUT:
             // Db.delete_object_store(Store_Name); // Indices are deleted together
 
-            // Mark unused store not to trigger upgrade again
+            // Mark unused store as kinda deleted, not to trigger upgrade again
             idbx.#update_unused_store_list("add",Store_Name);
         }
         
@@ -183,7 +323,7 @@ class idbx {
 
         for (let Store_Name of New_Stores)
             if (Cur_Stores.indexOf(Store_Name)==-1){                
-                if (!idbx.#is_unused_store(Store_Name))
+                if (!idbx.#is_unused_store(Db,Store_Name))
                     Cre_Stores.push(Store_Name); // Not existing, create
                 else{
                     // Existing, but current index schema ignored Store_Name, 
@@ -199,9 +339,10 @@ class idbx {
             let S = Db.create_object_store(Store_Name);
 
             for (let Index_Name in New_Indices[Store_Name]){
-                let type = New_Indices[Store_Name][Index_Name];
+                let type          = New_Indices[Store_Name][Index_Name];
+                let Index_Keypath = idbx.indexname_to_keypath(Index_Name);
                 log("idbx.upgrade_db: Creating new index:",Store_Name,"/",Index_Name);
-                S.create_index(Index_Name,Index_Name,type);
+                S.create_index(Index_Name,Index_Keypath,type);
             }
         }
 
@@ -234,9 +375,10 @@ class idbx {
             // Create new
             for (let Idx_Name of New_Idx_Names)
                 if (Cur_Idx_Names.indexOf(Idx_Name)==-1){
-                    let type = New_Indices[Store_Name][Idx_Name];
+                    let type        = New_Indices[Store_Name][Idx_Name];
+                    let Idx_Keypath = idbx.indexname_to_keypath(Idx_Name);
                     log("idbx.upgrade_db: Creating new index:",Store_Name,"/",Idx_Name);
-                    S.create_index(Idx_Name,Idx_Name,type);
+                    S.create_index(Idx_Name,Idx_Keypath,type);
                     Cre_Idx_Names.push(Idx_Name);
                 }
 
@@ -250,13 +392,15 @@ class idbx {
 
             for (let Idx_Name of Same_Idx_Names)
                 if (New_Indices[Store_Name][Idx_Name] != Cur_Indices[Store_Name][Idx_Name]){
-                    let type = New_Indices[Store_Name][Idx_Name];
+                    let type        = New_Indices[Store_Name][Idx_Name];
+                    let Idx_Keypath = idbx.indexname_to_keypath(Idx_Name);
                     log("idbx.upgrade_db: Updating index to new type:",Store_Name,"/",Idx_Name+":"+type);
                     S.delete_index(Idx_Name);
-                    S.create_index(Idx_Name,Idx_Name, type); // New type
+                    S.create_index(Idx_Name,Idx_Keypath, type); // New type
                 }    
         }         
             
+        // Close the db connection with upgrade transaction
         Db.close();
     }
 
@@ -276,6 +420,9 @@ class idbx {
             return;
         }        
 
+        // Add schema for operation history and full-text search
+        Indices = idbx.add_more_indices(Indices);
+
         // All id is primary field of u1 type (unique, single value)
         for (let Store_Name in Indices)
             Indices[Store_Name].id = u1;
@@ -292,8 +439,15 @@ class idbx {
             return await idb.open(Db_Name);
 
         // Indices changed, upgrade
-        await idbx.upgrade_db(Db_Name, Cur_Indices, New_Indices);
-        return await idb.open(Db_Name);
+        await idbx.upgrade_db(Db_Name, Cur_Indices, New_Indices); // Open+close inside
+
+        // Open db
+        var Db = await idb.open(Db_Name);
+
+        // Remove trash flags
+        idbx.#fix_unused_store_list(Db); // No db ops in here
+
+        return Db;
     }
 
     /**
@@ -301,6 +455,13 @@ class idbx {
      */
     static async reopen(){
         return await idb.open(window._Db_Name);
+    }
+
+    /**
+     * Get number of db connections
+     */ 
+    static num_db_cons(){
+        return window._num_db_cons;
     }
 
     /**
@@ -343,6 +504,33 @@ class idbx {
         var S      = T.store1();
         var Result = await S[Op_Name](...Args);
         return Result;
+    }
+
+    /**
+     * Delete object store
+     * WARN: AVOID USING THIS, SPECIAL OPERATIONS ON DB ONLY.
+     */ 
+    static async del_obj_store(Db_Name,Store_Name){
+        var cur_ver = await idbx.get_cur_db_ver(Db_Name);
+        var new_ver = cur_ver+1;
+
+        // Trigger upgrade
+        var Db = await idb.open(Db_Name, new_ver);
+
+        if (Db instanceof Error){
+            loge(`idbx.del_obj_store: Failed to delete object store '${Store_Name}' `+
+                 `in db '${Db_Name}', error:`,Db);
+            return;
+        }
+
+        // Del the store
+        await Db.delete_object_store(Store_Name);
+
+        // Update unused store list if deleted store is in that list
+        idbx.#update_unused_store_list("remove", Store_Name);
+
+        // Close the upgraded db
+        Db.close();
     }
 }
 

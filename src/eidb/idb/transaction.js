@@ -118,6 +118,7 @@ class transaction {
             this.self.abort();
         }
         catch (Dom_Exception){
+            loge("transaction.abort: Error:",Dom_Exception);
             return Dom_Exception;
         }       
     }
@@ -130,6 +131,7 @@ class transaction {
             this.self.commit();
         }
         catch (Dom_Exception){
+            loge("transaction.commit: Error:",Dom_Exception);
             return Dom_Exception;
         }
     }
@@ -144,6 +146,7 @@ class transaction {
             return new object_store(Store);
         }
         catch (Dom_Exception){
+            loge("transaction.object_store: Error:",Dom_Exception);
             return Dom_Exception;
         } 
     }
