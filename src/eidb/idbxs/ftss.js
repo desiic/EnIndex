@@ -11,6 +11,14 @@
 // CALL `eidb.stay_idle` (or just `stay_idle`) TO DELAY FOR A WHILE 
 // IF IN NEED OF OP HISTORY OR FTS RESULTS IMMEDIATELY.
 
+// Modules
+import idbxs from "../idbxs.js";
+
+// Shorthands
+const log  = console.log;
+const logw = console.warn;
+const loge = console.error;
+
 /**
  * FTS secure
  */
@@ -30,30 +38,50 @@ class ftss {
      * Enable FTS, should run after `.open_av`
      */ 
     static enable_fts(){
+        if (idbxs.Skey==null) {
+            loge("ftss.enable_fts: Static key not set");
+            return;
+        }
     }
 
     /**
      * Disable FTS, note: FTS is disabled by default
      */ 
     static disable_fts(){
+        if (idbxs.Skey==null) {
+            loge("ftss.disable_fts: Static key not set");
+            return;
+        }
     }
 
     /**
      * String to unique words (all lowercase)
      */
     static str_to_unique_words(Str){
+        if (idbxs.Skey==null) {
+            loge("ftss.str_to_unique_words: Static key not set");
+            return;
+        }
     }
 
     /**
      * Object to unique words (all lowercase), find words in all strings in object
      */
     static obj_to_unique_words(Obj){
+        if (idbxs.Skey==null) {
+            loge("ftss.obj_to_unique_words: Static key not set");
+            return;
+        }
     }
 
     /**
      * Check if object exists using an index, any store
      */ 
     static async obj_exists(Store,Index_Name,Value){
+        if (idbxs.Skey==null) {
+            loge("ftss.obj_exists: Static key not set");
+            return;
+        }
     }
 
     /**
@@ -61,6 +89,10 @@ class ftss {
      * Requirement: Pair Store_Name & Word must be already in fts_words store
      */ 
     static async increase_num_objs(Swords, Store_Name, Word){
+        if (idbxs.Skey==null) {
+            loge("ftss.increase_num_objs: Static key not set");
+            return;
+        }
     }
 
     /**
@@ -68,18 +100,30 @@ class ftss {
      * Requirement: Pair Store_Name & Word must be already in fts_words store
      */ 
     static async decrease_num_objs(Swords, Store_Name, Word){
+        if (idbxs.Skey==null) {
+            loge("ftss.decrease_num_objs: Static key not set");
+            return;
+        }
     }
 
     /**
      * Update FTS
      */ 
     static async update_fts(Op, Store_Name, id, Obj){
+        if (idbxs.Skey==null) {
+            loge("ftss.update_fts: Static key not set");
+            return;
+        }
     }
 
     /**
      * Update FTS data, CRUD/C
      */ 
     static update_fts_c(Store_Name, id, Obj){
+        if (idbxs.Skey==null) {
+            loge("ftss.update_fts_c: Static key not set");
+            return;
+        }
     }
 
     /**
@@ -93,24 +137,40 @@ class ftss {
      * Update FTS data, CRUD/U
      */ 
     static update_fts_u(Store_Name, id, Obj){
+        if (idbxs.Skey==null) {
+            loge("ftss.update_fts_u: Static key not set");
+            return;
+        }
     }
 
     /**
      * Update FTS data, CRUD/D
      */ 
     static update_fts_d(Store_Name, id, Obj){
+        if (idbxs.Skey==null) {
+            loge("ftss.update_fts_d: Static key not set");
+            return;
+        }
     }
 
     /**
      * All objects containing a term
      */
     static async #term_to_objs(Sids, Store,Term, limit){
+        if (idbxs.Skey==null) {
+            loge("ftss.#term_to_objs: Static key not set");
+            return;
+        }
     }
 
     /**
      * Give objects scores
      */ 
     static #score_objs(Objs,Terms){
+        if (idbxs.Skey==null) {
+            loge("ftss.#score_objs: Static key not set");
+            return;
+        }
     }
 
     /**
@@ -119,6 +179,10 @@ class ftss {
      *                  and list of excluded terms (terms not in FTS data)
      */ 
     static async find_many_by_terms(Store_Name, Terms_Str, limit=1000){
+        if (idbxs.Skey==null) {
+            loge("ftss.find_many_by_terms: Static key not set");
+            return;
+        }
     }
 }
 

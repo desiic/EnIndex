@@ -50,8 +50,8 @@ class idbxs { // Aka sec
      */
     PROPERTIES;
 
-    static Ekey     = null;                              // Encryption key
-    static Akeypair = {privateKey:null, publicKey:null}; // Authentication key pair
+    static Ekey     = null; // Encryption key
+    static Akeypair = null; // Authentication key pair {privateKey:, publicKey:}
     static Skey     = null; // Static key (set once at db creation, or on total re-encryption)
     static Rkey     = null; // Recovery key (unused, use separate variable)
 
@@ -68,6 +68,18 @@ class idbxs { // Aka sec
      * ops with read or write can be performed.
      */ 
     static set_static_key(Skey){
+        if (idbxs.Ekey==null || idbxs.Akeypair==null){
+            loge("idbxs.set_static_key: Encryption key and auth key pair must exist first, call set_ea_keys");
+            return;
+        }
+
+        // Generate static key
+        ???
+
+        // Encrypt static key
+        // 
+
+        // Save encrypted static key to db
         // 
     }
 
