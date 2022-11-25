@@ -58,9 +58,17 @@ class idbxs { // Aka sec
     /**
      * Set keys to be used by secure ops
      */ 
-    static set_keys(Ekey,Akeypair){
+    static set_ea_keys(Ekey,Akeypair){
         idbxs.Ekey     = Ekey;
         idbxs.Akeypair = Akeypair;
+    }
+
+    /**
+     * Set static key in db, only after setting static key, all other secure
+     * ops with read or write can be performed.
+     */ 
+    static set_static_key(Skey){
+        // 
     }
 
     /**
