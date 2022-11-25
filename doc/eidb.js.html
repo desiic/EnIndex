@@ -1,0 +1,629 @@
+<!DOCTYPE html><html lang="en" style="font-size:16px"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><script src="jsdoc-custom.js"></script><link type="text/css" rel="stylesheet" href="jsdoc-custom.css"><title>eidb.js</title><!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]--><script src="scripts/third-party/hljs.js" defer="defer"></script><script src="scripts/third-party/hljs-line-num.js" defer="defer"></script><script src="scripts/third-party/popper.js" defer="defer"></script><script src="scripts/third-party/tippy.js" defer="defer"></script><script src="scripts/third-party/tocbot.min.js"></script><script>var baseURL="/",locationPathname="",baseURL=(locationPathname=document.location.pathname).substr(0,locationPathname.lastIndexOf("/")+1)</script><link rel="stylesheet" href="styles/clean-jsdoc-theme.min.css"><svg aria-hidden="true" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" style="display:none"><defs><symbol id="copy-icon" viewbox="0 0 488.3 488.3"><g><path d="M314.25,85.4h-227c-21.3,0-38.6,17.3-38.6,38.6v325.7c0,21.3,17.3,38.6,38.6,38.6h227c21.3,0,38.6-17.3,38.6-38.6V124    C352.75,102.7,335.45,85.4,314.25,85.4z M325.75,449.6c0,6.4-5.2,11.6-11.6,11.6h-227c-6.4,0-11.6-5.2-11.6-11.6V124    c0-6.4,5.2-11.6,11.6-11.6h227c6.4,0,11.6,5.2,11.6,11.6V449.6z"/><path d="M401.05,0h-227c-21.3,0-38.6,17.3-38.6,38.6c0,7.5,6,13.5,13.5,13.5s13.5-6,13.5-13.5c0-6.4,5.2-11.6,11.6-11.6h227    c6.4,0,11.6,5.2,11.6,11.6v325.7c0,6.4-5.2,11.6-11.6,11.6c-7.5,0-13.5,6-13.5,13.5s6,13.5,13.5,13.5c21.3,0,38.6-17.3,38.6-38.6    V38.6C439.65,17.3,422.35,0,401.05,0z"/></g></symbol><symbol id="search-icon" viewBox="0 0 512 512"><g><g><path d="M225.474,0C101.151,0,0,101.151,0,225.474c0,124.33,101.151,225.474,225.474,225.474    c124.33,0,225.474-101.144,225.474-225.474C450.948,101.151,349.804,0,225.474,0z M225.474,409.323    c-101.373,0-183.848-82.475-183.848-183.848S124.101,41.626,225.474,41.626s183.848,82.475,183.848,183.848    S326.847,409.323,225.474,409.323z"/></g></g><g><g><path d="M505.902,476.472L386.574,357.144c-8.131-8.131-21.299-8.131-29.43,0c-8.131,8.124-8.131,21.306,0,29.43l119.328,119.328    c4.065,4.065,9.387,6.098,14.715,6.098c5.321,0,10.649-2.033,14.715-6.098C514.033,497.778,514.033,484.596,505.902,476.472z"/></g></g></symbol><symbol id="font-size-icon" viewBox="0 0 24 24"><path fill="none" d="M0 0h24v24H0z"/><path d="M11.246 15H4.754l-2 5H.6L7 4h2l6.4 16h-2.154l-2-5zm-.8-2L8 6.885 5.554 13h4.892zM21 12.535V12h2v8h-2v-.535a4 4 0 1 1 0-6.93zM19 18a2 2 0 1 0 0-4 2 2 0 0 0 0 4z"/></symbol><symbol id="add-icon" viewBox="0 0 24 24"><path fill="none" d="M0 0h24v24H0z"/><path d="M11 11V5h2v6h6v2h-6v6h-2v-6H5v-2z"/></symbol><symbol id="minus-icon" viewBox="0 0 24 24"><path fill="none" d="M0 0h24v24H0z"/><path d="M5 11h14v2H5z"/></symbol><symbol id="dark-theme-icon" viewBox="0 0 24 24"><path fill="none" d="M0 0h24v24H0z"/><path d="M10 7a7 7 0 0 0 12 4.9v.1c0 5.523-4.477 10-10 10S2 17.523 2 12 6.477 2 12 2h.1A6.979 6.979 0 0 0 10 7zm-6 5a8 8 0 0 0 15.062 3.762A9 9 0 0 1 8.238 4.938 7.999 7.999 0 0 0 4 12z"/></symbol><symbol id="light-theme-icon" viewBox="0 0 24 24"><path fill="none" d="M0 0h24v24H0z"/><path d="M12 18a6 6 0 1 1 0-12 6 6 0 0 1 0 12zm0-2a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM11 1h2v3h-2V1zm0 19h2v3h-2v-3zM3.515 4.929l1.414-1.414L7.05 5.636 5.636 7.05 3.515 4.93zM16.95 18.364l1.414-1.414 2.121 2.121-1.414 1.414-2.121-2.121zm2.121-14.85l1.414 1.415-2.121 2.121-1.414-1.414 2.121-2.121zM5.636 16.95l1.414 1.414-2.121 2.121-1.414-1.414 2.121-2.121zM23 11v2h-3v-2h3zM4 11v2H1v-2h3z"/></symbol><symbol id="reset-icon" viewBox="0 0 24 24"><path fill="none" d="M0 0h24v24H0z"/><path d="M18.537 19.567A9.961 9.961 0 0 1 12 22C6.477 22 2 17.523 2 12S6.477 2 12 2s10 4.477 10 10c0 2.136-.67 4.116-1.81 5.74L17 12h3a8 8 0 1 0-2.46 5.772l.997 1.795z"/></symbol><symbol id="down-icon" viewBox="0 0 16 16"><path fill-rule="evenodd" clip-rule="evenodd" d="M12.7803 6.21967C13.0732 6.51256 13.0732 6.98744 12.7803 7.28033L8.53033 11.5303C8.23744 11.8232 7.76256 11.8232 7.46967 11.5303L3.21967 7.28033C2.92678 6.98744 2.92678 6.51256 3.21967 6.21967C3.51256 5.92678 3.98744 5.92678 4.28033 6.21967L8 9.93934L11.7197 6.21967C12.0126 5.92678 12.4874 5.92678 12.7803 6.21967Z"></path></symbol><symbol id="codepen-icon" viewBox="0 0 24 24"><path fill="none" d="M0 0h24v24H0z"/><path d="M16.5 13.202L13 15.535v3.596L19.197 15 16.5 13.202zM14.697 12L12 10.202 9.303 12 12 13.798 14.697 12zM20 10.869L18.303 12 20 13.131V10.87zM19.197 9L13 4.869v3.596l3.5 2.333L19.197 9zM7.5 10.798L11 8.465V4.869L4.803 9 7.5 10.798zM4.803 15L11 19.131v-3.596l-3.5-2.333L4.803 15zM4 13.131L5.697 12 4 10.869v2.262zM2 9a1 1 0 0 1 .445-.832l9-6a1 1 0 0 1 1.11 0l9 6A1 1 0 0 1 22 9v6a1 1 0 0 1-.445.832l-9 6a1 1 0 0 1-1.11 0l-9-6A1 1 0 0 1 2 15V9z"/></symbol><symbol id="close-icon" viewBox="0 0 24 24"><path fill="none" d="M0 0h24v24H0z"/><path d="M12 10.586l4.95-4.95 1.414 1.414-4.95 4.95 4.95 4.95-1.414 1.414-4.95-4.95-4.95 4.95-1.414-1.414 4.95-4.95-4.95-4.95L7.05 5.636z"/></symbol><symbol id="menu-icon" viewBox="0 0 24 24"><path fill="none" d="M0 0h24v24H0z"/><path d="M3 4h18v2H3V4zm0 7h18v2H3v-2zm0 7h18v2H3v-2z"/></symbol></defs></svg></head><body class="light" data-theme="light"><div class="sidebar-container"><div class="sidebar" id="sidebar"><a href="/" class="sidebar-title sidebar-title-anchor">Home</a><div class="sidebar-items-container"><div class="sidebar-section-title with-arrow" data-isopen="false" id="nvTleyJhZMnfnousquNry"><div>Modules</div><svg><use xlink:href="#down-icon"></use></svg></div><div class="sidebar-section-children-container"><div class="sidebar-section-children"><a href="module-eidb.html">eidb</a></div><div class="sidebar-section-children"><a href="module-eidb_base.html">eidb/base</a></div><div class="sidebar-section-children"><a href="module-eidb_idb.html">eidb/idb</a></div><div class="sidebar-section-children"><a href="module-eidb_idb_cursor.html">eidb/idb/cursor</a></div><div class="sidebar-section-children"><a href="module-eidb_idb_cursor_with_value.html">eidb/idb/cursor_with_value</a></div><div class="sidebar-section-children"><a href="module-eidb_idb_database.html">eidb/idb/database</a></div><div class="sidebar-section-children"><a href="module-eidb_idb_factory.html">eidb/idb/factory</a></div><div class="sidebar-section-children"><a href="module-eidb_idb_index.html">eidb/idb/index</a></div><div class="sidebar-section-children"><a href="module-eidb_idb_key_range.html">eidb/idb/key_range</a></div><div class="sidebar-section-children"><a href="module-eidb_idb_object_store.html">eidb/idb/object_store</a></div><div class="sidebar-section-children"><a href="module-eidb_idb_open_db_request.html">eidb/idb/open_db_request</a></div><div class="sidebar-section-children"><a href="module-eidb_idb_request.html">eidb/idb/request</a></div><div class="sidebar-section-children"><a href="module-eidb_idb_transaction.html">eidb/idb/transaction</a></div><div class="sidebar-section-children"><a href="module-eidb_idb_version_change_event.html">eidb/idb/version_change_event</a></div><div class="sidebar-section-children"><a href="module-eidb_idbx.html">eidb/idbx</a></div><div class="sidebar-section-children"><a href="module-eidb_idbx_crud.html">eidb/idbx/crud</a></div><div class="sidebar-section-children"><a href="module-eidb_idbx_fts.html">eidb/idbx/fts</a></div><div class="sidebar-section-children"><a href="module-eidb_idbx_miscs.html">eidb/idbx/miscs</a></div><div class="sidebar-section-children"><a href="module-eidb_idbx_op_hist.html">eidb/idbx/op_hist</a></div><div class="sidebar-section-children"><a href="module-eidb_idbxs.html">eidb/idbxs</a></div><div class="sidebar-section-children"><a href="module-eidb_idbxs_blind_index.html">eidb/idbxs/blind_index</a></div><div class="sidebar-section-children"><a href="module-eidb_idbxs_cruds.html">eidb/idbxs/cruds</a></div><div class="sidebar-section-children"><a href="module-eidb_idbxs_dobi.html">eidb/idbxs/dobi</a></div><div class="sidebar-section-children"><a href="module-eidb_idbxs_ftss.html">eidb/idbxs/ftss</a></div><div class="sidebar-section-children"><a href="module-eidb_idbxs_op_hists.html">eidb/idbxs/op_hists</a></div><div class="sidebar-section-children"><a href="module-eidb_utils.html">eidb/utils</a></div><div class="sidebar-section-children"><a href="module-eidb_wcrypto.html">eidb/wcrypto</a></div></div></div></div></div><div class="navbar-container" id="VuAckcnZhf"><nav class="navbar"><div class="navbar-left-items"><div class="navbar-item"><a id="" href="index.html" target="_self">Doc Home</a></div><div class="navbar-item"><a id="" href="https://github.com/desiic/enindex" target="_blank">Project Website</a></div></div><div class="navbar-right-items"><div class="navbar-right-item"><button class="icon-button search-button" aria-label="open-search"><svg><use xlink:href="#search-icon"></use></svg></button></div><div class="navbar-right-item"><button class="icon-button theme-toggle" aria-label="toggle-theme"><svg><use class="theme-svg-use" xlink:href="#dark-theme-icon"></use></svg></button></div><div class="navbar-right-item"><button class="icon-button font-size" aria-label="change-font-size"><svg><use xlink:href="#font-size-icon"></use></svg></button></div></div><nav></nav></nav></div><div class="toc-container"><div class="toc-content"><span class="bold">On this page</span><div id="eed4d2a0bfd64539bb9df78095dec881"></div></div></div><div class="body-wrapper"><div class="main-content"><div class="main-wrapper"><section id="source-page" class="source-page"><header><h1 id="title" class="has-anchor">eidb.js</h1></header><article><pre class="prettyprint source lang-js"><code>/**
+ * @module eidb
+ */
+// EnIndex
+// Encrypted IndexedDB for JavaScript
+// Convenient wrapper for IndexedDB APIs with encryption
+// See: https://developer.mozilla.org/en-US/docs/Web/API/IndexedDB_API
+
+// Conventions
+// ===========
+// Naming rules:
+// Rather similar to natural language, only my_primitive is maths
+// Rather similar to C++ STL standard, only My_Compound differs
+//   - my_namespace -- Generic nouns,    eg. app.ui.utils
+//   - my_class     -- Generic nouns,    eg. technical_manager
+//   - my_method    -- Verbs, aux verbs, eg. process_documents
+//   - my_primitive -- Specific nouns,   eg. i, j, k, n (maths var with both lower and upper-case)
+//   - My_Compound  -- Specific nouns,   eg. John_Doe   (maths var with both lower and upper-case)
+//   - MY_INSTANCE  -- Numbers, digits,  eg. MAX_PRICE
+// Other guides:
+//   - Line &lt;80 chars, max 120 chars
+//   - Max 100 lines per function
+//   - Max 100 functions per file
+//   - Try to reduce lines but more comments
+
+// Modules
+import base      from "./eidb/base.js";
+import idb       from "./eidb/idb.js";
+import idbx      from "./eidb/idbx.js";
+import idbxs     from "./eidb/idbxs.js";
+import factory   from "./eidb/idb/factory.js";
+import key_range from "./eidb/idb/key-range.js";
+import wcrypto   from "./eidb/wcrypto.js";
+import utils     from "./eidb/utils.js";
+
+// Shorthands
+var log  = console.log;
+var logw = console.warn;
+var loge = console.error;
+
+/**
+ * Main class of EnIndex library, can be used directly under global scope, 
+ * that is `window.eidb` or just `eidb`. It contains mainly sub-namespaces
+ * and static aliases to static methods.
+ */
+class eidb {
+
+    /**
+     * _________________________________________________________________________
+     */
+    SUB_NAMESPACES;
+
+    /**
+     * Sub-namespace, IndexedDB wrapper
+     */
+    static idb = idb;
+
+    /**
+     * Sub-namespace, IndexedDB extended features
+     */
+    static idbx = idbx;
+
+    /**
+     * Sub-namespace, IndexedDB extended features (secure, encrypted)
+     */
+    static idbxs = idbxs;
+    static sec   = idbxs;
+
+    /**
+     * Sub-namespace, Web Crypto
+     */ 
+    static wcrypto = wcrypto;
+
+    /**
+     * Sub-namespace, utils
+     */ 
+    static utils = utils;
+
+    /**
+     * _________________________________________________________________________
+     */
+    CONSTANTS;
+
+    /**
+     * Read-only mode for creating transaction
+     */
+    static RO = "readonly";
+
+    /**
+     * Read-write mode for creating transaction
+     */
+    static RW = "readwrite";
+
+    /**
+     * _________________________________________________________________________
+     */
+    LITERALS;
+
+    /**
+     * Field type, non-unique + single value
+     */
+    static n1 = 1;
+
+    /**
+     * Field type, non-unique + multiple values (array)
+     */
+    static n2 = 2;
+
+    /**
+     * Field type, unique + single value
+     */
+    static u1 = 3;
+
+    /**
+     * Field type, unique + multiple values (array)
+     */
+    static u2 = 4;
+
+    /**
+     * _________________________________________________________________________
+     */
+    PROPERTIES;
+
+    /**
+     * Global idb_factory
+     */
+    static Factory = new factory(window.indexedDB);
+
+    /**
+     * _________________________________________________________________________
+     */
+    METHODS;
+
+    // BASE OPS ****************************************************************
+    /**
+     * Alias of `eidb.idb.databases` [See here](module-eidb_idb-idb.html#.databases)
+     */
+    static databases = idb.databases;
+
+    /**
+     * Alias of `eidb.idb.open` [See here](module-eidb_idb-idb.html#.open)
+     * ```
+     * // Example
+     * var [Err,Result] = await eidb.open("my-db-name")
+     * ```
+     */
+    static open = idb.open;
+
+    /**
+     * Alias of `eidb.idb.delete_database` [See here](module-eidb_idb-idb.html#.delete_database)
+     */
+    static delete_database = idb.delete_database;
+
+    // EXTENDED OPS ************************************************************
+    /**
+     * Alias of `eidb.idbx.open_av` [See here](module-eidb_idbx-idbx.html#.open_av)
+     */
+    static open_av = idbx.open_av;
+
+    /**
+     * Alias of `eidb.idbx.reopen` [See here](module-eidb_idbx-idbx.html#.reopen)
+     */
+    static reopen = idbx.reopen;
+
+    /**
+     * Alias of `eidb.idbx.num_db_cons`
+     */
+    static num_db_cons = idbx.num_db_cons;
+
+    /**
+     * Alias of `eidb.idbx.set_db` [See here](module-eidb_idbx-idbx.html#.set_db)
+     */
+    static set_db = idbx.set_db;
+
+    /**
+     * Alias of `eidb.idbx.get_prop` [See here](module-eidb_idbx-idbx.html#.get_prop)
+     */
+    static get_prop = idbx.get_prop;
+
+    /**
+     * Alias of `eidb.idbx.do_op` [See here](module-eidb_idbx-idbx.html#.do_op)
+     */
+    static do_op = idbx.do_op;
+
+    /**
+     * Alias of `eidb.idbx.del_obj_store`
+     */
+    static del_obj_store = idbx.del_obj_store;
+
+    // CRUD OPS ****************************************************************
+    /**
+     * Alias of `eidb.idbx.crud.insert_one` [See here](module-eidb_idbx_crud-crud.html#.insert_one)&lt;/br>
+     * CRUD/CREATE
+     */
+    static insert_one = idbx.crud.insert_one;
+
+    /**
+     * Alias of `eidb.idbx.crud.insert_many` [See here](module-eidb_idbx_crud-crud.html#.insert_many)&lt;/br>
+     * CRUD/CREATE
+     */
+    static insert_many = idbx.crud.insert_many;
+
+    /**
+     * Alias of `eidb.idbx.crud.exists` [See here](module-eidb_idbx_crud-crud.html#.exists)&lt;/br>
+     * CRUD/READ
+     */
+     static exists = idbx.crud.exists;
+
+    /**
+     * Alias of `eidb.idbx.crud.count` [See here](module-eidb_idbx_crud-crud.html#.count)&lt;/br>
+     * CRUD/READ
+     */
+    static count = idbx.crud.count;
+
+    /**
+     * Alias of `eidb.idbx.crud.count_all` [See here](module-eidb_idbx_crud-crud.html#.count_all)&lt;/br>
+     * CRUD/READ
+     */
+    static count_all = idbx.crud.count_all;
+
+    /**
+     * Alias of `eidb.idbx.crud.find_one` [See here](module-eidb_idbx_crud-crud.html#.find_one)
+     * &lt;/br>
+     * CRUD/READ
+     */
+    static find_one = idbx.crud.find_one;
+
+    /**
+     * Alias of `eidb.idbx.crud.find_many` [See here](module-eidb_idbx_crud-crud.html#.find_many)&lt;/br>
+     * CRUD/READ
+     */
+    static find_many = idbx.crud.find_many;
+
+    /**
+     * Alias of `eidb.idbx.crud.find_all` [See here](module-eidb_idbx_crud-crud.html#.find_all)&lt;/br>
+     * CRUD/READ
+     */
+    static find_all = idbx.crud.find_all;
+
+    /**
+     * Alias of `eidb.idbx.crud.filter` [See here](module-eidb_idbx_crud-crud.html#.filter)&lt;/br>
+     * CRUD/READ
+     */
+    static filter = idbx.crud.filter;
+
+    /**
+     * Alias of `eidb.idbx.crud.update_one` [See here](module-eidb_idbx_crud-crud.html#.update_one)&lt;/br>
+     * CRUD/UPDATE
+     */
+    static update_one = idbx.crud.update_one;
+
+    /**
+     * Alias of `eidb.idbx.crud.update_many` [See here](module-eidb_idbx_crud-crud.html#.update_many)&lt;/br>
+     * CRUD/UPDATE
+     */
+    static update_many = idbx.crud.update_many;
+
+    /**
+     * Alias of `eidb.idbx.crud.upsert_one` [See here](module-eidb_idbx_crud-crud.html#.upsert_one)&lt;/br>
+     * CRUD/UPDATE
+     */
+    static upsert_one = idbx.crud.upsert_one;
+
+    /**
+     * Alias of `eidb.idbx.crud.remove_one` [See here](module-eidb_idbx_crud-crud.html#.remove_one)&lt;/br>
+     * CRUD/DELETE
+     */
+    static remove_one = idbx.crud.remove_one;
+
+    /**
+     * Alias of `eidb.idbx.crud.remove_many` [See here](module-eidb_idbx_crud-crud.html#.remove_many)&lt;/br>
+     * CRUD/DELETE
+     */
+    static remove_many = idbx.crud.remove_many;   
+    
+    // OP HISTORY **************************************************************
+    /**
+     * Alias of `eidb.idbx.op_hist.set_max_history`
+     */
+    static set_max_history = idbx.op_hist.set_max_history;
+
+    /**
+     * Alias of `eidb.idbx.op_hist.get_op_hist_status`
+     */
+    static get_op_hist_status = idbx.op_hist.get_op_hist_status;
+
+    /**
+     * Alias of `eidb.idbx.op_hist.enable_op_hist`
+     */
+    static enable_op_hist = idbx.op_hist.enable_op_hist;
+
+    /**
+     * Alias of `eidb.idbx.op_hist.enable_op_hist`
+     */
+    static disable_op_hist = idbx.op_hist.disable_op_hist;
+
+    /**
+     * Alias of `eidb.idbx.op_hist.get_op_hist`
+     */
+    static get_op_hist = idbx.op_hist.get_op_hist;
+
+    /**
+     * Alias of `eidb.idbx.op_hist.clear_op_hist`
+     */
+    static clear_op_hist = idbx.op_hist.clear_op_hist;
+
+    // FULL-TEXT SEARCH ********************************************************
+    /**
+     * Alias of `eidb.idbx.fts.enable_fts`
+     */
+    static enable_fts = idbx.fts.enable_fts;
+
+    /**
+     * Alias of `eidb.idbx.fts.disable_fts`
+     */
+    static disable_fts = idbx.fts.disable_fts;
+
+    /**
+     * Alias of `eidb.idbx.fts.find_many_by_terms`
+     */
+    static find_many_by_terms = idbx.fts.find_many_by_terms;
+}
+
+/**
+ * _____________________________________________________________________________
+ */
+var EXPORTS_LITERALS; // Kinda keywords
+
+/**
+ * Key type literal: non-unique, single-entry
+ */ 
+window.n1 = eidb.n1; // Index schema, use 1 for syntax colouring, eg. field:1
+
+/**
+ * Key type literal: non-unique, multi-entry
+ */ 
+window.n2 = eidb.n2; // Index schema, use 2 for syntax colouring, eg. field:2
+ 
+/**
+ * Key type literal: unique, single-entry
+ */ 
+window.u1 = eidb.u1; // Index schema eg. field:u1
+ 
+/**
+ * Key type literal: non-unique, single-entry
+ */ 
+window.u2 = eidb.u2; // Index schema eg. field:u2
+
+/**
+ * Result of cursor callback to stop iterating
+ */ 
+window._stop = "stop";
+
+/**
+ * _____________________________________________________________________________
+ */
+var EXPORTS_CONSTANTS;
+
+/**
+ * Read-only transaction mode
+ */
+const RO = eidb.RO;
+window.RO = RO;
+ 
+/**
+ * Read-write transaction mode
+ */
+const RW = eidb.RW;
+window.RW = RW;
+
+/*
+Range	            Code
+All keys ≥ x	    IDBKeyRange.lowerBound (x)
+All keys > x	    IDBKeyRange.lowerBound (x, true)
+All keys ≤ y	    IDBKeyRange.upperBound (y)
+All keys &lt; y	    IDBKeyRange.upperBound (y, true)
+All keys ≥ x &amp;&amp; ≤ y	IDBKeyRange.bound (x, y)
+All keys > x &amp;&amp;&lt; y	IDBKeyRange.bound (x, y, true, true)
+All keys > x &amp;&amp; ≤ y	IDBKeyRange.bound (x, y, true, false)
+All keys ≥ x &amp;&amp;&lt; y	IDBKeyRange.bound (x, y, false, true)
+The key = z	        IDBKeyRange.only (z)
+*/
+/**
+ * Indicates that left value in index value range is included
+ */
+const WITH_LEFT = false;
+window.WITH_LEFT = WITH_LEFT;
+
+/**
+ * Indicates that right value in key range is included
+ */
+const WITH_RIGHT = false;
+window.WITH_RIGHT = WITH_RIGHT;
+
+/**
+ * Indicates that left value in key range is EXCLUDED
+ */
+const NO_LEFT = true;
+window.NO_LEFT = NO_LEFT;
+
+/**
+ * Indicates that right value in key range is EXCLUDED
+ */
+const NO_RIGHT = true;
+window.NO_RIGHT = NO_RIGHT;
+
+/**
+ * _____________________________________________________________________________
+ */
+var EXPORTS_OP_NAMES;
+
+/**
+ * Operation name to work with eidb.do_op, eg.: `eidb.do_op("my-store",_add,{})`
+ */
+const _add = "add";
+window._add = _add;
+
+/**
+ * Operation name to work with eidb.do_op
+ */
+const _clear = "clear";
+window._clear = _clear;
+
+/**
+ * Operation name to work with eidb.do_op
+ */
+const _count = "count";
+window._count = _count;
+
+/**
+ * Operation name to work with eidb.do_op
+ */
+const _create_index = "create_index";
+window._create_index = _create_index;
+
+/**
+ * Operation name to work with eidb.do_op
+ */
+const _delete = "delete";
+window._delete = _delete;
+
+/**
+ * Operation name to work with eidb.do_op
+ */
+const _delete_index = "delete_index";
+window._delete_index = _delete_index;
+
+/**
+ * Operation name to work with eidb.do_op
+ */
+const _get = "get";
+window._get = _get;
+
+/**
+ * Operation name to work with eidb.do_op
+ */
+const _get_all = "get_all";
+window._get_all = _get_all;
+
+/**
+ * Operation name to work with eidb.do_op
+ */
+const _get_all_keys = "get_all_keys";
+window._get_all_keys = _get_all_keys;
+
+/**
+ * Operation name to work with eidb.do_op
+ */
+const _get_key = "get_key";
+window._get_key = _get_key;
+
+/**
+ * Operation name to work with eidb.do_op
+ */
+const _index = "index";
+window._index = _index;
+
+/**
+ * Operation name to work with eidb.do_op
+ */
+const _open_cursor = "open_cursor";
+window._open_cursor = _open_cursor;
+
+/**
+ * Operation name to work with eidb.do_op
+ */
+const _open_key_cursor = "open_key_cursor";
+window._open_key_cursor = _open_key_cursor;
+
+/**
+ * Operation name to work with eidb.do_op
+ */
+const _put = "put";
+window._put = _put;
+
+/*
+ * _____________________________________________________________________________
+ */
+var EXPORTS_METHODS;
+
+/**
+ * Key range (greater than or equal)
+ */
+const range_gte = (x)=>new key_range(IDBKeyRange.lowerBound(x));
+window.range_gte = range_gte;
+
+/**
+ * Key range (greater than)
+ */
+const range_gt = (x)=>new key_range(IDBKeyRange.lowerBound(x, true));
+window.range_gt = range_gt;
+
+/**
+ * Key range (less than or equal)
+ */
+const range_lte = (y)=>new key_range(IDBKeyRange.upperBound(y)); 
+window.range_lte = range_lte;
+
+/**
+ * Key range (less than)
+ */
+const range_lt = (y)=>new key_range(IDBKeyRange.upperBound(y, true)); 
+window.range_lt = range_lt;
+
+/**
+ * Key range between 2 values: [..], (..], [..), or (..)
+ * @param {Any}     x   - Left value
+ * @param {Any}     y   - Right value
+ * @param {Boolean} exl - Indicates whether to exclude left value
+ * @param {Boolean} exr - Indicates whether to exclude right value
+ */
+const range_between = (x,y,exl,exr)=>new key_range(IDBKeyRange.bound(x,y, exl,exr));
+window.range_between = range_between;
+
+/**
+ * Key range of exact only 1 value
+ */
+const value_is = (z)=>new key_range(IDBKeyRange.only(z));
+window.value_is = value_is;
+
+// Global bindings, base functionalities
+/** 
+ * Create async/await lock, example:
+ * ```
+ * var [Lock,unlock] = new_lock();
+ * ```
+ */
+/** @func new_lock */
+const new_lock = base.new_lock;
+window.new_lock = new_lock;
+
+/** 
+ * Stay idle for a number of milliseconds (similar to sleep but the thread
+ * is actually still running, so it's not sleep)
+ */
+/** @func stay_idle */
+const stay_idle = base.stay_idle;
+window.stay_idle = stay_idle;
+
+/*
+ * _____________________________________________________________________________
+ */
+var EXPORTS_CLASS;
+
+// Global bindings, whole lib
+// EnIndex library global object
+window.eidb = eidb;
+log("EnIndex loaded");
+
+/**
+ * Note
+ * ----
+ * 
+ * All members &amp; methods of this module are bound to global scope under `window` object.
+ * 
+ * Examples
+ * --------
+ * 
+ * EnIndex library is delivered as ES6 module, use `script` tag with `type="module"` to load:
+ * ```
+ * // Warn: Type module is loaded asynchronously, may not exist when root global JS
+ * // script is executed even if this module tag is at first position in HTML file.
+ * &lt;script type="module" src="/path/to/eidb.js">&lt;/script>
+ * ```
+ * 
+ * Sample index schema
+ * ```
+ * // 1:Single value, 2:Multientry, u1:Unique single value, u2:Unique multientry
+ * var Indices = {
+ *     my_store: { 
+ *         foo:1, bar:2, foobar:u1, barfoo:u2, "foo.bar":1, "bar.foo":2         
+ *     }
+ * };
+ * ```
+ * 
+ * Open database with automatic versioning
+ * ```
+ * var Db = eidb.open_av("my_db", Indices);
+ * 
+ * if (Db instanceof Error){
+ *     ...
+ * }
+ * eidb.enable_op_hist();
+ * eidb.enable_fts();
+ * 
+ * // Do some ops
+ * // Use eidb.sec.* instead of eidb.idbxs.* for secure ops,
+ * // they are the same alias but eidb.sec has better clarity.
+ * ...
+ * Db.close();
+ * ```
+ * 
+ * `open_av` is to be called once at app load, use `reopen` later on. Avoid
+ * being blocked in db upgrade when app is in multiple browser tabs, 
+ * call `reopen` and close for every transaction.
+ * ```
+ * var Db = eidb.reopen();
+ * ...
+ * Db.close();
+ * ```
+ */
+
+// WARNING: The 'Examples' block above should be right above this export
+// to be used as module description by JSDoc.
+// Module export, for submodules to use only, outer JS uses window.* above
+export default eidb; 
+// EOF</code></pre></article></section></div></div></div><div class="search-container" id="PkfLWpAbet" style="display:none"><div class="wrapper" id="iCxFxjkHbP"><button class="icon-button search-close-button" id="VjLlGakifb" aria-label="close search"><svg><use xlink:href="#close-icon"></use></svg></button><div class="search-box-c"><svg><use xlink:href="#search-icon"></use></svg> <input type="text" id="vpcKVYIppa" class="search-input" placeholder="Search..." autofocus></div><div class="search-result-c" id="fWwVHRuDuN"><span class="search-result-c-text">Type anything to view search result</span></div></div></div><div class="mobile-menu-icon-container"><button class="icon-button" id="mobile-menu" data-isopen="false" aria-label="menu"><svg><use xlink:href="#menu-icon"></use></svg></button></div><div id="mobile-sidebar" class="mobile-sidebar-container"><div class="mobile-sidebar-wrapper"><a href="/" class="sidebar-title sidebar-title-anchor">Home</a><div class="mobile-nav-links"><div class="navbar-item"><a id="" href="index.html" target="_self">Doc Home</a></div><div class="navbar-item"><a id="" href="https://github.com/desiic/enindex" target="_blank">Project Website</a></div></div><div class="mobile-sidebar-items-c"><div class="sidebar-section-title with-arrow" data-isopen="false" id="nvTleyJhZMnfnousquNry"><div>Modules</div><svg><use xlink:href="#down-icon"></use></svg></div><div class="sidebar-section-children-container"><div class="sidebar-section-children"><a href="module-eidb.html">eidb</a></div><div class="sidebar-section-children"><a href="module-eidb_base.html">eidb/base</a></div><div class="sidebar-section-children"><a href="module-eidb_idb.html">eidb/idb</a></div><div class="sidebar-section-children"><a href="module-eidb_idb_cursor.html">eidb/idb/cursor</a></div><div class="sidebar-section-children"><a href="module-eidb_idb_cursor_with_value.html">eidb/idb/cursor_with_value</a></div><div class="sidebar-section-children"><a href="module-eidb_idb_database.html">eidb/idb/database</a></div><div class="sidebar-section-children"><a href="module-eidb_idb_factory.html">eidb/idb/factory</a></div><div class="sidebar-section-children"><a href="module-eidb_idb_index.html">eidb/idb/index</a></div><div class="sidebar-section-children"><a href="module-eidb_idb_key_range.html">eidb/idb/key_range</a></div><div class="sidebar-section-children"><a href="module-eidb_idb_object_store.html">eidb/idb/object_store</a></div><div class="sidebar-section-children"><a href="module-eidb_idb_open_db_request.html">eidb/idb/open_db_request</a></div><div class="sidebar-section-children"><a href="module-eidb_idb_request.html">eidb/idb/request</a></div><div class="sidebar-section-children"><a href="module-eidb_idb_transaction.html">eidb/idb/transaction</a></div><div class="sidebar-section-children"><a href="module-eidb_idb_version_change_event.html">eidb/idb/version_change_event</a></div><div class="sidebar-section-children"><a href="module-eidb_idbx.html">eidb/idbx</a></div><div class="sidebar-section-children"><a href="module-eidb_idbx_crud.html">eidb/idbx/crud</a></div><div class="sidebar-section-children"><a href="module-eidb_idbx_fts.html">eidb/idbx/fts</a></div><div class="sidebar-section-children"><a href="module-eidb_idbx_miscs.html">eidb/idbx/miscs</a></div><div class="sidebar-section-children"><a href="module-eidb_idbx_op_hist.html">eidb/idbx/op_hist</a></div><div class="sidebar-section-children"><a href="module-eidb_idbxs.html">eidb/idbxs</a></div><div class="sidebar-section-children"><a href="module-eidb_idbxs_blind_index.html">eidb/idbxs/blind_index</a></div><div class="sidebar-section-children"><a href="module-eidb_idbxs_cruds.html">eidb/idbxs/cruds</a></div><div class="sidebar-section-children"><a href="module-eidb_idbxs_dobi.html">eidb/idbxs/dobi</a></div><div class="sidebar-section-children"><a href="module-eidb_idbxs_ftss.html">eidb/idbxs/ftss</a></div><div class="sidebar-section-children"><a href="module-eidb_idbxs_op_hists.html">eidb/idbxs/op_hists</a></div><div class="sidebar-section-children"><a href="module-eidb_utils.html">eidb/utils</a></div><div class="sidebar-section-children"><a href="module-eidb_wcrypto.html">eidb/wcrypto</a></div></div></div><div class="mobile-navbar-actions"><div class="navbar-right-item"><button class="icon-button search-button" aria-label="open-search"><svg><use xlink:href="#search-icon"></use></svg></button></div><div class="navbar-right-item"><button class="icon-button theme-toggle" aria-label="toggle-theme"><svg><use class="theme-svg-use" xlink:href="#dark-theme-icon"></use></svg></button></div><div class="navbar-right-item"><button class="icon-button font-size" aria-label="change-font-size"><svg><use xlink:href="#font-size-icon"></use></svg></button></div></div></div></div><script type="text/javascript" src="scripts/core.min.js"></script><script src="scripts/search.min.js" defer="defer"></script><script src="scripts/third-party/fuse.js" defer="defer"></script><script type="text/javascript">var tocbotInstance=tocbot.init({tocSelector:"#eed4d2a0bfd64539bb9df78095dec881",contentSelector:".main-content",headingSelector:"h1, h2, h3",hasInnerContainers:!0,scrollContainer:".main-content",headingsOffset:130,onClick:bringLinkToView})</script></body></html>
