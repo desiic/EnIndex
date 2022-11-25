@@ -43,6 +43,19 @@ Source Code Documentation
 Tools
   * JSDoc, clean-jsdoc-theme Template
 
+Lib Fixes
+=========
+
+JSDoc: Error TypeError: Do not know how to serialize a BigInt
+```
+at JSON.stringify (<anonymous>)
+at exports.nodeToValue (/usr/lib/node_modules/jsdoc/lib/jsdoc/src/astnode.js)
+```
+How to Fix:
+  * Open `astnode.js` to edit
+  * Add this line at top `BigInt.prototype.toJSON = function(){ return this.toString(); };`
+  * Ref: https://github.com/GoogleChromeLabs/jsbi/issues/30#issuecomment-953187833
+
 Dependencies
 ============
 
