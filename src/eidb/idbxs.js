@@ -73,11 +73,8 @@ class idbxs { // Aka sec
             return;
         }
 
-        // Generate static key
-        ???
-
         // Encrypt static key
-        // 
+        ???
 
         // Save encrypted static key to db
         // 
