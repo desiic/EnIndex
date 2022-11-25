@@ -42,7 +42,12 @@ class wcrypto {
         // Return EC public key as 2 numbers
         // WARN: Not Pubkey.x, .y, they are different values compared to getX(), getY().
         // .toString(16) is built-in to get hex.
-        return [Pubkey.getX().toString(16), Pubkey.getY().toString(16)];
+        var Xhex = Pubkey.getX().toString(16);
+        var Yhex = Pubkey.getY().toString(16);
+        while (Xhex.length<64) Xhex="0"+Xhex;
+        while (Yhex.length<64) Yhex="0"+Yhex;
+
+        return [Xhex, Yhex];
     }
 
     /**
@@ -126,7 +131,7 @@ class wcrypto {
      * Base64 to Base64URL
      */
     static base64_to_base64url(Str){
-        return Str.replaceAll("+","-").replaceAll("/","_").replace("=","");
+        return Str.replaceAll("+","-").replaceAll("/","_").replaceAll("=","");
     }
 
     /**

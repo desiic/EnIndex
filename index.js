@@ -97,9 +97,9 @@ async function main(){
 
     logw("Test sec module"); //-------------------------------------------------
     eidb.sec.ITERATIONS = 1000; // Default: 100,000; here using smaller value for fast testing
-    var Ek,Aks;
+    var Ek,Aks,Sk;
     log("Key chain:     ",[Ek,Aks]=await eidb.sec.get_key_chain("foobar","foobarspassword"));
-    log("Static key:    ",await eidb.sec.get_new_static_key("foobar"));
+    log("Static key:    ",Sk=await eidb.sec.get_new_static_key("foobar"));
     log("Recovery info: ",{Recovery_Key,Ciphertext,Iv}=await eidb.sec.gen_recovery_info(Ek,Aks));
     var Rtext,Rkey;
     log("Recovery text: ",Rtext=await eidb.sec.key_to_text(Recovery_Key));
@@ -107,6 +107,10 @@ async function main(){
     log("Recovered keys:",await eidb.sec.recover_key_chain(Ciphertext,Iv,Rkey));
 
     logw("Test CRUD ops (secure)"); // -----------------------------------------    
+    var Username = "user";
+    var Pw       = "123456";
+    [Ek,Aks] = await eidb.sec.get_key_chain(Username, Pw);
+    log(Ek,Aks)
     logw("Test CREATE (secure)");
     // ...
     return;

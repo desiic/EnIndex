@@ -204,7 +204,7 @@ class eidb {
      * Alias of `eidb.idbx.crud.exists` [See here](module-eidb_idbx_crud-crud.html#.exists)</br>
      * CRUD/READ
      */
-     static exists = idbx.crud.exists;
+    static exists = idbx.crud.exists;
 
     /**
      * Alias of `eidb.idbx.crud.count` [See here](module-eidb_idbx_crud-crud.html#.count)</br>
@@ -319,6 +319,139 @@ class eidb {
      * Alias of `eidb.idbx.fts.find_many_by_terms`
      */
     static find_many_by_terms = idbx.fts.find_many_by_terms;
+
+    // CRUD OPS (SECURE) *******************************************************
+    /**
+     * Alias of `eidb.idbxs.cruds.insert_one` [See here](module-eidb_idbxs_cruds-cruds.html#.insert_one)</br>
+     * CRUD/CREATE
+     */
+    static s_insert_one = idbxs.cruds.insert_one;
+
+    /**
+     * Alias of `eidb.idbxs.cruds.insert_many` [See here](module-eidb_idbxs_cruds-cruds.html#.insert_many)</br>
+     * CRUD/CREATE
+     */
+    static s_insert_many = idbxs.cruds.insert_many;
+
+    /**
+     * Alias of `eidb.idbxs.cruds.exists` [See here](module-eidb_idbxs_cruds-cruds.html#.exists)</br>
+     * CRUD/READ
+     */
+    static s_exists = idbxs.cruds.exists;
+
+    /**
+     * Alias of `eidb.idbxs.cruds.count` [See here](module-eidb_idbxs_cruds-cruds.html#.count)</br>
+     * CRUD/READ
+     */
+    static s_count = idbxs.cruds.count;
+
+    /**
+     * Alias of `eidb.idbxs.cruds.count_all` [See here](module-eidb_idbxs_cruds-cruds.html#.count_all)</br>
+     * CRUD/READ
+     */
+    static s_count_all = idbxs.cruds.count_all;
+
+    /**
+     * Alias of `eidb.idbx.crud.find_one` [See here](module-eidb_idbxs_cruds-cruds.html#.find_one)
+     * </br>
+     * CRUD/READ
+     */
+    static s_find_one = idbxs.cruds.find_one;
+
+    /**
+     * Alias of `eidb.idbxs.cruds.find_many` [See here](module-eidb_idbxs_cruds-cruds.html#.find_many)</br>
+     * CRUD/READ
+     */
+    static s_find_many = idbxs.cruds.find_many;
+
+    /**
+     * Alias of `eidb.idbxs.cruds.find_all` [See here](module-eidb_idbxs_cruds-cruds.html#.find_all)</br>
+     * CRUD/READ
+     */
+    static s_find_all = idbxs.cruds.find_all;
+
+    /**
+     * Alias of `eidb.idbxs.cruds.filter` [See here](module-eidb_idbxs_cruds-cruds.html#.filter)</br>
+     * CRUD/READ
+     */
+    static s_filter = idbxs.cruds.filter;
+
+    /**
+     * Alias of `eidb.idbxs.cruds.update_one` [See here](module-eidb_idbxs_cruds-cruds.html#.update_one)</br>
+     * CRUD/UPDATE
+     */
+    static s_update_one = idbxs.cruds.update_one;
+
+    /**
+     * Alias of `eidb.idbxs.cruds.update_many` [See here](module-eidb_idbxs_cruds-cruds.html#.update_many)</br>
+     * CRUD/UPDATE
+     */
+    static s_update_many = idbxs.cruds.update_many;
+
+    /**
+     * Alias of `eidb.idbxs.cruds.upsert_one` [See here](module-eidb_idbxs_cruds-cruds.html#.upsert_one)</br>
+     * CRUD/UPDATE
+     */
+    static s_upsert_one = idbxs.cruds.upsert_one;
+
+    /**
+     * Alias of `eidb.idbxs.cruds.remove_one` [See here](module-eidb_idbxs_cruds-cruds.html#.remove_one)</br>
+     * CRUD/DELETE
+     */
+    static s_remove_one = idbxs.cruds.remove_one;
+
+    /**
+     * Alias of `eidb.idbxs.cruds.remove_many` [See here](module-eidb_idbxs_cruds-cruds.html#.remove_many)</br>
+     * CRUD/DELETE
+     */
+    static s_remove_many = idbxs.cruds.remove_many;   
+    
+    // OP HISTORY (SECURE) *****************************************************
+    /**
+     * Alias of `eidb.idbxs.op_hists.set_max_history`
+     */
+    static s_set_max_history = idbxs.op_hists.set_max_history;
+
+    /**
+     * Alias of `eidb.idbxs.op_hists.get_op_hist_status`
+     */
+    static s_get_op_hist_status = idbxs.op_hists.get_op_hist_status;
+
+    /**
+     * Alias of `eidb.idbxs.op_hists.enable_op_hist`
+     */
+    static s_enable_op_hist = idbxs.op_hists.enable_op_hist;
+
+    /**
+     * Alias of `eidb.idbxs.op_hists.enable_op_hist`
+     */
+    static s_disable_op_hist = idbxs.op_hists.disable_op_hist;
+
+    /**
+     * Alias of `eidb.idbxs.op_hists.get_op_hist`
+     */
+    static s_get_op_hist = idbxs.op_hists.get_op_hist;
+
+    /**
+     * Alias of `eidb.idbxs.op_hists.clear_op_hist`
+     */
+    static s_clear_op_hist = idbxs.op_hists.clear_op_hist;
+
+    // FULL-TEXT SEARCH (SECURE) ***********************************************
+    /**
+     * Alias of `eidb.idbxs.ftss.enable_fts`
+     */
+    static s_enable_fts = idbxs.ftss.enable_fts;
+
+    /**
+     * Alias of `eidb.idbxs.ftss.disable_fts`
+     */
+    static s_disable_fts = idbxs.ftss.disable_fts;
+
+    /**
+     * Alias of `eidb.idbx.fts.find_many_by_terms`
+     */
+    static s_find_many_by_terms = idbxs.ftss.find_many_by_terms;
 }
 
 /**

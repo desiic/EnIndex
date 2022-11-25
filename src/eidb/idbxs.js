@@ -3,8 +3,11 @@
  */
 
 // Modules
-import base    from "./base.js";
-import wcrypto from "./wcrypto.js";
+import base     from "./base.js";
+import wcrypto  from "./wcrypto.js";
+import cruds    from "./idbxs/cruds.js";
+import op_hists from "./idbxs/op-hists.js";
+import ftss     from "./idbxs/ftss.js";
 
 // Shorthands
 const log      = console.log;
@@ -24,8 +27,41 @@ const new_lock = base.new_lock;
  * - Etdr_: Encrypted by recovery key
  * ``` 
  */ 
-class idbxs { // Aka sec
-    static ITERATIONS = 100000;     
+class idbxs { // Aka sec         
+
+    /**
+     * _________________________________________________________________________
+     */
+    SUB_NAMESPACES;
+
+    static cruds    = cruds;
+    static op_hists = op_hists;
+    static ftss     = ftss;
+
+    /**
+     * _________________________________________________________________________
+     */
+    CONSTANTS;
+
+    static ITERATIONS = 100000;
+
+    /**
+     * _________________________________________________________________________
+     */
+    PROPERTIES;
+
+    static Ekey     = null;                              // Encryption key
+    static Akeypair = {privateKey:null, publicKey:null}; // Authentication key pair
+    static Skey     = null; // Static key (set once at db creation, or on total re-encryption)
+    static Rkey     = null; // Recovery key (unused, use separate variable)
+
+    /**
+     * Set keys to be used by secure ops
+     */ 
+    static set_keys(Ekey,Akeypair){
+        idbxs.Ekey     = Ekey;
+        idbxs.Akeypair = Akeypair;
+    }
 
     /**
      * Get key chain from password<br/>
