@@ -112,7 +112,19 @@ class idbxs { // Aka sec
     }
 
     /**
-     * Turn regular object into secure object to save encrypted
+     * Turn value into secure value (encrypted by static key)
+     * @param  {String|Number} Value - A value
+     * @return {String}        Base64 ciphertext
+     */ 
+    static async value_to_svalue(Value){
+        var Ct_Iv = await wcrypto.encrypt_aes_fiv(Value, idbxs.Skey);
+        return Ct_Iv[0];
+    }
+
+    /**
+     * Turn regular object into secure object to save encrypted<br/>
+     * NOTICE: THE OUTPUT SECURE OBJECT CONTAINS ONLY ENCRYPTED PROPERTIES
+     *         THOSE ARE INDEXED, THE REST OF PROPERTIES ARE IN .Etds_Obj
      */ 
     static async obj_to_sobj(Store_Name,Obj){
         if (idbxs.Skey==null) {
@@ -172,6 +184,25 @@ class idbxs { // Aka sec
         Sobj.Etds_Obj = Ct_Iv[0]; // Ignore fixed IV value
 
         return Sobj;
+    }
+
+    /**
+     * Object to secure object, all depths<br/>
+     * Can't utilise JSON.parse object travel, its reviver is synchronous
+     * while encryption is async. Doing recursion.
+     */
+    static async obj_to_sobj_full(Obj){
+        if (Obj==null) return null;
+
+        // Leaf values
+        if (!(Obj instanceof Object))
+            return (await wcrypto.encrypt_aes_fiv(Obj, idbxs.Skey))[0];
+
+        // Object
+        for (let Key in Obj)
+            Obj[Key] = (await wcrypto.encrypt_aes_fiv(Obj[Key], idbxs.Skey))[0];
+
+        return Obj;
     }
 
     /**

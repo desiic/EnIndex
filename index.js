@@ -137,15 +137,24 @@ async function main(){
     log("Reco-load:", await eidb.sec.recover_and_set_keys(Rk));
 
     logw("Test CREATE (secure)");
-    var id = await eidb.s_insert_one("my_secure_store",{foo:"bar", bar:{ blah:999 }});
-    log("Inserted id:",id);
-    return;
+    var id = await eidb.s_insert_one("my_secure_store",{foo:999, bar:{ blah:999 }});
+    log("Inserted id: ",id);
+    var Ids = await eidb.s_insert_many("my_secure_store",[{foo:"bar"},{bar:"foo"}]);
+    log("Inserted ids:",Ids);
 
     logw("Test READ (secure)");
-    // ...
+    log("Exists:   ",await eidb.s_exists("my_secure_store", {foo:"bar"}));
+    log("Count:    ",await eidb.s_count("my_secure_store", {foo:999}));
+    log("Count all:",await eidb.s_count_all("my_secure_store"));
+    log("Find one: ",await eidb.s_find_one("my_secure_store", {foo:999}));
+    log("Find many:",await eidb.s_find_many("my_secure_store", {foo:999}));
+    log("Find all: ",await eidb.s_find_all("my_secure_store"));
+    log("Filter:   ",await eidb.s_find_many("my_secure_store", {foo:999}));
 
     logw("Test UPDATE (secure)");
-    // ...
+    await eidb.s_update_one("my_secure_store", {foo:999}, {foo:111});
+    log("After update one:",await eidb.s_find_one("my_secure_store", {foo:111}));
+    return;
 
     logw("Test DELETE (secure)");
     // ...

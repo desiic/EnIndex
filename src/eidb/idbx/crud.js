@@ -449,6 +449,7 @@ class crud {
             let Obj = await crud.get_1stcond_obj(Store,Cond);
             if (Obj==null) { Db.close(); return null; }
 
+            // Apply changes
             Obj = {...Obj,...Changes_};
             Store.put(Obj);
             op_hist.update_op_hist_u(Store.Name, [Obj.id]);
@@ -469,6 +470,7 @@ class crud {
         var Obj = await Store.get(value_is(Ids[0]));
         if (Obj==null) { Db.close(); return null; }
 
+        // Apply changes
         Obj = {...Obj,...Changes_};
         Store.put(Obj);
         op_hist.update_op_hist_u(Store.Name, [Obj.id]);

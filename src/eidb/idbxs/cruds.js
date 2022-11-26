@@ -8,8 +8,9 @@
 
 // Modules
 import crud    from "../idbx/crud.js";
-import wcrypto from "../wcrypto.js";
 import idbxs   from "../idbxs.js";
+import wcrypto from "../wcrypto.js";
+import utils   from "../utils.js";
 
 // Shorthands
 const log  = console.log;
@@ -51,28 +52,31 @@ class cruds {
             return;
         }
         Store_Name = "#"+Store_Name;
+
+        // Make encrypted obj, each infex field is encrypted to find,
+        // whole obj is encrypted to 'Etds_Obj' field to load all inc. non indexed fields.
+        var Sobjs = [];
+
+        for (let Obj of Objs)
+            Sobjs.push( await idbxs.obj_to_sobj(Store_Name,Obj) );
+        
+        // Insert
+        var Ids = await crud.insert_many(Store_Name,Sobjs, _secure);
+        return Ids;
     }
 
     /**
      * Get object by 1 condition only
      */
     static async get_1stcond_obj(Store,Cond){ // Cond can't be empty {}
-        if (idbxs.Skey==null) {
-            loge("cruds.get_1stcond_obj: Static key not set");
-            return;
-        }
-        Store_Name = "#"+Store_Name;
+        // Unused
     }
 
     /**
      * Get objects by 1 condition only
      */
     static async get_1stcond_objs(Store,Cond){ // Cond can't be empty {}
-        if (idbxs.Skey==null) {
-            loge("cruds.get_1stcond_objs: Static key not set");
-            return;
-        }
-        Store_Name = "#"+Store_Name;
+        // Unused
     }
 
     /**
@@ -81,11 +85,7 @@ class cruds {
      * of value 'b', intersect these 2 for id list.
      */ 
     static async intersect_cond(Store,Cond){
-        if (idbxs.Skey==null) {
-            loge("cruds.intersect_cond: Static key not set");
-            return;
-        }
-        Store_Name = "#"+Store_Name;
+        // Unused
     }
 
     /**
@@ -94,11 +94,7 @@ class cruds {
      * of value 'b', intersect these 2 for object list.
      */ 
     static async intersect_cond_getobjs(Store,Cond){
-        if (idbxs.Skey==null) {
-            loge("cruds.intersect_cond_getobjs: Static key not set");
-            return;
-        }
-        Store_Name = "#"+Store_Name;
+        // Unused
     }
 
     /**
@@ -113,6 +109,17 @@ class cruds {
             return;
         }
         Store_Name = "#"+Store_Name;
+
+        // Make encrypted obj, each infex field is encrypted to find,
+        // whole obj is encrypted to 'Etds_Obj' field to load all inc. non indexed fields.
+        var Scond = {};
+
+        for (let Key in Cond)
+            Scond[Key] = await idbxs.value_to_svalue(Cond[Key]);
+        
+        // Check
+        var res = await crud.exists(Store_Name,Scond, _secure);
+        return res;
     }
 
     /**
@@ -127,6 +134,17 @@ class cruds {
             return;
         }
         Store_Name = "#"+Store_Name;
+
+        // Make encrypted obj, each infex field is encrypted to find,
+        // whole obj is encrypted to 'Etds_Obj' field to load all inc. non indexed fields.
+        var Scond = {};
+
+        for (let Key in Cond)
+            Scond[Key] = await idbxs.value_to_svalue(Cond[Key]);
+        
+        // Count
+        var res = await crud.count(Store_Name,Scond, _secure);
+        return res;
     }
 
     /**
@@ -140,6 +158,8 @@ class cruds {
             return;
         }
         Store_Name = "#"+Store_Name;
+
+        return await crud.count_all(Store_Name, _secure);
     }
 
     /**
@@ -152,6 +172,23 @@ class cruds {
             return;
         }
         Store_Name = "#"+Store_Name;
+
+        // Make encrypted obj, each infex field is encrypted to find,
+        // whole obj is encrypted to 'Etds_Obj' field to load all inc. non indexed fields.
+        var Scond = {};
+
+        for (let Key in Cond)
+            Scond[Key] = await idbxs.value_to_svalue(Cond[Key]);
+        
+        // Find
+        var Sobj = await crud.find_one(Store_Name,Scond, _secure);
+
+        // Decrypt
+        var Json = await wcrypto.decrypt_aes_fiv(Sobj.Etds_Obj, idbxs.Skey);
+        var Obj  = utils.json_to_obj_bd(Json);
+        Obj.id   = Sobj.id;
+
+        return Obj;
     }
 
     /**
@@ -165,6 +202,28 @@ class cruds {
             return;
         }
         Store_Name = "#"+Store_Name;
+
+        // Make encrypted obj, each infex field is encrypted to find,
+        // whole obj is encrypted to 'Etds_Obj' field to load all inc. non indexed fields.
+        var Scond = {};
+
+        for (let Key in Cond)
+            Scond[Key] = await idbxs.value_to_svalue(Cond[Key]);
+        
+        // Find
+        var Sobjs = await crud.find_many(Store_Name,Scond, limit,_secure);
+
+        // Decrypt
+        var Objs = [];
+
+        for (let Sobj of Sobjs){
+            var Json = await wcrypto.decrypt_aes_fiv(Sobj.Etds_Obj, idbxs.Skey);
+            var Obj  = utils.json_to_obj_bd(Json);
+            Obj.id   = Sobj.id;
+            Objs.push(Obj);
+        }
+
+        return Objs;
     }
 
     /**
@@ -177,28 +236,37 @@ class cruds {
             return;
         }
         Store_Name = "#"+Store_Name;
+
+        // Find
+        var Sobjs = await crud.find_all(Store_Name, _secure);
+
+        // Decrypt
+        var Objs = [];
+
+        for (let Sobj of Sobjs){
+            var Json = await wcrypto.decrypt_aes_fiv(Sobj.Etds_Obj, idbxs.Skey);
+            if (Json==null) continue;
+
+            var Obj = utils.json_to_obj_bd(Json);
+            Obj.id  = Sobj.id;
+            Objs.push(Obj);
+        }
+
+        return Objs;
     }
 
     /**
      * Get value at prop path
      */ 
     static get_proppath_value(Obj,Path){
-        if (idbxs.Skey==null) {
-            loge("cruds.get_proppath_value: Static key not set");
-            return;
-        }
-        Store_Name = "#"+Store_Name;
+        // Unused
     }
 
     /**
      * Check if object matches condition
      */ 
     static obj_matches_cond(Obj,Cond){
-        if (idbxs.Skey==null) {
-            loge("cruds.obj_matches_cond: Static key not set");
-            return;
-        }
-        Store_Name = "#"+Store_Name;
+        // Unused
     }
 
     /**
@@ -210,6 +278,28 @@ class cruds {
             return;
         }
         Store_Name = "#"+Store_Name;
+
+        // Make encrypted obj, each infex field is encrypted to find,
+        // whole obj is encrypted to 'Etds_Obj' field to load all inc. non indexed fields.
+        var Scond = {};
+
+        for (let Key in Cond)
+            Scond[Key] = await idbxs.value_to_svalue(Cond[Key]);
+        
+        // Find
+        var Sobjs = await crud.filter(Store_Name,Scond, limit,_secure);
+
+        // Decrypt
+        var Objs = [];
+
+        for (let Sobj of Sobjs){
+            var Json = await wcrypto.decrypt_aes_fiv(Sobj.Etds_Obj, idbxs.Skey);
+            var Obj  = utils.json_to_obj_bd(Json);
+            Obj.id   = Sobj.id;
+            Objs.push(Obj);
+        }
+
+        return Objs;
     }
 
     /**
@@ -223,6 +313,40 @@ class cruds {
             return;
         }
         Store_Name = "#"+Store_Name;
+
+        // Make encrypted obj, each infex field is encrypted to find,
+        // whole obj is encrypted to 'Etds_Obj' field to load all inc. non indexed fields.        
+        var Schanges = await idbxs.obj_to_sobj_full(Changes);
+        var Scond    = {};
+
+        for (let Key in Cond)
+            Scond[Key] = await idbxs.value_to_svalue(Cond[Key]);
+
+        // Apply changes to Etds_Obj
+        var Sobj1 = await crud.find_one(Store_Name,Scond, _secure);
+        var Obj   = await wcrypto.decrypt_aes_fiv(Sobj1.Etds_Obj, idbxs.Skey);
+        Obj       = {...Obj, ...Changes};
+        var Json  = await utils.obj_to_json(Obj);        
+        ???
+        log("in db obj",Obj)
+        log("apply",Json)
+        Schanges.Etds_Obj = (await wcrypto.encrypt_aes_fiv(Json, idbxs.Skey))[0];
+        
+        // Update
+        log("b4",await crud.find_one(Store_Name,Scond, _secure) );
+        var Sobj2 = await crud.update_one(Store_Name,Scond,Schanges, _secure);      
+        log("cond",Scond)
+        log("changes",Schanges)
+        log("af",Sobj2)  
+
+        // Decrypt
+        var Json = await wcrypto.decrypt_aes_fiv(Sobj2.Etds_Obj, idbxs.Skey);
+        log("json",Json)
+        var Obj  = utils.json_to_obj_bd(Json);
+        Obj.id   = Sobj2.id;
+        log("obj",Obj)
+
+        return Obj;
     }
 
     /**
