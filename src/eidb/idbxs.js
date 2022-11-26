@@ -383,8 +383,20 @@ class idbxs { // Aka sec
             return;
         }
 
-        // Set to use
+        // Decrypt metadata to get static key
+        var Etde_Skey    = Meta.Etde_Skey;
+        var Etde_Skey_Iv = Meta.Etde_Skey_Iv;
+        var Sk           = await wcrypto.decrypt_aes(Etde_Skey, Etde_Skey_Iv, Ek);
+
+        if (Sk==null){
+            loge("idbxs.recovery_and_set_keys: Failed to decrypt for static key");
+            Db.close();
+            return;
+        }
+
+        // Set keys to use
         idbxs.set_ea_keys(Ek,Aks);
+        idbxs.set_static_key(Sk);
         Db.close();
         return [Ek,Aks];
     }
