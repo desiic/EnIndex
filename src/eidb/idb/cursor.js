@@ -14,7 +14,7 @@ var new_lock = base.new_lock;
 /**
  * IDBCursor wraper class
  */
- class cursor {
+class cursor {
     self = null;
 
     /**

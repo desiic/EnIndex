@@ -60,9 +60,9 @@ class idbxs { // Aka sec
      */
     SUB_NAMESPACES;
 
-    static cruds    = cruds;
-    static op_hists = op_hists;
-    static ftss     = ftss;
+    static cruds;
+    static op_hists;
+    static ftss;
 
     /**
      * _________________________________________________________________________
@@ -79,7 +79,7 @@ class idbxs { // Aka sec
     static Ekey     = null; // Encryption key
     static Akeypair = null; // Authentication key pair {privateKey:, publicKey:}
     static Skey     = null; // Static key (save once at db creation, or on total re-encryption)
-    static Rkey     = null; // Recovery key (unused, use separate variable)
+    static Rkey     = null; // Recovery key (UNUSED, use separate variable)
 
     /*
      * _________________________________________________________________________
@@ -666,6 +666,19 @@ class idbxs { // Aka sec
         // Turn bytes into hex and get key
         var Hex = wcrypto.bytes_to_hex(Bytes);
         return await wcrypto.import_key_aes_raw(Hex);
+    }
+
+    /**
+     * Init
+     */ 
+    static init(){
+        idbxs.cruds    = cruds;
+        idbxs.op_hists = op_hists;
+        idbxs.ftss     = ftss;
+
+        idbxs.cruds    .init();
+        idbxs.op_hists .init();
+        idbxs.ftss     .init();
     }
 }
 

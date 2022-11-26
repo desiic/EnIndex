@@ -94,17 +94,17 @@ class idbx {
     /**
      * CRUD functionalities
      */
-    static crud = crud;
+    static crud;
 
     /**
      * Op history features
      */ 
-    static op_hist = op_hist;
+    static op_hist;
 
     /**
      * FTS features
      */
-    static fts = fts;
+    static fts;
 
     /**
      * _________________________________________________________________________
@@ -549,6 +549,19 @@ class idbx {
 
         // Close the upgraded db
         Db.close();
+    }
+
+    /**
+     * Init
+     */ 
+    static init(){
+        idbx.crud    = crud;
+        idbx.op_hist = op_hist;
+        idbx.fts     = fts;
+
+        idbx.crud   .init(); 
+        idbx.op_hist.init(); 
+        idbx.fts    .init(); 
     }
 }
 

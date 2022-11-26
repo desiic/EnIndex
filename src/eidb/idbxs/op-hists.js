@@ -120,6 +120,12 @@ class op_hists {
     static async clear_op_hist(){
         await op_hist.clear_op_hist();
     }
+
+    /**
+     * Init static stuff
+     */ 
+    static init(){
+    }    
 }
 
 export default op_hists;

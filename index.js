@@ -19,6 +19,7 @@ var _Test_Indices = {
 
 // Main
 async function main(){
+    eidb.init();
     log("Testing...");
     log("Recommended to reopen db again and again for operations to avoid upgrade being blocked.");
 
@@ -136,7 +137,8 @@ async function main(){
     log("Reco-load:", await eidb.sec.recover_and_set_keys(Rk));
 
     logw("Test CREATE (secure)");
-    await eidb.s_insert_one("my_secure_store",{foo:"bar", bar:{ blah:999 }});
+    var id = await eidb.s_insert_one("my_secure_store",{foo:"bar", bar:{ blah:999 }});
+    log("Inserted id:",id);
     return;
 
     logw("Test READ (secure)");

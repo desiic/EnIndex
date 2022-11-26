@@ -276,6 +276,12 @@ class cruds {
         }
         Store_Name = "#"+Store_Name;
     }
+
+    /**
+     * Init static stuff
+     */ 
+    static init(){
+    }
 }
 
 export default cruds;

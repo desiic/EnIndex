@@ -853,6 +853,12 @@ class wcrypto {
         var Rand = wcrypto.random_uuidx(); // 256 bits
         return await wcrypto.derive_key_pb2aes(Rand,Salt,iterations); // AES 256-bit
     }
+
+    /**
+     * Init static stuff
+     */ 
+    static init(){
+    }
 }
 
 export default wcrypto;

@@ -8,7 +8,7 @@ import request from "../idb/request.js";
 /**
  * IDBOpenDbRequest wraper class
  */
- class open_db_request extends request {
+class open_db_request extends request {
     self = null;
 
     /**

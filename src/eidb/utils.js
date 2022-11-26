@@ -153,6 +153,12 @@ class utils {
 
         return Prop;
     }
+
+    /**
+     * Init static stuff
+     */ 
+    static init(){
+    }
 }
 
 export default utils;

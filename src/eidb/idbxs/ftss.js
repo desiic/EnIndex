@@ -198,6 +198,12 @@ class ftss {
         }
         Store_Name = "#"+Store_Name;
     }
+
+    /**
+     * Init static stuff
+     */ 
+    static init(){
+    }
 }
 
 export default ftss;

@@ -731,6 +731,11 @@ class crud {
         Db.close();
         return null;
     }
+
+    /**
+     */
+    static init(){
+    } 
 }
 
 export default crud;

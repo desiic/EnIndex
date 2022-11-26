@@ -382,6 +382,12 @@ class fts {
             Note:Note
         };
     }
+
+    /**
+     * Init
+     */ 
+    static init(){
+    }
 }
 
 export default fts;
