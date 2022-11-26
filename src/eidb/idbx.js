@@ -20,8 +20,12 @@ const n1=1, n2=2, u1=3, u2=4; // Match values in eidb.js
 
 // Constants
 // Default indices
+// Internal data for both unencrypted & encrypted
 var _DEFAULT_INDICES = {};
-_DEFAULT_INDICES["_meta"] = {}; // Internal data for both unencrypted & encrypted
+_DEFAULT_INDICES["_meta"] = {
+    Store:u1 // Store name or "_global" for global
+    // Non indexed: See idbxs.js
+};
 
 // OPERATION HISTORY STORE:
 // Docmetas array is supposed to contain unique values but laxed, this array is

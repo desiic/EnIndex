@@ -719,6 +719,7 @@ log("EnIndex loaded");
  * Sample index schema
  * ```
  * // 1:Single value, 2:Multientry, u1:Unique single value, u2:Unique multientry
+ * // Do not use _ prefix for store names, it's for EnIndex internal use.
  * var Indices = {
  *     my_store: { 
  *         foo:1, bar:2, foobar:u1, barfoo:u2, "foo.bar":1, "bar.foo":2         

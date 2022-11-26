@@ -677,7 +677,7 @@ class wcrypto {
         var Cipherbuff = await window.crypto.subtle.encrypt(Algo,Key,Bytes); // ArrayBuffer
         var Ciphertext = wcrypto.buff_to_base64(Cipherbuff);
 
-        return [Ciphertext, Iv];
+        return [Ciphertext, wcrypto.bytes_to_hex(Iv)];
     }
 
     /**
@@ -693,11 +693,18 @@ class wcrypto {
     }
 
     /**
+     * Encrypt with EC key to base64
+     */ 
+    static async encrypt_ec(Text, Key){
+        // NO EC ENCRYPT/DECRYPT IN WEB CRYPTO YET.
+    }
+
+    /**
      * Decrypt (AES) from base64
      */
     static async decrypt_aes(Ciphertext, Iv, Key){
         var Bytes = wcrypto.base64_to_bytes(Ciphertext);
-        var Algo  = {name:"AES-GCM", iv:Iv};
+        var Algo  = {name:"AES-GCM", iv:wcrypto.hex_to_bytes(Iv)};
         var Buff  = await window.crypto.subtle.decrypt(Algo,Key,Bytes);
         var Text  = wcrypto.bytes_to_utf8(new Uint8Array(Buff));
 
@@ -707,13 +714,20 @@ class wcrypto {
     /**
      * Decrypt (RSA) from base64
      */
-    static async decrypt_rsa(Ciphertext){
+    static async decrypt_rsa(Ciphertext, Key){
         var Bytes = wcrypto.base64_to_bytes(Ciphertext);
         var Algo  = {name:"RSA-OAEP"};
         var Buff  = await window.crypto.subtle.decrypt(Algo,Key,Bytes);
         var Text  = wcrypto.bytes_to_utf8(new Uint8Array(Buff));
 
         return Text;
+    }
+
+    /**
+     * Decrypt with EC key from base64
+     */ 
+    static async decrypt_ec(Ciphertext, Key){
+        // NO EC ENCRYPT/DECRYPT IN WEB CRYPTO YET.
     }
 
     /**

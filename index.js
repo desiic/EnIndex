@@ -100,7 +100,7 @@ async function main(){
     var Ek,Aks,Sk;
     log("Key chain:     ",[Ek,Aks]=await eidb.sec.get_key_chain("foobar","foobarspassword"));
     log("Static key:    ",Sk=await eidb.sec.get_new_static_key("foobar"));
-    log("Recovery info: ",{Recovery_Key,Ciphertext,Iv}=await eidb.sec.gen_recovery_info(Ek,Aks));
+    log("Recovery info: ",{Ciphertext,Iv,Recovery_Key}=await eidb.sec.gen_recovery_info(Ek,Aks));
     var Rtext,Rkey;
     log("Recovery text: ",Rtext=await eidb.sec.key_to_text(Recovery_Key));
     log("Back to key:   ",Rkey=await eidb.sec.text_to_key(Rtext));
@@ -109,8 +109,28 @@ async function main(){
     logw("Test CRUD ops (secure)"); // -----------------------------------------    
     var Username = "user";
     var Pw       = "123456";
-    [Ek,Aks] = await eidb.sec.get_key_chain(Username, Pw);
-    log(Ek,Aks)
+    [Ek,Aks] = await eidb.sec.get_key_chain(Username, Pw);    
+    eidb.sec.set_ea_keys(Ek,Aks);
+
+    var Sk = await eidb.sec.get_new_static_key(Username); // Only once on db creation
+    await eidb.sec.save_static_key(Sk);                   // Only once on db creation
+    Sk = await eidb.sec.load_static_key();
+    await eidb.do_op("_meta", _clear); // Clear to test with any username/pw below
+                                       // otherwise static key isn't decryptable.
+
+    await eidb.sec.prepare_keys(Username,Pw); // Put in eidb.sec to use
+    log("Ekey:     ", eidb.sec.Ekey);
+    log("Akeypair: ", eidb.sec.Akeypair);
+    log("Skey:     ", eidb.sec.Skey);
+    var Ek  = eidb.sec.Ekey; 
+    var Aks = eidb.sec.Akeypair;
+    var {Ciphertext,Iv,Recovery_Key}=await eidb.sec.gen_recovery_info(Ek,Aks)
+    var Text;
+    log("Recovery: ", Text=await eidb.sec.key_to_text(Recovery_Key)); // Give to user
+    await eidb.sec.save_recovery_info(Ciphertext,Iv);    
+    var Rk = await eidb.sec.text_to_key(Text);
+    log("Reco-load:", await eidb.sec.recover_and_set_keys(Rk));
+
     logw("Test CREATE (secure)");
     // ...
     return;
