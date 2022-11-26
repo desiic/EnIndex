@@ -11,6 +11,9 @@ var _Test_Indices = {
     my_store: { 
         foo:1, bar:2, foobar:u1, barfoo:u2, "foo.bar":1, "bar.foo":2,
         "foo,bar":1 // Compound index, remember compound indices can't be 2, or u2
+    },
+    my_secure_store: {
+        _secure, foo:1, "bar.blah":1
     }
 };
 
@@ -20,7 +23,8 @@ async function main(){
     log("Recommended to reopen db again and again for operations to avoid upgrade being blocked.");
 
     logw("Test db open"); // ---------------------------------------------------
-    var Db = await eidb.open_av("my_db", _Test_Indices);
+    // var Db = await eidb.open_av("my_db", _Test_Indices); // Regular open
+    var Db = await eidb.s_open_av("my_db", _Test_Indices);  // Secure open (facilitates encryption)
     log("Db:",Db);
     Db.close();
 
@@ -132,7 +136,7 @@ async function main(){
     log("Reco-load:", await eidb.sec.recover_and_set_keys(Rk));
 
     logw("Test CREATE (secure)");
-    // ...
+    await eidb.s_insert_one("my_secure_store",{foo:"bar", bar:{ blah:999 }});
     return;
 
     logw("Test READ (secure)");
@@ -145,7 +149,7 @@ async function main(){
     // ...
 
     logw("Test op history (secure)"); // ---------------------------------------
-    // ...
+    log("The same as regular op_hist");
 
     logw("Test full-text search (secure)"); // ---------------------------------
     // ...

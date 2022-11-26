@@ -4,7 +4,10 @@
 
 // Modules
 import base     from "./base.js";
+import utils    from "./utils.js";
 import wcrypto  from "./wcrypto.js";
+import idb      from "./idb.js";
+import idbx     from "./idbx.js";
 import cruds    from "./idbxs/cruds.js";
 import op_hists from "./idbxs/op-hists.js";
 import ftss     from "./idbxs/ftss.js";
@@ -16,7 +19,7 @@ const loge     = console.error;
 const new_lock = base.new_lock;
 
 // Constants
-const GLOBAL_DEFAULT_META = {
+var GLOBAL_DEFAULT_META = {
     Store:            "_global", // Always _global
     Etde_Skey:        null,      // Set by app
     Etde_Skey_Iv:     null,      // Set by app
@@ -66,7 +69,7 @@ class idbxs { // Aka sec
      */
     CONSTANTS;
 
-    static ITERATIONS = 100000;
+    static ITERATIONS = 100000; // For key derivatiion
 
     /**
      * _________________________________________________________________________
@@ -77,6 +80,99 @@ class idbxs { // Aka sec
     static Akeypair = null; // Authentication key pair {privateKey:, publicKey:}
     static Skey     = null; // Static key (save once at db creation, or on total re-encryption)
     static Rkey     = null; // Recovery key (unused, use separate variable)
+
+    /*
+     * _________________________________________________________________________
+     */
+    METHODS;
+
+    /**
+     * Open db with version set automatically (av, ie. auto-versioning)
+     * @param  {String} Db_Name - Database name
+     * @param  {Object} Indices - Index schema of database
+     * @return {Array}  Error or null, and database object
+     */
+    static async open_av(Db_Name,Indices){
+        // Check _secure marking in every store
+        var Store_Names = Object.keys(Indices);
+
+        for (let Store_Name of Store_Names){
+            if (Indices[Store_Name]._secure == null) continue;
+
+            // Remove marking 
+            delete Indices[Store_Name]._secure;
+
+            // Prefix store name with #
+            Indices["#"+Store_Name] = {...Indices[Store_Name]};
+            delete Indices[Store_Name];
+        }
+
+        // Open db
+        return await idbx.open_av(Db_Name,Indices);        
+    }
+
+    /**
+     * Turn regular object into secure object to save encrypted
+     */ 
+    static async obj_to_sobj(Store_Name,Obj){
+        if (idbxs.Skey==null) {
+            loge("idbxs.obj_to_sobj: Static key not set");
+            return;
+        }
+
+        // Get index name list
+        var Idx_Names = Object.keys(idbx.Indices[Store_Name]);
+            Idx_Names = Idx_Names.filter(X => X!="id");
+
+        // Create encrypted values
+        let Props = []; 
+
+        if (Obj.id != null)
+            var Sobj = {id: Obj.id};
+        else
+            var Sobj = {};
+
+        for (let Idx_Name of Idx_Names){            
+            let is_compound = Idx_Name.indexOf(",")>=0;
+
+            // Compound index
+            if (is_compound){
+                let Paths = Idx_Name.split(",");
+
+                for (let Path of Paths) 
+                    Props.push({
+                        Path:  Path,
+                        Value: utils.prop_get(Obj,Path)
+                    });
+            }
+            else{ // Regular index
+                Props.push({
+                    Path:  Idx_Name,
+                    Value: utils.prop_get(Obj,Idx_Name)
+                });
+            }
+
+            // Encrypt
+            for (let i=0; i<Props.length; i++){
+                let Ct_Iv       = await wcrypto.encrypt_aes_fiv(Props[i].Value, idbxs.Skey);
+                Props[i].Svalue = Ct_Iv[0]; // Ignore fixed IV value
+            }
+        }
+
+        // Put encrypted properties to secure obj
+        for (let Prop of Props){
+            let Path   = Prop.Path;
+            let Svalue = Prop.Svalue;
+            Sobj       = utils.prop_set(Sobj,Path,Svalue);
+        }
+
+        // Add Etds_Obj (object encrypted by static key)
+        var Str       = utils.obj_to_json(Obj);
+        var Ct_Iv     = await wcrypto.encrypt_aes_fiv(Str, idbxs.Skey);
+        Sobj.Etds_Obj = Ct_Iv[0]; // Ignore fixed IV value
+
+        return Sobj;
+    }
 
     /**
      * Set enc/dec keys to be used by secure ops
@@ -386,13 +482,14 @@ class idbxs { // Aka sec
         // Decrypt metadata to get static key
         var Etde_Skey    = Meta.Etde_Skey;
         var Etde_Skey_Iv = Meta.Etde_Skey_Iv;
-        var Sk           = await wcrypto.decrypt_aes(Etde_Skey, Etde_Skey_Iv, Ek);
+        var Sk_Hex       = await wcrypto.decrypt_aes(Etde_Skey, Etde_Skey_Iv, Ek);
 
-        if (Sk==null){
+        if (Sk_Hex==null){
             loge("idbxs.recovery_and_set_keys: Failed to decrypt for static key");
             Db.close();
             return;
         }
+        var Sk = await wcrypto.import_key_aes_raw(Sk_Hex);
 
         // Set keys to use
         idbxs.set_ea_keys(Ek,Aks);

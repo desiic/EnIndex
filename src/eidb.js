@@ -320,6 +320,12 @@ class eidb {
      */
     static find_many_by_terms = idbx.fts.find_many_by_terms;
 
+    // EXTENDED OPS (SECURE) ***************************************************
+    /**
+     * Alias of `eidb.idbxs.s_open_av` [See here](module-eidb_idbxs-idbxs.html#.open_av)
+     */
+    static s_open_av = idbxs.open_av;
+
     // CRUD OPS (SECURE) *******************************************************
     /**
      * Alias of `eidb.idbxs.cruds.insert_one` [See here](module-eidb_idbxs_cruds-cruds.html#.insert_one)</br>
@@ -478,6 +484,11 @@ window.u1 = eidb.u1; // Index schema eg. field:u1
  * Key type literal: non-unique, single-entry
  */ 
 window.u2 = eidb.u2; // Index schema eg. field:u2
+
+/**
+ * Secure mode for store
+ */ 
+window._secure = true;
 
 /**
  * Result of cursor callback to stop iterating

@@ -7,7 +7,9 @@
 // USE MODULES IN idb.* INSTEAD.
 
 // Modules
-import idbxs from "../idbxs.js";
+import crud    from "../idbx/crud.js";
+import wcrypto from "../wcrypto.js";
+import idbxs   from "../idbxs.js";
 
 // Shorthands
 const log  = console.log;
@@ -28,6 +30,15 @@ class cruds {
             loge("cruds.insert_one: Static key not set");
             return;
         }
+        Store_Name = "#"+Store_Name;
+
+        // Make encrypted obj, each infex field is encrypted to find,
+        // whole obj is encrypted to 'Etds_Obj' field to load all inc. non indexed fields.
+        var Sobj = await idbxs.obj_to_sobj(Store_Name,Obj);
+        
+        // Insert
+        var id = await crud.insert_one(Store_Name,Sobj, _secure);
+        return id;
     }
 
     /**
@@ -39,6 +50,7 @@ class cruds {
             loge("cruds.insert_many: Static key not set");
             return;
         }
+        Store_Name = "#"+Store_Name;
     }
 
     /**
@@ -49,6 +61,7 @@ class cruds {
             loge("cruds.get_1stcond_obj: Static key not set");
             return;
         }
+        Store_Name = "#"+Store_Name;
     }
 
     /**
@@ -59,6 +72,7 @@ class cruds {
             loge("cruds.get_1stcond_objs: Static key not set");
             return;
         }
+        Store_Name = "#"+Store_Name;
     }
 
     /**
@@ -71,6 +85,7 @@ class cruds {
             loge("cruds.intersect_cond: Static key not set");
             return;
         }
+        Store_Name = "#"+Store_Name;
     }
 
     /**
@@ -83,6 +98,7 @@ class cruds {
             loge("cruds.intersect_cond_getobjs: Static key not set");
             return;
         }
+        Store_Name = "#"+Store_Name;
     }
 
     /**
@@ -96,6 +112,7 @@ class cruds {
             loge("cruds.exists: Static key not set");
             return;
         }
+        Store_Name = "#"+Store_Name;
     }
 
     /**
@@ -109,6 +126,7 @@ class cruds {
             loge("cruds.count: Static key not set");
             return;
         }
+        Store_Name = "#"+Store_Name;
     }
 
     /**
@@ -121,6 +139,7 @@ class cruds {
             loge("cruds.count_all: Static key not set");
             return;
         }
+        Store_Name = "#"+Store_Name;
     }
 
     /**
@@ -132,6 +151,7 @@ class cruds {
             loge("cruds.find_one: Static key not set");
             return;
         }
+        Store_Name = "#"+Store_Name;
     }
 
     /**
@@ -144,6 +164,7 @@ class cruds {
             loge("cruds.find_many: Static key not set");
             return;
         }
+        Store_Name = "#"+Store_Name;
     }
 
     /**
@@ -155,6 +176,7 @@ class cruds {
             loge("cruds.find_all: Static key not set");
             return;
         }
+        Store_Name = "#"+Store_Name;
     }
 
     /**
@@ -165,6 +187,7 @@ class cruds {
             loge("cruds.get_proppath_value: Static key not set");
             return;
         }
+        Store_Name = "#"+Store_Name;
     }
 
     /**
@@ -175,6 +198,7 @@ class cruds {
             loge("cruds.obj_matches_cond: Static key not set");
             return;
         }
+        Store_Name = "#"+Store_Name;
     }
 
     /**
@@ -185,6 +209,7 @@ class cruds {
             loge("cruds.filter: Static key not set");
             return;
         }
+        Store_Name = "#"+Store_Name;
     }
 
     /**
@@ -197,6 +222,7 @@ class cruds {
             loge("cruds.update_one: Static key not set");
             return;
         }
+        Store_Name = "#"+Store_Name;
     }
 
     /**
@@ -209,6 +235,7 @@ class cruds {
             loge("cruds.update_many: Static key not set");
             return;
         }
+        Store_Name = "#"+Store_Name;
     }
 
     /**
@@ -221,6 +248,7 @@ class cruds {
             loge("cruds.upsert_one: Static key not set");
             return;
         }
+        Store_Name = "#"+Store_Name;
     }
 
     /**
@@ -233,6 +261,7 @@ class cruds {
             loge("cruds.remove_one: Static key not set");
             return;
         }
+        Store_Name = "#"+Store_Name;
     }
 
     /**
@@ -245,6 +274,7 @@ class cruds {
             loge("cruds.remove_many: Static key not set");
             return;
         }
+        Store_Name = "#"+Store_Name;
     }
 }
 

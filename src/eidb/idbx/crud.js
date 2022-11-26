@@ -7,6 +7,7 @@ import base    from "../base.js";
 import utils   from "../utils.js";
 import op_hist from "./op-hist.js";
 import fts     from "./fts.js";
+import ftss    from "../idbxs/ftss.js";
 
 // Shorthands
 var log      = console.log;
@@ -28,10 +29,10 @@ class crud {
      * Insert one
      * @return {Number} Id of the new obj
      */
-    static async insert_one(Store_Name,Obj){
+    static async insert_one(Store_Name,Obj, secure=false){
         var Db    = await eidb.reopen();
         var T     = Db.transaction(Store_Name,RW);
-        var Store = T.store1();
+        var Store = T.store1()
 
         // Got store, next
         var Obj_ = {...Obj}; // Clone to delete id
@@ -42,13 +43,18 @@ class crud {
 
         if (new_id instanceof Error){
             loge("crud.insert_one: Failed, error:",new_id);
-            Db.close();
+            if (Store==null) Db.close();
             return null;
         }
 
         op_hist.update_op_hist_c(Store.Name, [new_id]);
-        fts.update_fts_c(Store.Name, new_id, Obj);
-        Db.close();
+
+        if (secure)
+            ftss.update_fts_c(Store.Name, new_id, Obj);
+        else
+            fts.update_fts_c(Store.Name, new_id, Obj);
+
+        if (Store==null) Db.close();
         return new_id;
     }
 
@@ -56,9 +62,9 @@ class crud {
      * Insert many
      * @return {Array} List of inserted object ids
      */
-    static async insert_many(Store_Name,Objs){
+    static async insert_many(Store_Name,Objs, secure=false){
         var Db    = await eidb.reopen();
-        var T     = Db.transaction(Store_Name,RW);
+        var T     = Db.transaction(Store_Name,RW);            
         var Store = T.store1();
 
         // Got store, next
@@ -85,7 +91,10 @@ class crud {
         await Lock;
 
         for (let i=0; i<Ids.length; i++)
-            fts.update_fts_c(Store.Name, Ids[i], Objs[i]);
+            if (secure)
+                ftss.update_fts_c(Store.Name, Ids[i], Objs[i]);
+            else
+                fts.update_fts_c(Store.Name, Ids[i], Objs[i]);
 
         Db.close();        
         return Ids;
@@ -198,7 +207,7 @@ class crud {
      * Note: Read but no fetching data, no op history
      * @return {Boolean}
      */
-    static async exists(Store_Name,Cond){
+    static async exists(Store_Name,Cond, secure=false){
         var Db    = await eidb.reopen();
         var T     = Db.transaction(Store_Name,RO);
         var Store = T.store1();
@@ -226,7 +235,7 @@ class crud {
      * Note: Read but no fetching data, no op history
      * @return {Number}
      */
-    static async count(Store_Name,Cond){
+    static async count(Store_Name,Cond, secure=false){
         var Db    = await eidb.reopen();
         var T     = Db.transaction(Store_Name,RO);
         var Store = T.store1();
@@ -253,7 +262,7 @@ class crud {
      * Note: Read but no fetching data, no op history
      * @return {Number}
      */
-    static async count_all(Store_Name){
+    static async count_all(Store_Name, secure=false){
         var Db    = await eidb.reopen();
         var T     = Db.transaction(Store_Name,RO);
         var Store = T.store1();
@@ -268,7 +277,7 @@ class crud {
      * Find one, avoid using multiple conditions in Cond coz it's slow
      * @return {Object}
      */
-    static async find_one(Store_Name,Cond){
+    static async find_one(Store_Name,Cond, secure=false){
         var Db    = await eidb.reopen();
         var T     = Db.transaction(Store_Name,RO);
         var Store = T.store1();
@@ -303,7 +312,7 @@ class crud {
      * USE COMPOUND INDEX INSTEAD.
      * @return {Object}
      */
-    static async find_many(Store_Name,Cond, limit=Number.MAX_SAFE_INTEGER){
+    static async find_many(Store_Name,Cond, limit=Number.MAX_SAFE_INTEGER, secure=false){
         var Db    = await eidb.reopen();
         var T     = Db.transaction(Store_Name,RO);
         var Store = T.store1();
@@ -350,7 +359,7 @@ class crud {
      * Find all
      * @return {Array}
      */
-    static async find_all(Store_Name){
+    static async find_all(Store_Name, secure=false){
         var Db    = await eidb.reopen();
         var T     = Db.transaction(Store_Name,RO);
         var Store = T.store1();
@@ -397,7 +406,7 @@ class crud {
     /**
      * Filter (value contain, for exact match: use find, find_many)
      */ 
-    static async filter(Store_Name,Cond, limit=Number.MAX_SAFE_INTEGER){
+    static async filter(Store_Name,Cond, limit=Number.MAX_SAFE_INTEGER, secure=false){
         var Db    = await eidb.reopen();
         var T     = Db.transaction(Store_Name,RO);
         var Store = T.store1();
@@ -423,7 +432,7 @@ class crud {
      * USE COMPOUND INDEX INSTEAD.
      * @return {Object}
      */
-    static async update_one(Store_Name,Cond,Changes){
+    static async update_one(Store_Name,Cond,Changes, secure=false){
         var Db    = await eidb.reopen();
         var T     = Db.transaction(Store_Name,RW);
         var Store = T.store1();
@@ -443,7 +452,12 @@ class crud {
             Obj = {...Obj,...Changes_};
             Store.put(Obj);
             op_hist.update_op_hist_u(Store.Name, [Obj.id]);
-            fts.update_fts_u(Store.Name, Obj.id, Obj);
+
+            if (secure)
+                ftss.update_fts_u(Store.Name, Obj.id, Obj);
+            else
+                fts.update_fts_u(Store.Name, Obj.id, Obj);
+
             Db.close();
             return Obj;
         }
@@ -458,7 +472,12 @@ class crud {
         Obj = {...Obj,...Changes_};
         Store.put(Obj);
         op_hist.update_op_hist_u(Store.Name, [Obj.id]);
-        fts.update_fts_u(Store.Name, Obj.id, Obj);
+
+        if (secure)
+            ftss.update_fts_u(Store.Name, Obj.id, Obj);
+        else
+            fts.update_fts_u(Store.Name, Obj.id, Obj);
+
         Db.close();
         return Obj;
     }
@@ -468,7 +487,7 @@ class crud {
      * USE COMPOUND INDEX INSTEAD.
      * @return {Object}
      */
-    static async update_many(Store_Name,Cond,Changes, limit=Number.MAX_SAFE_INTEGER){
+    static async update_many(Store_Name,Cond,Changes, limit=Number.MAX_SAFE_INTEGER, secure=false){
         var Db    = await eidb.reopen();
         var T     = Db.transaction(Store_Name,RW);
         var Store = T.store1();
@@ -516,7 +535,10 @@ class crud {
         await Lock;
 
         for (let i=0; i<Updated_Objs.length; i++)
-            fts.update_fts_u(Store.Name, Updated_Objs[i].id, Updated_Objs[i]);
+            if (secure)
+                ftss.update_fts_u(Store.Name, Updated_Objs[i].id, Updated_Objs[i]);
+            else
+                fts.update_fts_u(Store.Name, Updated_Objs[i].id, Updated_Objs[i]);
 
         Db.close();        
         return Updated_Objs;
@@ -527,7 +549,7 @@ class crud {
      * USE COMPOUND INDEX INSTEAD
      * @return {Object}
      */
-    static async upsert_one(Store_Name,Cond,Changes){
+    static async upsert_one(Store_Name,Cond,Changes, secure=false){
         var Db    = await eidb.reopen();
         var T     = Db.transaction(Store_Name,RW);
         var Store = T.store1();
@@ -547,7 +569,12 @@ class crud {
             if (Obj==null){
                 let id = await Store.add(Changes_);
                 op_hist.update_op_hist_c(Store.Name, [id]);
-                fts.update_fts_c(Store.Name, id, Changes);
+
+                if (secure)
+                    ftss.update_fts_c(Store.Name, id, Changes);
+                else
+                    fts.update_fts_c(Store.Name, id, Changes);
+
                 Db.close();
                 return id;
             };
@@ -556,7 +583,12 @@ class crud {
             Obj = {...Obj,...Changes_};
             Store.put(Obj);
             op_hist.update_op_hist_u(Store.Name, [Obj.id]);
-            fts.update_fts_u(Store.Name, Obj.id, Obj);
+
+            if (secure)
+                ftss.update_fts_u(Store.Name, Obj.id, Obj);
+            else
+                fts.update_fts_u(Store.Name, Obj.id, Obj);
+
             Db.close();
             return Obj.id;
         }
@@ -571,7 +603,12 @@ class crud {
         if (Obj==null){
             let id = await Store.add(Changes_);
             op_hist.update_op_hist_c(Store.Name, [id]);
-            fts.update_fts_c(Store.Name, id, Changes);
+
+            if (secure)
+                ftss.update_fts_c(Store.Name, id, Changes);
+            else
+                fts.update_fts_c(Store.Name, id, Changes);
+
             Db.close();
             return id;
         };
@@ -580,7 +617,12 @@ class crud {
         Obj = {...Obj,...Changes_};
         Store.put(Obj);
         op_hist.update_op_hist_u(Store.Name, [Obj.id]);
-        fts.update_fts_u(Store.Name, Obj.id, Obj);
+
+        if (secure)
+            ftss.update_fts_u(Store.Name, Obj.id, Obj);
+        else
+            fts.update_fts_u(Store.Name, Obj.id, Obj);
+
         Db.close();
         return Obj.id;
     }
@@ -590,7 +632,7 @@ class crud {
      * USE COMPOUND INDEX INSTEAD
      * @return {null}
      */
-    static async remove_one(Store_Name,Cond){
+    static async remove_one(Store_Name,Cond, secure=false){
         var Db    = await eidb.reopen();
         var T     = Db.transaction(Store_Name,RW);
         var Store = T.store1();
@@ -606,7 +648,12 @@ class crud {
             
             let id = await Store.delete(value_is(Obj.id));
             op_hist.update_op_hist_d(Store.Name, [Obj.id]);
-            fts.update_fts_d(Store.Name, Obj.id, Obj);
+
+            if (secure)
+                ftss.update_fts_d(Store.Name, Obj.id, Obj);
+            else
+                fts.update_fts_d(Store.Name, Obj.id, Obj);
+
             Db.close();
             return id; // Always null, from IDBObjectStore.delete
         }
@@ -618,7 +665,12 @@ class crud {
         
         var id = await Store.delete(value_is(Ids[0]));
         op_hist.update_op_hist_d(Store.Name, [Ids[0]]);
-        fts.update_fts_d(Store.Name, Ids[0], Objs[0]);
+
+        if (secure)
+            ftss.update_fts_d(Store.Name, Ids[0], Objs[0]);
+        else
+            fts.update_fts_d(Store.Name, Ids[0], Objs[0]);
+
         Db.close();
         return id; // Always null, from IDBObjectStore.delete
     }
@@ -628,7 +680,7 @@ class crud {
      * USE COMPOUND INDEX INSTEAD
      * @return {null}
      */
-    static async remove_many(Store_Name,Cond){
+    static async remove_many(Store_Name,Cond, secure=false){
         var Db    = await eidb.reopen();
         var T     = Db.transaction(Store_Name,RW);
         var Store = T.store1();
@@ -671,7 +723,10 @@ class crud {
         await Lock;
 
         for (let i=0; i<Ids.length; i++)
-            fts.update_fts_d(Store.Name, Ids[i], Objs[i]);
+            if (secure)
+                ftss.update_fts_d(Store.Name, Ids[i], Objs[i]);
+            else
+                fts.update_fts_d(Store.Name, Ids[i], Objs[i]);
 
         Db.close();
         return null;

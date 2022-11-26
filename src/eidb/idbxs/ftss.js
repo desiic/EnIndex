@@ -42,6 +42,7 @@ class ftss {
             loge("ftss.enable_fts: Static key not set");
             return;
         }
+        Store_Name = "#"+Store_Name;
     }
 
     /**
@@ -52,6 +53,7 @@ class ftss {
             loge("ftss.disable_fts: Static key not set");
             return;
         }
+        Store_Name = "#"+Store_Name;
     }
 
     /**
@@ -62,6 +64,7 @@ class ftss {
             loge("ftss.str_to_unique_words: Static key not set");
             return;
         }
+        Store_Name = "#"+Store_Name;
     }
 
     /**
@@ -72,6 +75,7 @@ class ftss {
             loge("ftss.obj_to_unique_words: Static key not set");
             return;
         }
+        Store_Name = "#"+Store_Name;
     }
 
     /**
@@ -82,6 +86,7 @@ class ftss {
             loge("ftss.obj_exists: Static key not set");
             return;
         }
+        Store_Name = "#"+Store_Name;
     }
 
     /**
@@ -93,6 +98,7 @@ class ftss {
             loge("ftss.increase_num_objs: Static key not set");
             return;
         }
+        Store_Name = "#"+Store_Name;
     }
 
     /**
@@ -104,6 +110,7 @@ class ftss {
             loge("ftss.decrease_num_objs: Static key not set");
             return;
         }
+        Store_Name = "#"+Store_Name;
     }
 
     /**
@@ -114,6 +121,7 @@ class ftss {
             loge("ftss.update_fts: Static key not set");
             return;
         }
+        Store_Name = "#"+Store_Name;
     }
 
     /**
@@ -124,6 +132,7 @@ class ftss {
             loge("ftss.update_fts_c: Static key not set");
             return;
         }
+        Store_Name = "#"+Store_Name;
     }
 
     /**
@@ -141,6 +150,7 @@ class ftss {
             loge("ftss.update_fts_u: Static key not set");
             return;
         }
+        Store_Name = "#"+Store_Name;
     }
 
     /**
@@ -151,6 +161,7 @@ class ftss {
             loge("ftss.update_fts_d: Static key not set");
             return;
         }
+        Store_Name = "#"+Store_Name;
     }
 
     /**
@@ -161,6 +172,7 @@ class ftss {
             loge("ftss.#term_to_objs: Static key not set");
             return;
         }
+        Store_Name = "#"+Store_Name;
     }
 
     /**
@@ -171,6 +183,7 @@ class ftss {
             loge("ftss.#score_objs: Static key not set");
             return;
         }
+        Store_Name = "#"+Store_Name;
     }
 
     /**
@@ -183,6 +196,7 @@ class ftss {
             loge("ftss.find_many_by_terms: Static key not set");
             return;
         }
+        Store_Name = "#"+Store_Name;
     }
 }
 

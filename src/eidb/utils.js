@@ -2,6 +2,11 @@
  * @module eidb/utils
  */ 
 
+// Shorthands
+const log  = console.log;
+const logw = console.warn;
+const loge = console.error;
+
 /**
  * Utility class
  */
@@ -56,6 +61,97 @@ class utils {
     static obj_to_valuestr(Obj){
         var Str = utils.#obj_to_valuestr(Obj);
         return Str.trim();
+    }
+
+    /**
+     * Object (including binary values) to JSON string<br/>
+     * WARN: binary values will be come empty {}
+     */ 
+    static obj_to_json(Obj){
+        return JSON.stringify(Obj);
+    }
+
+    /**
+     * JSON string to object without date revival
+     */ 
+    static json_to_obj_sd(Json){ // String date
+        return JSON.parse(Json);
+    }
+
+    /**
+     * JSON string to object with date revival
+     */ 
+    static json_to_obj_bd(Json){ // Binary date
+        return JSON.parse(Json,(K,V)=>{
+            if (V.constructor != String)
+                return V;
+
+            // Check string format if is date
+            var Reg = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/;
+            if (V.match(Reg) == null) return V;
+            return new Date(V);
+        });
+    }
+
+    /**
+     * Set property value of object by path
+     */ 
+    static prop_set(Obj,Path,Value){
+        var Tokens = Path.split(".");
+        var Prop   = Obj;
+
+        // Invalid
+        if (Tokens.length == 0){
+            loge("utils.prop_set: Invalid path");
+            return;
+        }
+
+        // Direct field
+        if (Tokens.length == 1){
+            Obj[Path] = Value;
+            return Obj;
+        }
+
+        // Inner field    
+        for (let i=0; i<Tokens.length; i++){
+            let Token = Tokens[i];
+
+            if (i<Tokens.length-1){
+                if (Prop[Token] == null) Prop[Token]={};
+                Prop = Prop[Token];
+            }
+            else{
+                Prop[Token] = Value; 
+                return Obj;
+            }
+        }
+    }
+
+    /**
+     * Get property value of object by path
+     */ 
+    static prop_get(Obj,Path){
+        var Tokens = Path.split(".");
+        var Prop   = Obj;
+
+        // Invalid
+        if (Tokens.length == 0){
+            loge("utils.prop_get: Invalid path");
+            return;
+        }
+
+        // Direct field
+        if (Tokens.length == 1)
+            return Obj[Path];
+
+        // Inner field    
+        for (let i=0; i<Tokens.length; i++){
+            let Token = Tokens[i];
+            if (Prop[Token] == null) return null;
+            Prop = Prop[Token];
+        }
+
+        return Prop;
     }
 }
 

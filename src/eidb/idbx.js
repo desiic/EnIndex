@@ -49,6 +49,7 @@ _DEFAULT_INDICES["op_hist"] = {
 
 // Encrypted
 _DEFAULT_INDICES["#op_hist"] = { 
+    // None, secure op history is the same as regular op hist
 };
 
 // FULL-TEXT SEARCH STORE
@@ -104,6 +105,16 @@ class idbx {
      * FTS features
      */
     static fts = fts;
+
+    /**
+     * _________________________________________________________________________
+     */ 
+    PROPERTIES;
+
+    /**
+     * Index schema saved when open_av
+     */ 
+    static Indices = {};
 
     /*
      * _________________________________________________________________________
@@ -430,6 +441,9 @@ class idbx {
         // All id is primary field of u1 type (unique, single value)
         for (let Store_Name in Indices)
             Indices[Store_Name].id = u1;
+
+        // Store index schema for later reference, eg. obj_to_sobj
+        idbx.Indices = Indices;    
 
         // Check if indices changed
         window._Db_Name     = Db_Name;

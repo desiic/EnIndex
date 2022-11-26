@@ -13,12 +13,20 @@ var loge = console.error;
 // Constants
 const BIT_LEN = 256;
 
+// Fixed IV for searching with index feature.
+// WARN: THESE FIXED IV VALUES SHOULD STAY UNCHANGED.
+//       0->15 is teddious, stepping 2 is even (maybe easy?), using stepping 3:
+const FIXED_IV_BYTES = new Uint8Array([0,3,6,9, 12,15,18,21, 24,27,30,33, 36,39,42,45]); 
+const FIXED_IV       = "000306090c0f1215181b1e2124272a2d";
+
 /**
  * Crypto class<br/>
  * NOTE: Web Crypto always return ArrayBuffer but receive Uint8Array params.
  *       ALL ARE DEFAULTED TO 256-BIT IN THIS MODULE (EXCEPT RSA).
  */
 class wcrypto {
+    static BIT_LEN  = BIT_LEN;
+    static FIXED_IV = FIXED_IV;
 
     /**
      * _________________________________________________________________________
@@ -670,14 +678,26 @@ class wcrypto {
     /**
      * Encrypt with AES key (GCM) to base64
      */ 
-    static async encrypt_aes(Text, Key){
-        var Bytes      = wcrypto.utf8_to_bytes(Text); // Always UTF-8 to bytes
-        var Iv         = wcrypto.random_iv();
+    static async encrypt_aes(Text, Key, Iv_Hex=null){
+        if (Iv_Hex==null)
+            var Iv = wcrypto.random_iv();
+        else   
+            var Iv = wcrypto.hex_to_bytes(Iv_Hex);
+
+        var Bytes      = wcrypto.utf8_to_bytes(Text); // Always UTF-8 to bytes        
         var Algo       = {name:"AES-GCM", iv:Iv};
         var Cipherbuff = await window.crypto.subtle.encrypt(Algo,Key,Bytes); // ArrayBuffer
         var Ciphertext = wcrypto.buff_to_base64(Cipherbuff);
 
         return [Ciphertext, wcrypto.bytes_to_hex(Iv)];
+    }
+
+    /**
+     * Encrypt with AES key (GCM) to base64, with fixed IV, for facilitating
+     * encrypted search for field value.
+     */ 
+    static async encrypt_aes_fiv(Text, Key){ // fiv: Fixed IV
+        return await wcrypto.encrypt_aes(Text, Key, FIXED_IV)
     }
 
     /**

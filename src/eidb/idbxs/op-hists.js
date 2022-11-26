@@ -12,7 +12,7 @@
 // IF IN NEED OF OP HISTORY OR FTS RESULTS IMMEDIATELY.
 
 // Modules
-import idbxs from "../idbxs.js";
+import op_hist from "../idbx/op-hist.js";
 
 // Shorthands
 const log  = console.log;
@@ -23,57 +23,43 @@ const loge = console.error;
  * Operation history secure
  */ 
 class op_hists {
-    static max_history = 1000;
-    static enabled     = false;
+    // COMMENTED OUT: THESE VALUES ARE IN REGULAR op_hist CLASS
+    // static max_history = 1000;
+    // static enabled     = false;
 
     /**
      * Change default max entries per op type in history
      */ 
     static set_max_history(max){
-        if (idbxs.Skey==null) {
-            loge("op_hists.set_max_history: Static key not set");
-            return;
-        }
+        op_hist.set_max_history(max);
     }
 
     /**
      * Get op hist status
      */ 
     static get_op_hist_status(){
-        if (idbxs.Skey==null) {
-            loge("op_hists.get_op_hist_status: Static key not set");
-            return;
-        }
+        return op_hist.get_op_hist_status();
     }
 
     /**
      * Enable op history
      */
     static async enable_op_hist(){
-        if (idbxs.Skey==null) {
-            loge("op_hists.enable_op_hist: Static key not set");
-            return;
-        }
+        op_hist.enable_op_hist();
     }
 
     /**
      * Disable history
      */ 
     static disable_op_hist(){
-        if (idbxs.Skey==null) {
-            loge("op_hists.disable_op_hist: Static key not set");
-            return;
-        }
+        op_hist.disable_op_hist();
     }
 
     /**
      * Sort a docmeta array descending, most recents first
      */ 
     static sort_docmetas_des(Docmetas){
-        if (idbxs.Skey==null) {
-            loge("op_hists.sort_docmetas_des: Static key not set");
-            return;
-        }
+        // UNUSED, SEE REGULAR op_hist CLASS
     }
 
     /**
@@ -81,21 +67,16 @@ class op_hists {
      * NOTE: NOT TO AWAIT HISTORY|FTS METHODS, BE IN BACKGROUND
      */ 
     static async #update_op_hist(Store_Name, Op_Type, Ids){
-        if (idbxs.Skey==null) {
-            loge("op_hists.#update_op_hist: Static key not set");
-            return;
-        }
+        // UNUSED, SEE REGULAR op_hist CLASS
     }
 
     /**
      * Update op hist CRUD:C<br/>
      * NOTE: NOT TO AWAIT HISTORY|FTS METHODS, BE IN BACKGROUND
      */ 
-    static update_op_hist_c(Store_Name, Ids){
-        if (idbxs.Skey==null) {
-            loge("op_hists.update_op_hist_c: Static key not set");
-            return;
-        }
+    static update_op_hist_c(Store_Name, Ids){        
+        Store_Name = "#"+Store_Name;
+        op_hist.update_op_hist_c(Store_Name, Ids);
     }
 
     /**
@@ -103,10 +84,8 @@ class op_hists {
      * NOTE: NOT TO AWAIT HISTORY|FTS METHODS, BE IN BACKGROUND
      */ 
     static update_op_hist_r(Store_Name, Ids){
-        if (idbxs.Skey==null) {
-            loge("op_hists.update_op_hist_r: Static key not set");
-            return;
-        }
+        Store_Name = "#"+Store_Name;
+        op_hist.update_op_hist_r(Store_Name, Ids);
     }
 
     /**
@@ -114,41 +93,32 @@ class op_hists {
      * NOTE: NOT TO AWAIT HISTORY|FTS METHODS, BE IN BACKGROUND
      */ 
     static update_op_hist_u(Store_Name, Ids){
-        if (idbxs.Skey==null) {
-            loge("op_hists.update_op_hist_u: Static key not set");
-            return;
-        }
+        Store_Name = "#"+Store_Name;
+        op_hist.update_op_hist_u(Store_Name, Ids);
     }
 
     /**
      * Update op hist CRUD:D<br/>
      * NOTE: NOT TO AWAIT HISTORY|FTS METHODS, BE IN BACKGROUND
      */ 
-    static update_op_hist_d(Store_Name, Ids){
-        if (idbxs.Skey==null) {
-            loge("op_hists.update_op_hist_d: Static key not set");
-            return;
-        }
+    static update_op_hist_d(Store_Name, Ids){        
+        Store_Name = "#"+Store_Name;
+        op_hist.update_op_hist_d(Store_Name, Ids);
     }
 
     /**
      * Get operation history entries
      */ 
     static async get_op_hist(Store_Name, max){
-        if (idbxs.Skey==null) {
-            loge("op_hists.get_op_hist: Static key not set");
-            return;
-        }
+        Store_Name = "#"+Store_Name;
+        return await op_hist.get_op_hist(Store_Name, max);
     }
 
     /**
      * Clear operation history, caller should await, to let user see result.
      */ 
     static async clear_op_hist(){
-        if (idbxs.Skey==null) {
-            loge("op_hists.clear_op_hist: Static key not set");
-            return;
-        }
+        await op_hist.clear_op_hist();
     }
 }
 
