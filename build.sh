@@ -24,7 +24,11 @@ for Jsfile in ${Jsfiles[@]}; do
     echo -e "\nMinifying $Jsfile..."
     Outfile=$(echo $Jsfile | perl -pe $'s/\/src/\/dist/g')
     mkdir -p $Outfile
-    rm -d $Outfile
+
+    if [[ -d $Outfile ]]; then
+        rm -d $Outfile
+    fi
+    
     terser $Jsfile -m -c -o $Outfile
 done
 # EOF
