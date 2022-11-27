@@ -78,13 +78,18 @@ async function main(){
 
     logw("Test full-text search"); // ------------------------------------------
     var Db = await eidb.reopen(); // Clear fts_words, fts_ids stores first to test
-    var T  = Db.transaction(["my_store","fts_words","fts_ids"],RW);
+    var T  = Db.transaction(["my_store","fts_words","fts_ids",
+                             "#my_secure_store","#fts_words","#fts_ids"],RW);
     await T.object_store("my_store").clear();
     await T.object_store("fts_words").clear();
     await T.object_store("fts_ids").clear();
+    await T.object_store("#my_secure_store").clear();
+    await T.object_store("#fts_words").clear();
+    await T.object_store("#fts_ids").clear();
     Db.close();
 
     eidb.enable_fts(); // Should be right after open_av in production
+    // eidb.s_enable_fts(); // The same
     await eidb.insert_one(Sname,{foo:"foo bar foobar barfoox"});
     await eidb.insert_one(Sname,{foo:"foo foobar"});
     await eidb.update_one(Sname,{foo:"foo foobar"}, {foo:"foo abcxyz"});
@@ -162,15 +167,16 @@ async function main(){
     logw("Test DELETE (secure)");
     await eidb.s_remove_one("my_secure_store", {foo:111});
     log("Remove one:  ",await eidb.s_find_one("my_secure_store", {foo:111}));
-    await eidb.s_remove_many("my_secure_store", {foo:"bar"});
+    await eidb.s_remove_many("my_secure_store", {foo:"barx"});    
     log("Remove many: ",await eidb.s_find_many("my_secure_store", {foo:"bar"}));    
 
     logw("Test op history (secure)"); // ---------------------------------------
     log("The same as regular op_hist");
 
     logw("Test full-text search (secure)"); // ---------------------------------
-    // ...
-    return;
+    await eidb.s_insert_one("my_secure_store",{foo:"bar"});
+    log("Num words:",await eidb.s_count_all("fts_words"));
+    log("FTS find: ",await eidb.s_find_many_by_terms("my_secure_store","bar blahblah"));
 
     logw("Test Web Crypto"); // ------------------------------------------------
     logw("Randomisation");

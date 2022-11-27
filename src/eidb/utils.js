@@ -162,6 +162,14 @@ class utils {
     }
 
     /**
+     * Escape string for putting in regex<br/>
+     * See: https://stackoverflow.com/a/6969486/5581893
+     */
+    static escape_for_regex(Str) {
+        return Str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); // $& means the whole matched string
+    } 
+
+    /**
      * Init static stuff
      */ 
     static init(){

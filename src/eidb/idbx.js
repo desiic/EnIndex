@@ -77,8 +77,23 @@ _DEFAULT_INDICES["fts_ids"] = {
 
 // Encrypted
 _DEFAULT_INDICES["#fts_words"] = { 
+    Store:              1,  // Store name, FTS find step1: O(1)
+    Word:               1,  // A single-word term to search            
+    "Store,Word":       u1, // Compound to look up
+
+    // Other indices:
+    num_obj_ids:        1,  // To select the first term with fewest ids
 };
 _DEFAULT_INDICES["#fts_ids"] = {
+    Store:              1,  // Store name, FTS outer loop O(n), in-next-set operation O(logn)
+    Word:               1,  // A single-word term to search            
+    "Store,Word":       1,  // Not unique due to multiple obj_id(s)
+
+    // Other indices:
+    obj_id:             1,  // A single object id of object containing Word
+    "Store,obj_id":     1,  // To remove all unused words on 'update', 'delete'
+    "Store,Word,obj_id":u1  // Compound index to find if Store+Word+obj_id exists (set intersection),
+                            // this compound value is always true, or doesn't exist.
 };
 
 /** 

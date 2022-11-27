@@ -12,7 +12,10 @@
 // IF IN NEED OF OP HISTORY OR FTS RESULTS IMMEDIATELY.
 
 // Modules
-import idbxs from "../idbxs.js";
+import fts     from "../idbx/fts.js";
+import idbxs   from "../idbxs.js";
+import wcrypto from "../wcrypto.js";
+import utils   from "../utils.js";
 
 // Shorthands
 const log  = console.log;
@@ -23,9 +26,10 @@ const loge = console.error;
  * FTS secure
  */
 class ftss {
-    static enabled    = false;
-    static score_rate = 2; // Mostly user won't enter search terms of 32+ words,
-                           // score is capped by 2^32 in #score_objs method.
+    // COMMENTED OUT, THESE PROPS ARE IN REGULAR fts CLASS
+    // static enabled    = false;
+    // static score_rate = 2; // Mostly user won't enter search terms of 32+ words,
+    //                        // score is capped by 2^32 in #score_objs method.
     /*
     FTS scoring example:
     Search terms (smaller sets first):  foo  bar  foobar  barfoo
@@ -35,58 +39,38 @@ class ftss {
     */
 
     /**
-     * Enable FTS, should run after `.open_av`
+     * Enable FTS, should run after `.s_open_av`
      */ 
     static enable_fts(){
-        if (idbxs.Skey==null) {
-            loge("ftss.enable_fts: Static key not set");
-            return;
-        }
-        Store_Name = "#"+Store_Name;
+        fts.enable_fts();
     }
 
     /**
      * Disable FTS, note: FTS is disabled by default
      */ 
     static disable_fts(){
-        if (idbxs.Skey==null) {
-            loge("ftss.disable_fts: Static key not set");
-            return;
-        }
-        Store_Name = "#"+Store_Name;
+        fts.disable_fts();
     }
 
     /**
      * String to unique words (all lowercase)
      */
     static str_to_unique_words(Str){
-        if (idbxs.Skey==null) {
-            loge("ftss.str_to_unique_words: Static key not set");
-            return;
-        }
-        Store_Name = "#"+Store_Name;
+        // Unused
     }
 
     /**
      * Object to unique words (all lowercase), find words in all strings in object
      */
     static obj_to_unique_words(Obj){
-        if (idbxs.Skey==null) {
-            loge("ftss.obj_to_unique_words: Static key not set");
-            return;
-        }
-        Store_Name = "#"+Store_Name;
+        // Unused
     }
 
     /**
      * Check if object exists using an index, any store
      */ 
     static async obj_exists(Store,Index_Name,Value){
-        if (idbxs.Skey==null) {
-            loge("ftss.obj_exists: Static key not set");
-            return;
-        }
-        Store_Name = "#"+Store_Name;
+        // Unused
     }
 
     /**
@@ -94,11 +78,7 @@ class ftss {
      * Requirement: Pair Store_Name & Word must be already in fts_words store
      */ 
     static async increase_num_objs(Swords, Store_Name, Word){
-        if (idbxs.Skey==null) {
-            loge("ftss.increase_num_objs: Static key not set");
-            return;
-        }
-        Store_Name = "#"+Store_Name;
+        // Unused
     }
 
     /**
@@ -106,33 +86,21 @@ class ftss {
      * Requirement: Pair Store_Name & Word must be already in fts_words store
      */ 
     static async decrease_num_objs(Swords, Store_Name, Word){
-        if (idbxs.Skey==null) {
-            loge("ftss.decrease_num_objs: Static key not set");
-            return;
-        }
-        Store_Name = "#"+Store_Name;
+        // Unused
     }
 
     /**
      * Update FTS
      */ 
     static async update_fts(Op, Store_Name, id, Obj){
-        if (idbxs.Skey==null) {
-            loge("ftss.update_fts: Static key not set");
-            return;
-        }
-        Store_Name = "#"+Store_Name;
+        // Unused
     }
 
     /**
      * Update FTS data, CRUD/C
      */ 
     static update_fts_c(Store_Name, id, Obj){
-        if (idbxs.Skey==null) {
-            loge("ftss.update_fts_c: Static key not set");
-            return;
-        }
-        Store_Name = "#"+Store_Name;
+        fts.update_fts_c(Store_Name, id, Obj, _secure);
     }
 
     /**
@@ -146,44 +114,28 @@ class ftss {
      * Update FTS data, CRUD/U
      */ 
     static update_fts_u(Store_Name, id, Obj){
-        if (idbxs.Skey==null) {
-            loge("ftss.update_fts_u: Static key not set");
-            return;
-        }
-        Store_Name = "#"+Store_Name;
+        fts.update_fts_u(Store_Name, id, Obj, _secure);
     }
 
     /**
      * Update FTS data, CRUD/D
      */ 
     static update_fts_d(Store_Name, id, Obj){
-        if (idbxs.Skey==null) {
-            loge("ftss.update_fts_d: Static key not set");
-            return;
-        }
-        Store_Name = "#"+Store_Name;
+        fts.update_fts_d(Store_Name, id, Obj, _secure);
     }
 
     /**
      * All objects containing a term
      */
     static async #term_to_objs(Sids, Store,Term, limit){
-        if (idbxs.Skey==null) {
-            loge("ftss.#term_to_objs: Static key not set");
-            return;
-        }
-        Store_Name = "#"+Store_Name;
+        // Unused
     }
 
     /**
      * Give objects scores
      */ 
     static #score_objs(Objs,Terms){
-        if (idbxs.Skey==null) {
-            loge("ftss.#score_objs: Static key not set");
-            return;
-        }
-        Store_Name = "#"+Store_Name;
+        // Unused
     }
 
     /**
@@ -197,6 +149,26 @@ class ftss {
             return;
         }
         Store_Name = "#"+Store_Name;
+
+        // Find
+        var Sres = await fts.find_many_by_terms(Store_Name, Terms_Str, limit, _secure);
+
+        // Decrypt
+        for (let i=0; i<Sres.Items.length; i++){
+            let Sobj = Sres.Items[i].Object;
+            let Json = await wcrypto.decrypt_aes_fiv(Sobj.Etds_Obj, idbxs.Skey);
+            let Obj  = utils.json_to_obj_bd(Json);
+            Obj.id   = Sobj.id;
+            Sres.Items[i] = Obj;
+        }
+
+        for (let i=0; i<Sres.Search_Terms.length; i++)
+            Sres.Search_Terms[i] = await wcrypto.decrypt_aes_fiv(Sres.Search_Terms[i], idbxs.Skey);
+        for (let i=0; i<Sres.Excluded_Terms.length; i++)
+            Sres.Excluded_Terms[i] = await wcrypto.decrypt_aes_fiv(Sres.Excluded_Terms[i], idbxs.Skey);    
+
+        var Res = Sres; // Decrypted
+        return Res;
     }
 
     /**

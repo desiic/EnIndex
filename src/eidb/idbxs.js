@@ -178,7 +178,7 @@ class idbxs { // Aka sec
             Sobj       = utils.prop_set(Sobj,Path,Svalue);
         }
 
-        // Add Etds_Obj (object encrypted by static key)
+        // Add Etds_Obj (object encrypted by static key)        
         var Str       = utils.obj_to_json(Obj);
         var Ct_Iv     = await wcrypto.encrypt_aes_fiv(Str, idbxs.Skey);
         Sobj.Etds_Obj = Ct_Iv[0]; // Ignore fixed IV value

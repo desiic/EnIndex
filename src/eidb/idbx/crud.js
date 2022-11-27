@@ -29,7 +29,7 @@ class crud {
      * Insert one
      * @return {Number} Id of the new obj
      */
-    static async insert_one(Store_Name,Obj, secure=false){
+    static async insert_one(Store_Name,Obj, secure=false,Original_Obj=null){
         var Db    = await eidb.reopen();
         var T     = Db.transaction(Store_Name,RW);
         var Store = T.store1()
@@ -50,7 +50,7 @@ class crud {
         op_hist.update_op_hist_c(Store.Name, [new_id]);
 
         if (secure)
-            ftss.update_fts_c(Store.Name, new_id, Obj);
+            ftss.update_fts_c(Store.Name, new_id, Original_Obj);
         else
             fts.update_fts_c(Store.Name, new_id, Obj);
 
@@ -62,7 +62,7 @@ class crud {
      * Insert many
      * @return {Array} List of inserted object ids
      */
-    static async insert_many(Store_Name,Objs, secure=false){
+    static async insert_many(Store_Name,Objs, secure=false,Original_Objs=null){
         var Db    = await eidb.reopen();
         var T     = Db.transaction(Store_Name,RW);            
         var Store = T.store1();
@@ -92,7 +92,7 @@ class crud {
 
         for (let i=0; i<Ids.length; i++)
             if (secure)
-                ftss.update_fts_c(Store.Name, Ids[i], Objs[i]);
+                ftss.update_fts_c(Store.Name, Ids[i], Original_Objs[i]);
             else
                 fts.update_fts_c(Store.Name, Ids[i], Objs[i]);
 
@@ -444,7 +444,7 @@ class crud {
      * Keys of Conds are all index names.
      * @return {Object}
      */
-    static async update_one(Store_Name,Cond,Changes, secure=false){
+    static async update_one(Store_Name,Cond,Changes, secure=false,Original_Obj=null){
         var Db    = await eidb.reopen();
         var T     = Db.transaction(Store_Name,RW);
         var Store = T.store1();
@@ -467,7 +467,7 @@ class crud {
             op_hist.update_op_hist_u(Store.Name, [Obj.id]);
 
             if (secure)
-                ftss.update_fts_u(Store.Name, Obj.id, Obj);
+                ftss.update_fts_u(Store.Name, Obj.id, Original_Obj);
             else
                 fts.update_fts_u(Store.Name, Obj.id, Obj);
 
@@ -542,7 +542,7 @@ class crud {
                 if (Updated_Objs.length >= limit)       unlock();
             };
             Req.onsuccess = (Ev)=>{
-                Updated_Objs.push(Replacement);
+                Updated_Objs.push({...Replacement, ...{id:Ev.target.result}});
                 if (Updated_Objs.length == Objs.length) unlock();
                 if (Updated_Objs.length >= limit)       unlock();
             }
@@ -550,8 +550,10 @@ class crud {
         await Lock;
 
         for (let i=0; i<Updated_Objs.length; i++)
-            if (secure)
-                ftss.update_fts_u(Store.Name, Updated_Objs[i].id, Updated_Objs[i]);
+            if (secure){
+                // FTS secure is updated in cruds.js for this case
+                // ftss.update_fts_u(Store.Name, Updated_Objs[i].id, Updated_Objs[i]);
+            }
             else
                 fts.update_fts_u(Store.Name, Updated_Objs[i].id, Updated_Objs[i]);
 
@@ -565,7 +567,7 @@ class crud {
      * Keys of Conds are all index names.
      * @return {Number} Object id
      */
-    static async upsert_one(Store_Name,Cond,Changes, secure=false){
+    static async upsert_one(Store_Name,Cond,Changes, secure=false,Original_Obj=null){
         var Db    = await eidb.reopen();
         var T     = Db.transaction(Store_Name,RW);
         var Store = T.store1();
@@ -587,7 +589,7 @@ class crud {
                 op_hist.update_op_hist_c(Store.Name, [id]);
 
                 if (secure)
-                    ftss.update_fts_c(Store.Name, id, Changes);
+                    ftss.update_fts_c(Store.Name, id, Original_Obj);
                 else
                     fts.update_fts_c(Store.Name, id, Changes);
 
@@ -601,7 +603,7 @@ class crud {
             op_hist.update_op_hist_u(Store.Name, [Obj.id]);
 
             if (secure)
-                ftss.update_fts_u(Store.Name, Obj.id, Obj);
+                ftss.update_fts_u(Store.Name, Obj.id, Original_Obj);
             else
                 fts.update_fts_u(Store.Name, Obj.id, Obj);
 
@@ -621,7 +623,7 @@ class crud {
             op_hist.update_op_hist_c(Store.Name, [id]);
 
             if (secure)
-                ftss.update_fts_c(Store.Name, id, Changes);
+                ftss.update_fts_c(Store.Name, id, Original_Obj);
             else
                 fts.update_fts_c(Store.Name, id, Changes);
 
@@ -635,7 +637,7 @@ class crud {
         op_hist.update_op_hist_u(Store.Name, [Obj.id]);
 
         if (secure)
-            ftss.update_fts_u(Store.Name, Obj.id, Obj);
+            ftss.update_fts_u(Store.Name, Obj.id, Original_Obj);
         else
             fts.update_fts_u(Store.Name, Obj.id, Obj);
 
@@ -649,7 +651,7 @@ class crud {
      * Keys of Conds are all index names.
      * @return {null}
      */
-    static async remove_one(Store_Name,Cond, secure=false){
+    static async remove_one(Store_Name,Cond, secure=false,Original_Obj=null){
         var Db    = await eidb.reopen();
         var T     = Db.transaction(Store_Name,RW);
         var Store = T.store1();
@@ -667,7 +669,7 @@ class crud {
             op_hist.update_op_hist_d(Store.Name, [Obj.id]);
 
             if (secure)
-                ftss.update_fts_d(Store.Name, Obj.id, Obj);
+                ftss.update_fts_d(Store.Name, Obj.id, Original_Obj);
             else
                 fts.update_fts_d(Store.Name, Obj.id, Obj);
 
@@ -684,7 +686,7 @@ class crud {
         op_hist.update_op_hist_d(Store.Name, [Ids[0]]);
 
         if (secure)
-            ftss.update_fts_d(Store.Name, Ids[0], Objs[0]);
+            ftss.update_fts_d(Store.Name, Ids[0], Original_Obj);
         else
             fts.update_fts_d(Store.Name, Ids[0], Objs[0]);
 
@@ -698,7 +700,7 @@ class crud {
      * Keys of Conds are all index names.
      * @return {null}
      */
-    static async remove_many(Store_Name,Cond, secure=false){
+    static async remove_many(Store_Name,Cond, secure=false,Original_Objs=null){
         var Db    = await eidb.reopen();
         var T     = Db.transaction(Store_Name,RW);
         var Store = T.store1();
@@ -742,7 +744,7 @@ class crud {
 
         for (let i=0; i<Ids.length; i++)
             if (secure)
-                ftss.update_fts_d(Store.Name, Ids[i], Objs[i]);
+                ftss.update_fts_d(Store.Name, Ids[i], Original_Objs[i]);
             else
                 fts.update_fts_d(Store.Name, Ids[i], Objs[i]);
 

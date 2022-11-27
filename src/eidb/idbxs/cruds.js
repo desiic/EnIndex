@@ -9,6 +9,7 @@
 // Modules
 import base    from "../base.js";
 import crud    from "../idbx/crud.js";
+import fts     from "../idbx/fts.js";
 import idbxs   from "../idbxs.js";
 import wcrypto from "../wcrypto.js";
 import utils   from "../utils.js";
@@ -21,7 +22,7 @@ const new_lock = base.new_lock;
 
 /**
  * CRUD secure<br/>
- * WARN: ALL Cond PASSED TO METHODS IN THIS CLASS ARE ALL DIRECT VALUES,
+ * WARN: FOR ENCRYPTED CRUD OPS: ALL Cond PASSED TO METHODS IN THIS CLASS ARE ALL DIRECT VALUES,
  *       CAN'T BE RANGES AS IN crud CLASS, SEE dobi.js, DOBI CAN BE RANGES.
  */
 class cruds {
@@ -42,7 +43,7 @@ class cruds {
         var Sobj = await idbxs.obj_to_sobj(Store_Name,Obj);
         
         // Insert
-        var id = await crud.insert_one(Store_Name,Sobj, _secure);
+        var id = await crud.insert_one(Store_Name,Sobj, _secure,Obj);
         return id;
     }
 
@@ -65,7 +66,7 @@ class cruds {
             Sobjs.push( await idbxs.obj_to_sobj(Store_Name,Obj) );
         
         // Insert
-        var Ids = await crud.insert_many(Store_Name,Sobjs, _secure);
+        var Ids = await crud.insert_many(Store_Name,Sobjs, _secure,Objs);
         return Ids;
     }
 
@@ -337,7 +338,7 @@ class cruds {
         Schanges.Etds_Obj = (await wcrypto.encrypt_aes_fiv(Json, idbxs.Skey))[0];
         
         // Update
-        var Sobj2 = await crud.update_one(Store_Name,Scond,Schanges, _secure);      
+        var Sobj2 = await crud.update_one(Store_Name,Scond,Schanges, _secure,Obj);
 
         // Decrypt
         var Json = await wcrypto.decrypt_aes_fiv(Sobj2.Etds_Obj, idbxs.Skey);
@@ -378,15 +379,17 @@ class cruds {
         for (let Key in Cond)
             Scond[Key] = await idbxs.value_to_svalue(Cond[Key]);
 
-        // Apply changes to Etds_Obj
-        var Sobj1s = await crud.find_many(Store_Name,Scond, _secure);
+        // Apply changes to Etds_Obj        
+        var Sobj1s        = await crud.find_many(Store_Name,Scond, _secure);
+        var Original_Objs = [];
 
         for (let Sobj1 of Sobj1s){
             let Json = await wcrypto.decrypt_aes_fiv(Sobj1.Etds_Obj, idbxs.Skey);
             let Obj  = utils.json_to_obj_bd(Json);
 
-            Obj  = {...Obj, ...Changes};
+            Obj  = {...Obj, ...Changes, ...{id:Sobj1.id}};
             Json = utils.obj_to_json(Obj); 
+            Original_Objs.push(Obj);
 
             let Schanges_Item      = utils.deepcopy(Schanges);
             Schanges_Item.Etds_Obj = (await wcrypto.encrypt_aes_fiv(Json, idbxs.Skey))[0];
@@ -406,11 +409,17 @@ class cruds {
             let wait;
 
             S.put(Sobj1,null, wait=false,(Res)=>{
-                if (Res instanceof Error)
+                if (Res instanceof Error){
                     loge("cruds.update_many: Error:",Res);
+                    Sobj2s.push(null);
+                }
                 else 
                     Sobj2s.push(Sobj1);
 
+                // FTS
+                fts.update_fts_u(Store_Name, Original_Objs[i].id, Original_Objs[i]);    
+
+                // Counter    
                 done++;
                 if (done==Sobj1s.length) unlock();
             });
@@ -461,7 +470,7 @@ class cruds {
         Schanges.Etds_Obj = (await wcrypto.encrypt_aes_fiv(Json, idbxs.Skey))[0];
         
         // Upsert
-        var id = await crud.upsert_one(Store_Name,Scond,Schanges, _secure);
+        var id = await crud.upsert_one(Store_Name,Scond,Schanges, _secure,Obj);
         return id;
     }
 
@@ -485,7 +494,16 @@ class cruds {
             Scond[Key] = await idbxs.value_to_svalue(Cond[Key]);
         
         // Find
-        await crud.remove_one(Store_Name,Scond, _secure);
+        var Sobj = await crud.find_one(Store_Name,Scond, _secure);
+        if (Sobj==null) return null;
+
+        // Decrypt
+        var Json = await wcrypto.decrypt_aes_fiv(Sobj.Etds_Obj, idbxs.Skey);
+        var Obj  = utils.json_to_obj_bd(Json);
+        Obj.id   = Sobj.id;
+        
+        // Remove
+        await crud.remove_one(Store_Name,Scond, _secure,Obj);
     }
 
     /**
@@ -508,7 +526,20 @@ class cruds {
             Scond[Key] = await idbxs.value_to_svalue(Cond[Key]);
         
         // Find
-        await crud.remove_many(Store_Name,Scond, _secure);
+        var Objs  = [];
+        var Sobjs = await crud.find_many(Store_Name,Scond, _secure);
+        if (Sobjs==null || Sobjs.length==0) return null;
+
+        // Decrypt
+        for (let Sobj of Sobjs){
+            var Json = await wcrypto.decrypt_aes_fiv(Sobj.Etds_Obj, idbxs.Skey);
+            var Obj  = utils.json_to_obj_bd(Json);
+            Obj.id   = Sobj.id;
+            Objs.push(Obj);
+        }
+        
+        // Remove
+        await crud.remove_many(Store_Name,Scond, _secure,Objs);
     }
 
     /**
