@@ -101,7 +101,8 @@ class crud {
     }
 
     /**
-     * Get object by 1 condition only
+     * Get object by 1 condition only<br/>
+     * Keys of Conds are all index names.
      */
     static async get_1stcond_obj(Store,Cond){ // Cond can't be empty {}
         var Keys  = Object.keys(Cond);
@@ -113,12 +114,13 @@ class crud {
             return null;
         }
 
-        var Range = value_is(Cond[Keys[0]]);
+        var Range = Cond[Keys[0]];
         return await Index.get(Range);
     }
 
     /**
-     * Get objects by 1 condition only
+     * Get objects by 1 condition only<br/>
+     * Keys of Conds are all index names.
      */
     static async get_1stcond_objs(Store,Cond){ // Cond can't be empty {}
         var Keys  = Object.keys(Cond);
@@ -130,14 +132,15 @@ class crud {
             return null;
         }
 
-        var Range = value_is(Cond[Keys[0]]);
+        var Range = Cond[Keys[0]];        
         return await Index.get_all(Range);
     }
 
     /**
      * Intersect conditions (key values) to get ids, eg. Cond {foo:"a", bar:"b"},
      * key foo gives multiple items of value 'a', key bar gives multiple items
-     * of value 'b', intersect these 2 for id list.
+     * of value 'b', intersect these 2 for id list.<br/>
+     * Keys of Conds are all index names.
      */ 
     static async intersect_cond(Store,Cond){
         var Keys = Object.keys(Cond);
@@ -155,7 +158,7 @@ class crud {
                 return null;
             }
 
-            let Range = value_is(Cond[Key]);
+            let Range = Cond[Key];
             let Objs  = await Index.get_all(Range);
             let Ids   = Objs.map(Obj=>Obj.id);
             Id_Arrays.push(Ids);
@@ -167,7 +170,8 @@ class crud {
     /**
      * Intersect conditions (key values) to get ids, eg. Cond {foo:"a", bar:"b"},
      * key foo gives multiple items of value 'a', key bar gives multiple items
-     * of value 'b', intersect these 2 for object list.
+     * of value 'b', intersect these 2 for object list.<br/>
+     * Keys of Conds are all index names.
      */ 
      static async intersect_cond_getobjs(Store,Cond){
         var Keys = Object.keys(Cond);
@@ -186,7 +190,7 @@ class crud {
                 return null;
             }
 
-            let Range = value_is(Cond[Key]);
+            let Range = Cond[Key];
             let Objs  = await Index.get_all(Range);
 
             let Ids = Objs.map(Obj=>{
@@ -204,7 +208,8 @@ class crud {
     /**
      * Check existence of obj<br/>
      * Avoid multiple conds in Cond, use compound index.<br/>
-     * Note: Read but no fetching data, no op history
+     * Note: Read but no fetching data, no op history<br/>
+     * Keys of Conds are all index names.
      * @return {Boolean}
      */
     static async exists(Store_Name,Cond, secure=false){
@@ -232,7 +237,8 @@ class crud {
     /**
      * Count<br/>
      * Avoid multiple conds in Cond, use compound index<br/>
-     * Note: Read but no fetching data, no op history
+     * Note: Read but no fetching data, no op history<br/>
+     * Keys of Conds are all index names.
      * @return {Number}
      */
     static async count(Store_Name,Cond, secure=false){
@@ -274,7 +280,8 @@ class crud {
     }
 
     /**
-     * Find one, avoid using multiple conditions in Cond coz it's slow
+     * Find one, avoid using multiple conditions in Cond coz it's slow<br/>
+     * Keys of Conds are all index names.
      * @return {Object}
      */
     static async find_one(Store_Name,Cond, secure=false){
@@ -289,6 +296,7 @@ class crud {
         // Single cond
         if (Keys.length==1){
             let Obj = await crud.get_1stcond_obj(Store,Cond);
+            if (Obj==null) { Db.close(); return null; }
 
             // Update op history and return
             op_hist.update_op_hist_r(Store.Name, [Obj.id]);
@@ -309,7 +317,8 @@ class crud {
 
     /**
      * Find many, avoid using multiple conditions in Cond coz it's slow,
-     * USE COMPOUND INDEX INSTEAD.
+     * USE COMPOUND INDEX INSTEAD.<br/>
+     * Keys of Conds are all index names.
      * @return {Object}
      */
     static async find_many(Store_Name,Cond, limit=Number.MAX_SAFE_INTEGER, secure=false){
@@ -387,7 +396,8 @@ class crud {
     }
 
     /**
-     * Check if object matches condition
+     * Check if object matches condition<br/>
+     * Keys of Conds are all index names.
      */ 
     static obj_matches_cond(Obj,Cond){
         for (let Key in Cond){
@@ -404,7 +414,8 @@ class crud {
     }
 
     /**
-     * Filter (value contain, for exact match: use find, find_many)
+     * Filter (value contain, for exact match: use find, find_many)<br/>
+     * Keys of Conds are all index names.
      */ 
     static async filter(Store_Name,Cond, limit=Number.MAX_SAFE_INTEGER, secure=false){
         var Db    = await eidb.reopen();
@@ -429,7 +440,8 @@ class crud {
 
     /**
      * Update one, avoid using multiple conditions in Cond coz it's slow,
-     * USE COMPOUND INDEX INSTEAD.
+     * USE COMPOUND INDEX INSTEAD.<br/>
+     * Keys of Conds are all index names.
      * @return {Object}
      */
     static async update_one(Store_Name,Cond,Changes, secure=false){
@@ -472,7 +484,7 @@ class crud {
 
         // Apply changes
         Obj = {...Obj,...Changes_};
-        Store.put(Obj);
+        await Store.put(Obj);
         op_hist.update_op_hist_u(Store.Name, [Obj.id]);
 
         if (secure)
@@ -486,7 +498,8 @@ class crud {
 
     /**
      * Update many, avoid using multiple conditions in Cond coz it's slow,
-     * USE COMPOUND INDEX INSTEAD.
+     * USE COMPOUND INDEX INSTEAD.<br/>
+     * Keys of Conds are all index names.
      * @return {Object}
      */
     static async update_many(Store_Name,Cond,Changes, limit=Number.MAX_SAFE_INTEGER, secure=false){
@@ -548,8 +561,9 @@ class crud {
 
     /**
      * Upsert one, avoid using multiple conditions in Cond coz it's slow,
-     * USE COMPOUND INDEX INSTEAD
-     * @return {Object}
+     * USE COMPOUND INDEX INSTEAD<br/>
+     * Keys of Conds are all index names.
+     * @return {Number} Object id
      */
     static async upsert_one(Store_Name,Cond,Changes, secure=false){
         var Db    = await eidb.reopen();
@@ -631,7 +645,8 @@ class crud {
 
     /**
      * Remove one, avoid using multiple conditions in Cond coz it's slow,
-     * USE COMPOUND INDEX INSTEAD
+     * USE COMPOUND INDEX INSTEAD<br/>
+     * Keys of Conds are all index names.
      * @return {null}
      */
     static async remove_one(Store_Name,Cond, secure=false){
@@ -679,7 +694,8 @@ class crud {
 
     /**
      * Remove many, avoid using multiple conditions in Cond coz it's slow,
-     * USE COMPOUND INDEX INSTEAD
+     * USE COMPOUND INDEX INSTEAD<br/>
+     * Keys of Conds are all index names.
      * @return {null}
      */
     static async remove_many(Store_Name,Cond, secure=false){

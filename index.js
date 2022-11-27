@@ -149,21 +149,28 @@ async function main(){
     log("Find one: ",await eidb.s_find_one("my_secure_store", {foo:999}));
     log("Find many:",await eidb.s_find_many("my_secure_store", {foo:999}));
     log("Find all: ",await eidb.s_find_all("my_secure_store"));
-    log("Filter:   ",await eidb.s_find_many("my_secure_store", {foo:999}));
+    log("Filter:   ",await eidb.s_filter("my_secure_store", {foo:999}));
 
     logw("Test UPDATE (secure)");
-    await eidb.s_update_one("my_secure_store", {foo:999}, {foo:111});
-    log("After update one:",await eidb.s_find_one("my_secure_store", {foo:111}));
-    return;
+    await eidb.s_update_one("my_secure_store", {foo:999}, {foo:111,bar:{blah:new Date()}});
+    log("Update one:  ",await eidb.s_find_one("my_secure_store", {foo:111}));
+    await eidb.s_update_many("my_secure_store", {foo:111}, {foo:999,bar:{blah:new Date()}});
+    log("Update many: ",await eidb.s_find_many("my_secure_store", {foo:999}));
+    await eidb.s_upsert_one("my_secure_store", {foo:999}, {foo:111,bar:{blah:new Date()}});
+    log("Upsert one:  ",await eidb.s_find_one("my_secure_store", {foo:111}));
 
     logw("Test DELETE (secure)");
-    // ...
+    await eidb.s_remove_one("my_secure_store", {foo:111});
+    log("Remove one:  ",await eidb.s_find_one("my_secure_store", {foo:111}));
+    await eidb.s_remove_many("my_secure_store", {foo:"bar"});
+    log("Remove many: ",await eidb.s_find_many("my_secure_store", {foo:"bar"}));    
 
     logw("Test op history (secure)"); // ---------------------------------------
     log("The same as regular op_hist");
 
     logw("Test full-text search (secure)"); // ---------------------------------
     // ...
+    return;
 
     logw("Test Web Crypto"); // ------------------------------------------------
     logw("Randomisation");

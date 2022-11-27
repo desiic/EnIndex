@@ -5,6 +5,7 @@
 // Modules
 import base              from "../base.js";
 import object_store      from "./object-store.js";
+import key_range         from "./key-range.js";
 import cursor            from "./cursor.js";
 import cursor_with_value from "./cursor-with-value.js";
 
@@ -79,8 +80,12 @@ class index {
         try {
             if (Range==null)
                 var Req = this.self.count();
-            else
-                var Req = this.self.count(Range.self);
+            else{
+                if (Range.constructor == key_range)
+                    var Req = this.self.count(Range.self);
+                else
+                    var Req = this.self.count(Range);
+            }
 
             var [Lock,unlock] = new_lock();
 
@@ -105,8 +110,12 @@ class index {
         try {
             if (Range==null)
                 var Req = this.self.get();
-            else
-                var Req = this.self.get(Range.self);
+            else{
+                if (Range.constructor == key_range)
+                    var Req = this.self.get(Range.self);
+                else
+                    var Req = this.self.get(Range);
+            }
 
             var [Lock,unlock] = new_lock();
 
@@ -131,8 +140,12 @@ class index {
         try {
             if (Range==null)
                 var Req = this.self.getAll();
-            else                
-                var Req = this.self.getAll(Range.self, max);
+            else{
+                if (Range.constructor==key_range)
+                    var Req = this.self.getAll(Range.self, max);
+                else
+                    var Req = this.self.getAll(Range, max);
+            }
 
             var [Lock,unlock] = new_lock();
 
@@ -157,8 +170,12 @@ class index {
         try {
             if (Range==null)
                 var Req = this.self.getAllKeys();
-            else                
-                var Req = this.self.getAllKeys(Range.self, max);
+            else{
+                if (Range.constructor==key_range)
+                    var Req = this.self.getAllKeys(Range.self, max);
+                else
+                    var Req = this.self.getAllKeys(Range, max);
+            }
 
             var [Lock,unlock] = new_lock();
 
@@ -183,8 +200,12 @@ class index {
         try {
             if (Range==null)
                 var Req = this.self.getKey();
-            else
-                var Req = this.self.getKey(Range.self);
+            else{
+                if (Range.constructor==key_range)
+                    var Req = this.self.getKey(Range.self);
+                else
+                    var Req = this.self.getKey(Range);
+            }
 
             var [Lock,unlock] = new_lock();
 
@@ -212,8 +233,12 @@ class index {
         try {         
             if (Range==null)   
                 var Req = this.self.openCursor();
-            else
-                var Req = this.self.openCursor(Range.self, Direction);
+            else{
+                if (Range.constructor==key_range)
+                    var Req = this.self.openCursor(Range.self, Direction);
+                else
+                    var Req = this.self.openCursor(Range, Direction);
+            }
 
             var [Lock,unlock] = new_lock();
 
@@ -253,8 +278,12 @@ class index {
         try {         
             if (Range==null)   
                 var Req = this.self.openCursor();
-            else
-                var Req = this.self.openCursor(Range.self, Direction);
+            else{
+                if (Range.constructor==key_range)
+                    var Req = this.self.openCursor(Range.self, Direction);
+                else
+                    var Req = this.self.openCursor(Range, Direction);
+            }
 
             var [Lock,unlock] = new_lock();
 

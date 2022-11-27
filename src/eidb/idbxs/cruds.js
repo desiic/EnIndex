@@ -7,18 +7,22 @@
 // USE MODULES IN idb.* INSTEAD.
 
 // Modules
+import base    from "../base.js";
 import crud    from "../idbx/crud.js";
 import idbxs   from "../idbxs.js";
 import wcrypto from "../wcrypto.js";
 import utils   from "../utils.js";
 
 // Shorthands
-const log  = console.log;
-const logw = console.warn;
-const loge = console.error;
+const log      = console.log;
+const logw     = console.warn;
+const loge     = console.error;
+const new_lock = base.new_lock;
 
 /**
- * CRUD secure
+ * CRUD secure<br/>
+ * WARN: ALL Cond PASSED TO METHODS IN THIS CLASS ARE ALL DIRECT VALUES,
+ *       CAN'T BE RANGES AS IN crud CLASS, SEE dobi.js, DOBI CAN BE RANGES.
  */
 class cruds {
 
@@ -182,6 +186,7 @@ class cruds {
         
         // Find
         var Sobj = await crud.find_one(Store_Name,Scond, _secure);
+        if (Sobj==null) return null;
 
         // Decrypt
         var Json = await wcrypto.decrypt_aes_fiv(Sobj.Etds_Obj, idbxs.Skey);
@@ -324,34 +329,32 @@ class cruds {
 
         // Apply changes to Etds_Obj
         var Sobj1 = await crud.find_one(Store_Name,Scond, _secure);
-        var Obj   = await wcrypto.decrypt_aes_fiv(Sobj1.Etds_Obj, idbxs.Skey);
-        Obj       = {...Obj, ...Changes};
-        var Json  = await utils.obj_to_json(Obj);        
-        ???
-        log("in db obj",Obj)
-        log("apply",Json)
+        var Json  = await wcrypto.decrypt_aes_fiv(Sobj1.Etds_Obj, idbxs.Skey);
+        var Obj   = utils.json_to_obj_bd(Json);
+
+        Obj  = {...Obj, ...Changes};
+        Json = utils.obj_to_json(Obj); 
         Schanges.Etds_Obj = (await wcrypto.encrypt_aes_fiv(Json, idbxs.Skey))[0];
         
         // Update
-        log("b4",await crud.find_one(Store_Name,Scond, _secure) );
         var Sobj2 = await crud.update_one(Store_Name,Scond,Schanges, _secure);      
-        log("cond",Scond)
-        log("changes",Schanges)
-        log("af",Sobj2)  
 
         // Decrypt
         var Json = await wcrypto.decrypt_aes_fiv(Sobj2.Etds_Obj, idbxs.Skey);
-        log("json",Json)
         var Obj  = utils.json_to_obj_bd(Json);
         Obj.id   = Sobj2.id;
-        log("obj",Obj)
 
         return Obj;
     }
 
     /**
      * Update many, avoid using multiple conditions in Cond coz it's slow,
-     * USE COMPOUND INDEX INSTEAD.
+     * USE COMPOUND INDEX INSTEAD.<br/>
+     * WARN: THIS SECURE OP IS SLOW DUE TO UPDATING MULTIPLE Etds_Obj(s)
+     *       WHICH REQUIRES MULTIPLE crud.update_one, CAN'T CALL crud,update_many
+     *       COZ EACH Changes CONTAINS A DIFFERENT Etds_Obj. TO AVOID MULTIPLE
+     *       TRANSACTIONS IN update_one, THIS SECURE update_many UPDATES 
+     *       DIRECTLY THRU' OBJECT STORE. 
      * @return {Object}
      */
     static async update_many(Store_Name,Cond,Changes, limit=Number.MAX_SAFE_INTEGER){
@@ -360,12 +363,78 @@ class cruds {
             return;
         }
         Store_Name = "#"+Store_Name;
+
+        // Remove possible id in Changes
+        var Temp = utils.deepcopy(Changes);
+        delete Temp.id;
+        Changes = Temp;
+        
+        // Make encrypted obj, each infex field is encrypted to find,
+        // whole obj is encrypted to 'Etds_Obj' field to load all inc. non indexed fields.        
+        var Schanges     = await idbxs.obj_to_sobj_full(Changes);
+        var Schanges_Arr = []; // Each object has a separate Etds_Obj
+        var Scond        = {};
+
+        for (let Key in Cond)
+            Scond[Key] = await idbxs.value_to_svalue(Cond[Key]);
+
+        // Apply changes to Etds_Obj
+        var Sobj1s = await crud.find_many(Store_Name,Scond, _secure);
+
+        for (let Sobj1 of Sobj1s){
+            let Json = await wcrypto.decrypt_aes_fiv(Sobj1.Etds_Obj, idbxs.Skey);
+            let Obj  = utils.json_to_obj_bd(Json);
+
+            Obj  = {...Obj, ...Changes};
+            Json = utils.obj_to_json(Obj); 
+
+            let Schanges_Item      = utils.deepcopy(Schanges);
+            Schanges_Item.Etds_Obj = (await wcrypto.encrypt_aes_fiv(Json, idbxs.Skey))[0];
+            Schanges_Arr.push(Schanges_Item);
+        }
+        
+        // Update
+        var Db            = await eidb.reopen();
+        var T             = Db.transaction(Store_Name,RW);
+        var S             = T.store1();
+        var done          = 0;
+        var Sobj2s        = [];
+        var [Lock,unlock] = new_lock();
+
+        for (let i=0; i<Sobj1s.length; i++){
+            let Sobj1 = {...Sobj1s[i], ...Schanges_Arr[i]};
+            let wait;
+
+            S.put(Sobj1,null, wait=false,(Res)=>{
+                if (Res instanceof Error)
+                    loge("cruds.update_many: Error:",Res);
+                else 
+                    Sobj2s.push(Sobj1);
+
+                done++;
+                if (done==Sobj1s.length) unlock();
+            });
+        }
+        await Lock;
+
+        // Decrypt
+        var Objs = [];
+
+        for (let Sobj2 of Sobj2s){
+            let Json = await wcrypto.decrypt_aes_fiv(Sobj2.Etds_Obj, idbxs.Skey);
+            let Obj  = utils.json_to_obj_bd(Json);
+            Obj.id   = Sobj2.id;
+            Objs.push(Obj);
+        }
+
+        Db.close();
+        return Objs;
     }
 
     /**
      * Upsert one, avoid using multiple conditions in Cond coz it's slow,
      * USE COMPOUND INDEX INSTEAD
-     * @return {Object}
+     * @return {Number}
      */
     static async upsert_one(Store_Name,Cond,Changes){
         if (idbxs.Skey==null) {
@@ -373,6 +442,27 @@ class cruds {
             return;
         }
         Store_Name = "#"+Store_Name;
+
+        // Make encrypted obj, each infex field is encrypted to find,
+        // whole obj is encrypted to 'Etds_Obj' field to load all inc. non indexed fields.        
+        var Schanges = await idbxs.obj_to_sobj_full(Changes);
+        var Scond    = {};
+
+        for (let Key in Cond)
+            Scond[Key] = await idbxs.value_to_svalue(Cond[Key]);
+
+        // Apply changes to Etds_Obj
+        var Sobj1 = await crud.find_one(Store_Name,Scond, _secure);
+        var Json  = await wcrypto.decrypt_aes_fiv(Sobj1.Etds_Obj, idbxs.Skey);
+        var Obj   = utils.json_to_obj_bd(Json);
+
+        Obj  = {...Obj, ...Changes};
+        Json = utils.obj_to_json(Obj); 
+        Schanges.Etds_Obj = (await wcrypto.encrypt_aes_fiv(Json, idbxs.Skey))[0];
+        
+        // Upsert
+        var id = await crud.upsert_one(Store_Name,Scond,Schanges, _secure);
+        return id;
     }
 
     /**
@@ -386,6 +476,16 @@ class cruds {
             return;
         }
         Store_Name = "#"+Store_Name;
+
+        // Make encrypted obj, each infex field is encrypted to find,
+        // whole obj is encrypted to 'Etds_Obj' field to load all inc. non indexed fields.
+        var Scond = {};
+
+        for (let Key in Cond)
+            Scond[Key] = await idbxs.value_to_svalue(Cond[Key]);
+        
+        // Find
+        await crud.remove_one(Store_Name,Scond, _secure);
     }
 
     /**
@@ -399,6 +499,16 @@ class cruds {
             return;
         }
         Store_Name = "#"+Store_Name;
+
+        // Make encrypted obj, each infex field is encrypted to find,
+        // whole obj is encrypted to 'Etds_Obj' field to load all inc. non indexed fields.
+        var Scond = {};
+
+        for (let Key in Cond)
+            Scond[Key] = await idbxs.value_to_svalue(Cond[Key]);
+        
+        // Find
+        await crud.remove_many(Store_Name,Scond, _secure);
     }
 
     /**

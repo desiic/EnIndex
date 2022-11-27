@@ -24,7 +24,7 @@ Similar to C++ STL with one exceptional rule for compound properties/variables.
 Database Convention
 ===================
 
-Primary field `id` (auto-incremented) is always added by default to all object stores.
+Primary field `id` (in-line key, auto-incremented) is always added by default to all object stores.
 Special object stores such as `op_hist` (operation history), `fts` (full-text search)
 are added to index schema by default when using those features too.
 

@@ -191,7 +191,7 @@ class idbxs { // Aka sec
      * Can't utilise JSON.parse object travel, its reviver is synchronous
      * while encryption is async. Doing recursion.
      */
-    static async obj_to_sobj_full(Obj){
+    static async #obj_to_sobj_full(Obj){
         if (Obj==null) return null;
 
         // Leaf values
@@ -199,10 +199,20 @@ class idbxs { // Aka sec
             return (await wcrypto.encrypt_aes_fiv(Obj, idbxs.Skey))[0];
 
         // Object
-        for (let Key in Obj)
-            Obj[Key] = (await wcrypto.encrypt_aes_fiv(Obj[Key], idbxs.Skey))[0];
+        for (let Key in Obj) // 'for in' gives Key for both Object & Array
+            Obj[Key] = await idbxs.#obj_to_sobj_full(Obj[Key]);
 
         return Obj;
+    }
+
+    /**
+     * Object to secure object, all depths<br/>
+     * Can't utilise JSON.parse object travel, its reviver is synchronous
+     * while encryption is async. Doing recursion.
+     */
+    static async obj_to_sobj_full(Obj){
+        var Clone = JSON.parse(JSON.stringify(Obj)); // Avoid changing Obj itself
+        return await idbxs.#obj_to_sobj_full(Clone);
     }
 
     /**

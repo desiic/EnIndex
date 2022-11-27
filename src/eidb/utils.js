@@ -155,6 +155,13 @@ class utils {
     }
 
     /**
+     * Deep copy
+     */ 
+    static deepcopy(Obj){
+        return utils.json_to_obj_bd( utils.obj_to_json(Obj) );
+    }
+
+    /**
      * Init static stuff
      */ 
     static init(){
