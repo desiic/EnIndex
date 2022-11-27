@@ -1,0 +1,1 @@
+class dobi{}export default dobi;

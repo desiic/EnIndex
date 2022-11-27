@@ -1,0 +1,1 @@
+import cursor from"../idb/cursor.js";class cursor_with_value extends cursor{self=null;constructor(r){this.self=r}SETS_AND_GETS;get Value(){return this.self.value}}export default cursor_with_value;
