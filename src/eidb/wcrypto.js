@@ -36,7 +36,8 @@ class wcrypto {
 
     /**
      * Make ECDSA public key from private key
-     * NOTE: THIS IS USING Elliptic LIB, NOT WEB CRYPTO.
+     * NOTE:  THIS IS USING Elliptic LIB, NOT WEB CRYPTO.<br/>
+     * TO-DO: USE DIRECT BigInt CALCULATION SIMILAR TO ecc.js TO AVOID THE DEPENDENCY Elliptic.
      * @param  {String} Priv_Hex - Private key (number d) 
      * @return {Array}  Public key point (2 numbers x,y)
      */ 
