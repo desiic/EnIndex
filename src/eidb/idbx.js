@@ -20,8 +20,12 @@ const n1=1, n2=2, u1=3, u2=4; // Match values in eidb.js
 
 // Constants
 // Default indices
+// Internal data for both unencrypted & encrypted
 var _DEFAULT_INDICES = {};
-_DEFAULT_INDICES["_meta"] = {}; // Internal data for both unencrypted & encrypted
+_DEFAULT_INDICES["_meta"] = {
+    Store:u1 // Store name or "_global" for global
+    // Non indexed: See idbxs.js
+};
 
 // OPERATION HISTORY STORE:
 // Docmetas array is supposed to contain unique values but laxed, this array is
@@ -45,6 +49,7 @@ _DEFAULT_INDICES["op_hist"] = {
 
 // Encrypted
 _DEFAULT_INDICES["#op_hist"] = { 
+    // None, secure op history is the same as regular op hist
 };
 
 // FULL-TEXT SEARCH STORE
@@ -72,8 +77,23 @@ _DEFAULT_INDICES["fts_ids"] = {
 
 // Encrypted
 _DEFAULT_INDICES["#fts_words"] = { 
+    Store:              1,  // Store name, FTS find step1: O(1)
+    Word:               1,  // A single-word term to search            
+    "Store,Word":       u1, // Compound to look up
+
+    // Other indices:
+    num_obj_ids:        1,  // To select the first term with fewest ids
 };
 _DEFAULT_INDICES["#fts_ids"] = {
+    Store:              1,  // Store name, FTS outer loop O(n), in-next-set operation O(logn)
+    Word:               1,  // A single-word term to search            
+    "Store,Word":       1,  // Not unique due to multiple obj_id(s)
+
+    // Other indices:
+    obj_id:             1,  // A single object id of object containing Word
+    "Store,obj_id":     1,  // To remove all unused words on 'update', 'delete'
+    "Store,Word,obj_id":u1  // Compound index to find if Store+Word+obj_id exists (set intersection),
+                            // this compound value is always true, or doesn't exist.
 };
 
 /** 
@@ -89,17 +109,27 @@ class idbx {
     /**
      * CRUD functionalities
      */
-    static crud = crud;
+    static crud;
 
     /**
      * Op history features
      */ 
-    static op_hist = op_hist;
+    static op_hist;
 
     /**
      * FTS features
      */
-    static fts = fts;
+    static fts;
+
+    /**
+     * _________________________________________________________________________
+     */ 
+    PROPERTIES;
+
+    /**
+     * Index schema saved when open_av
+     */ 
+    static Indices = {};
 
     /*
      * _________________________________________________________________________
@@ -427,6 +457,9 @@ class idbx {
         for (let Store_Name in Indices)
             Indices[Store_Name].id = u1;
 
+        // Store index schema for later reference, eg. obj_to_sobj
+        idbx.Indices = Indices;    
+
         // Check if indices changed
         window._Db_Name     = Db_Name;
         var New_Indices     = Indices;
@@ -531,6 +564,19 @@ class idbx {
 
         // Close the upgraded db
         Db.close();
+    }
+
+    /**
+     * Init
+     */ 
+    static init(){
+        idbx.crud    = crud;
+        idbx.op_hist = op_hist;
+        idbx.fts     = fts;
+
+        idbx.crud   .init(); 
+        idbx.op_hist.init(); 
+        idbx.fts    .init(); 
     }
 }
 

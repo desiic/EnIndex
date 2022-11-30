@@ -1,0 +1,1 @@
+class version_change_event{self=null;constructor(e){this.self=e}SETS_AND_GETS;get new_version(){return this.self.newVersion}get old_version(){return this.self.oldVersion}}export default version_change_event;

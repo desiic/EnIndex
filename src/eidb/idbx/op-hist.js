@@ -209,6 +209,12 @@ class op_hist {
 
         Db.close();
     }
+
+    /**
+     * Init
+     */ 
+    static init(){
+    }
 }
 
 export default op_hist;

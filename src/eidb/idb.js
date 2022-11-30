@@ -45,6 +45,12 @@ class idb{
     static async delete_database(Name){
         return await eidb.Factory.delete_database(Name);
     }
+
+    /**
+     * Init static stuff
+     */ 
+    static init(){
+    }
 }
 
 // Module export

@@ -5,6 +5,7 @@
 import base              from "../base.js";
 import index             from "../idb/index.js";
 import transaction       from "./transaction.js";
+import key_range         from "./key-range.js";
 import cursor            from "./cursor.js";
 import cursor_with_value from "./cursor-with-value.js";
 
@@ -140,8 +141,12 @@ class object_store {
         try {
             if (Range==null)
                 var Req = this.self.count();
-            else
-                var Req = this.self.count(Range.self);
+            else{
+                if (Range.constructor==key_range)
+                    var Req = this.self.count(Range.self);
+                else
+                    var Req = this.self.count(Range);
+            }
 
             var [Lock,unlock] = new_lock();
 
@@ -193,7 +198,11 @@ class object_store {
      */
     async delete(Range){
         try {
-            var Req           = this.self.delete(Range.self);
+            if (Range.constructor==key_range)
+                var Req = this.self.delete(Range.self);
+            else
+                var Req = this.self.delete(Range);
+
             var [Lock,unlock] = new_lock();
 
             Req.onerror = function(Ev){
@@ -232,8 +241,12 @@ class object_store {
         try {
             if (Range==null)
                 var Req = this.self.get();
-            else
-                var Req = this.self.get(Range.self);
+            else{
+                if (Range.constructor==key_range)
+                    var Req = this.self.get(Range.self);
+                else
+                    var Req = this.self.get(Range);
+            }
 
             var [Lock,unlock] = new_lock();
 
@@ -259,8 +272,12 @@ class object_store {
         try {
             if (Range==null)
                 var Req = this.self.getAll();
-            else
-                var Req = this.self.getAll(Range.self);
+            else{
+                if (Range.constructor==key_range)
+                    var Req = this.self.getAll(Range.self);
+                else    
+                    var Req = this.self.getAll(Range);
+            }
 
             var [Lock,unlock] = new_lock();
 
@@ -286,8 +303,12 @@ class object_store {
         try {
             if (Range==null)
                 var Req = this.self.getAllKeys();
-            else
-                var Req = this.self.getAllKeys(Range.self, max);
+            else{
+                if (Range.constructor==key_range)
+                    var Req = this.self.getAllKeys(Range.self, max);
+                else    
+                    var Req = this.self.getAllKeys(Range, max);
+            }
 
             var [Lock,unlock] = new_lock();
 
@@ -313,8 +334,12 @@ class object_store {
         try {
             if (Range==null)
                 var Req = this.self.getKey();
-            else
-                var Req = this.self.getKey(Range.self);
+            else{
+                if (Range.constructor==key_range)
+                    var Req = this.self.getKey(Range.self);
+                else
+                    var Req = this.self.getKey(Range);
+            }
 
             var [Lock,unlock] = new_lock();
 
@@ -356,8 +381,12 @@ class object_store {
         try {         
             if (Range==null)   
                 var Req = this.self.openCursor();
-            else
-                var Req = this.self.openCursor(Range.self, Direction);
+            else{
+                if (Range.constructor==key_range)
+                    var Req = this.self.openCursor(Range.self, Direction);
+                else
+                    var Req = this.self.openCursor(Range, Direction);
+            }
 
             var [Lock,unlock] = new_lock();
 
@@ -398,8 +427,12 @@ class object_store {
         try {         
             if (Range==null)   
                 var Req = this.self.openKeyCursor();
-            else
-                var Req = this.self.openKeyCursor(Range.self, Direction);
+            else{
+                if (Range.constructor==key_range)
+                    var Req = this.self.openKeyCursor(Range.self, Direction);
+                else
+                    var Req = this.self.openKeyCursor(Range, Direction);
+            }
 
             var [Lock,unlock] = new_lock();
 
@@ -432,24 +465,38 @@ class object_store {
     /**
      * Put (UPSERT) value to store, 
      * Item.id==null|notExisting -> INSERT, Item.id!=null -> UPDATE
-     * @return {Object} Error or result
+     * @param  {Object}  Item     - Item to put
+     * @param  {Object}  Range    - Warn: Don't use this field, all stores use in-line primary key.
+     * @param  {Boolean} wait     - Use false for those need to put in a loop
+     * @param  {Object}  callback - Use together with wait=false, to count when all puts are done.
+     * @return {Object}  Error or result
      */
-    async put(Item,Range){
+    async put(Item,Range, wait=true,callback){ // wait & callback param are for cruds.update_many
         try {            
             if (Range==null)
-                var Req = this.self.put(Item);
-            else
-                var Req = this.self.put(Item,Range.self);
+                var Req = this.self.put(Item); // With .id -> update, otherwise insert
+            else{
+                if (Range.constructor==key_range)
+                    var Req = this.self.put(Item,Range.self); // For out-line key
+                else{
+                    log(Item,Range)
+                    var Req = this.self.put(Item,Range); // For out-line key
+                }
+            }
 
             var [Lock,unlock] = new_lock();
 
             Req.onerror = function(Ev){
+                if (wait==false) callback(Ev.target.error);
                 unlock(Ev.target.error);
             };
             Req.onsuccess = function(Ev){
+                if (wait==false) callback(Ev.target.result);
                 unlock(Ev.target.result);
             };
-            return await Lock;
+
+            if (wait) return await Lock;
+            else      return;
         }
         catch (Dom_Exception){
             loge("object_store.put: Error:",Dom_Exception);

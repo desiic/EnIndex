@@ -11,7 +11,7 @@ import cursor_with_value from "./cursor-with-value.js";
 /**
  * IDBRequest wraper class
  */
- class request {
+class request {
     self = null;
 
     /**

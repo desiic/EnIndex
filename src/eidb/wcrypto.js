@@ -13,12 +13,21 @@ var loge = console.error;
 // Constants
 const BIT_LEN = 256;
 
+// Fixed IV for searching with index feature.
+// WARN: THESE FIXED IV VALUES SHOULD STAY UNCHANGED.
+//       0->15 is teddious, stepping 2 is even (maybe easy?), using stepping 3:
+const FIXED_IV_BYTES = new Uint8Array([0,3,6,9, 12,15,18,21, 24,27,30,33, 36,39,42,45]); 
+const FIXED_IV       = "000306090c0f1215181b1e2124272a2d";
+
 /**
  * Crypto class<br/>
  * NOTE: Web Crypto always return ArrayBuffer but receive Uint8Array params.
  *       ALL ARE DEFAULTED TO 256-BIT IN THIS MODULE (EXCEPT RSA).
  */
 class wcrypto {
+    static BIT_LEN        = BIT_LEN;
+    static FIXED_IV_BYTES = FIXED_IV_BYTES;
+    static FIXED_IV       = FIXED_IV;
 
     /**
      * _________________________________________________________________________
@@ -42,7 +51,12 @@ class wcrypto {
         // Return EC public key as 2 numbers
         // WARN: Not Pubkey.x, .y, they are different values compared to getX(), getY().
         // .toString(16) is built-in to get hex.
-        return [Pubkey.getX().toString(16), Pubkey.getY().toString(16)];
+        var Xhex = Pubkey.getX().toString(16);
+        var Yhex = Pubkey.getY().toString(16);
+        while (Xhex.length<64) Xhex="0"+Xhex;
+        while (Yhex.length<64) Yhex="0"+Yhex;
+
+        return [Xhex, Yhex];
     }
 
     /**
@@ -126,7 +140,7 @@ class wcrypto {
      * Base64 to Base64URL
      */
     static base64_to_base64url(Str){
-        return Str.replaceAll("+","-").replaceAll("/","_").replace("=","");
+        return Str.replaceAll("+","-").replaceAll("/","_").replaceAll("=","");
     }
 
     /**
@@ -448,9 +462,15 @@ class wcrypto {
         var Usages = ["deriveBits","deriveKey"];  
                       // "encrypt","decrypt","sign","verify","wrapKey","unwrapKey"
 
-        // PBKDF2 keys must set extractable=false                      
-        var Key = await window.crypto.subtle.
-                  importKey("raw",Bytes,{name:"PBKDF2"},extractable=false,Usages);
+        try{                      
+            // PBKDF2 keys must set extractable=false                      
+            var Key = await window.crypto.subtle.
+                      importKey("raw",Bytes,{name:"PBKDF2"},extractable=false,Usages);
+        }
+        catch(Err){
+            loge("wcrypto.import_key_pb_raw: Failed to import, error:",Err);
+            return null;
+        }
         return Key;
     }
 
@@ -467,9 +487,15 @@ class wcrypto {
         var Bytes  = wcrypto.hex_to_bytes(Hex);
         var Usages = ["encrypt","decrypt"]; 
                       // "sign","verify","deriveBits","deriveKey","wrapKey","unwrapKey"
-
-        var Key = await window.crypto.subtle.
-                  importKey("raw",Bytes,{name:"AES-GCM"},extractable=true,Usages);
+        
+        try{        
+            var Key = await window.crypto.subtle.
+                      importKey("raw",Bytes,{name:"AES-GCM"},extractable=true,Usages);
+        }
+        catch(Err){
+            loge("wcrypto.import_key_aes_raw: Failed to import, error:",Err);
+            return null;
+        }
         return Key;
     }
 
@@ -485,9 +511,15 @@ class wcrypto {
         else
             var Usages = ["sign","verify"];
 
-        var extractable;
-        return await window.crypto.subtle.importKey("jwk",Jwk_Obj,Algo,
-                     extractable=true,Usages);
+        try{
+            var extractable;
+            return await window.crypto.subtle.importKey("jwk",Jwk_Obj,Algo,
+                         extractable=true,Usages);
+        }
+        catch(Err){
+            loge("wcrypto.import_key_rsa_jwk: Failed to import, error:",Err);
+            return null;
+        }
     }
 
     /**
@@ -502,9 +534,15 @@ class wcrypto {
         else
             var Usages = ["verify"]; // Public key
 
-        var extractable;
-        return await window.crypto.subtle.importKey("jwk",Jwk_Obj,Algo,
-                     extractable=true,Usages);
+        try{
+            var extractable;
+            return await window.crypto.subtle.importKey("jwk",Jwk_Obj,Algo,
+                         extractable=true,Usages);
+        }
+        catch(Err){
+            loge("wcrypto.import_key_ec_jwk: Failed to import, error:",Err);
+            return null;
+        }
     }
 
     /**
@@ -518,8 +556,14 @@ class wcrypto {
      * Export RSA|EC key to JWK
      */
     static async export_key_jwk(Key){
-        var Obj = await window.crypto.subtle.exportKey("jwk",Key);
-        return Obj;
+        try{
+            var Obj = await window.crypto.subtle.exportKey("jwk",Key);
+            return Obj;
+        }
+        catch(Err){
+            loge("wcrypto.export_key_jwk: Failed to export, error:",Err);
+            return null;
+        }
     }
 
     /**
@@ -536,8 +580,14 @@ class wcrypto {
             iterations: iterations
         }; 
 
-        var Bits = await window.crypto.subtle.deriveBits(Algo,Base_Key,bit_count);
-        return wcrypto.buff_to_hex(Bits);
+        try{
+            var Bits = await window.crypto.subtle.deriveBits(Algo,Base_Key,bit_count);
+            return wcrypto.buff_to_hex(Bits);
+        }
+        catch(Err){
+            loge("wcrypto.derive_bits_pb: Failed to derive, error:",Err);
+            return null;
+        }
     }
 
     /**
@@ -558,9 +608,15 @@ class wcrypto {
         var Usages = ["encrypt","decrypt"]; 
                       // "sign","verify","deriveBits","deriveKey","wrapKey","unwrapKey"
 
-        var Key = await window.crypto.subtle.deriveKey(Algo,Base_Key,
-                      {name:"AES-GCM",length:BIT_LEN},extractable=true,Usages);
-        return Key;
+        try{
+            var Key = await window.crypto.subtle.deriveKey(Algo,Base_Key,
+                        {name:"AES-GCM",length:BIT_LEN},extractable=true,Usages);
+            return Key;
+        }
+        catch(Err){
+            loge("wcrypto.derive_key_pb2aes: Failed to derive, error:",Err);
+            return null;
+        }
     }
 
     /**
@@ -665,26 +721,59 @@ class wcrypto {
     /**
      * Encrypt with AES key (GCM) to base64
      */ 
-    static async encrypt_aes(Text, Key){
-        var Bytes      = wcrypto.utf8_to_bytes(Text); // Always UTF-8 to bytes
-        var Iv         = wcrypto.random_iv();
-        var Algo       = {name:"AES-GCM", iv:Iv};
-        var Cipherbuff = await window.crypto.subtle.encrypt(Algo,Key,Bytes); // ArrayBuffer
-        var Ciphertext = wcrypto.buff_to_base64(Cipherbuff);
+    static async encrypt_aes(Text, Key, Iv_Hex=null){
+        if (Iv_Hex==null)
+            var Iv = wcrypto.random_iv();
+        else   
+            var Iv = wcrypto.hex_to_bytes(Iv_Hex);
 
-        return [Ciphertext, Iv];
+        var Bytes = wcrypto.utf8_to_bytes(Text); // Always UTF-8 to bytes        
+        var Algo  = {name:"AES-GCM", iv:Iv};
+        
+        try{
+            var Cipherbuff = await window.crypto.subtle.encrypt(Algo,Key,Bytes); // ArrayBuffer
+        }
+        catch(Err){
+            loge("wcrypto.encrypt_aes: Failed to encrypt, error:",Err);
+            return null;
+        }
+
+        var Ciphertext = wcrypto.buff_to_base64(Cipherbuff);
+        return [Ciphertext, wcrypto.bytes_to_hex(Iv)];
+    }
+
+    /**
+     * Encrypt with AES key (GCM) to base64, with fixed IV, for facilitating
+     * encrypted search on index for field value.
+     */ 
+    static async encrypt_aes_fiv(Text, Key){ // fiv: Fixed IV
+        return await wcrypto.encrypt_aes(Text, Key, FIXED_IV)
     }
 
     /**
      * Encrypt with RSA key to base64
      */ 
     static async encrypt_rsa(Text, Key){
-        var Bytes      = wcrypto.utf8_to_bytes(Text); // Always UTF-8 to bytes
-        var Algo       = {name:"RSA-OAEP"};
-        var Cipherbuff = await window.crypto.subtle.encrypt(Algo,Key,Bytes); // ArrayBuffer
-        var Ciphertext = wcrypto.buff_to_base64(Cipherbuff);
+        var Bytes = wcrypto.utf8_to_bytes(Text); // Always UTF-8 to bytes
+        var Algo  = {name:"RSA-OAEP"};
 
+        try{
+            var Cipherbuff = await window.crypto.subtle.encrypt(Algo,Key,Bytes); // ArrayBuffer
+        }
+        catch(Err){
+            loge("wcrypto.encrypt_rsa: Failed to encrypt, error:",Err);
+            return null;
+        }
+
+        var Ciphertext = wcrypto.buff_to_base64(Cipherbuff);
         return Ciphertext;
+    }
+
+    /**
+     * Encrypt with EC key to base64
+     */ 
+    static async encrypt_ec(Text, Key){
+        // NO EC ENCRYPT/DECRYPT IN WEB CRYPTO YET.
     }
 
     /**
@@ -692,23 +781,52 @@ class wcrypto {
      */
     static async decrypt_aes(Ciphertext, Iv, Key){
         var Bytes = wcrypto.base64_to_bytes(Ciphertext);
-        var Algo  = {name:"AES-GCM", iv:Iv};
-        var Buff  = await window.crypto.subtle.decrypt(Algo,Key,Bytes);
-        var Text  = wcrypto.bytes_to_utf8(new Uint8Array(Buff));
+        var Algo  = {name:"AES-GCM", iv:wcrypto.hex_to_bytes(Iv)};
 
+        try{
+            var Buff = await window.crypto.subtle.decrypt(Algo,Key,Bytes);
+        }
+        catch(Err){
+            loge("wcrypto.decrypt_aes: Failed to decrypt, error:",Err);
+            return null;
+        }
+
+        var Text = wcrypto.bytes_to_utf8(new Uint8Array(Buff));
         return Text;
+    }
+
+    /**
+     * Decrypt (AES) from base64, with fixed IV, for facilitating
+     * encrypted search on index for field value.
+     */
+    static async decrypt_aes_fiv(Ciphertext, Key){
+        return await wcrypto.decrypt_aes(Ciphertext, FIXED_IV, Key);
     }
 
     /**
      * Decrypt (RSA) from base64
      */
-    static async decrypt_rsa(Ciphertext){
+    static async decrypt_rsa(Ciphertext, Key){
         var Bytes = wcrypto.base64_to_bytes(Ciphertext);
         var Algo  = {name:"RSA-OAEP"};
-        var Buff  = await window.crypto.subtle.decrypt(Algo,Key,Bytes);
-        var Text  = wcrypto.bytes_to_utf8(new Uint8Array(Buff));
 
+        try{
+            var Buff = await window.crypto.subtle.decrypt(Algo,Key,Bytes);
+        }
+        catch(Err){
+            loge("wcrypto.decrypt_rsa: Failed to decrypt, error:",Err);
+            return null;
+        }
+
+        var Text = wcrypto.bytes_to_utf8(new Uint8Array(Buff));
         return Text;
+    }
+
+    /**
+     * Decrypt with EC key from base64
+     */ 
+    static async decrypt_ec(Ciphertext, Key){
+        // NO EC ENCRYPT/DECRYPT IN WEB CRYPTO YET.
     }
 
     /**
@@ -724,7 +842,15 @@ class wcrypto {
             var Algo = {name:"ECDSA", hash:"SHA-256"};
             
         var Bytes = wcrypto.utf8_to_bytes(Text);
-        var Buff  = await window.crypto.subtle.sign(Algo,Privkey,Bytes);
+        
+        try{
+            var Buff = await window.crypto.subtle.sign(Algo,Privkey,Bytes);
+        }
+        catch(Err){
+            loge("wcrypto.sign: Failed to sign, error:",Err);
+            return null;
+        }
+
         return wcrypto.buff_to_hex(Buff);
     }
 
@@ -743,7 +869,14 @@ class wcrypto {
 
         var Text_Bytes = wcrypto.utf8_to_bytes(Text);
         var Sig_Bytes  = wcrypto.hex_to_bytes(Signature);
-        return await window.crypto.subtle.verify(Algo,Pubkey,Sig_Bytes,Text_Bytes);
+
+        try{
+            return await window.crypto.subtle.verify(Algo,Pubkey,Sig_Bytes,Text_Bytes);
+        }
+        catch(Err){
+            loge("wcrypto.verify: Failed to verify, error:",Err);
+            return null;
+        }
     }
 
     /**
@@ -813,6 +946,12 @@ class wcrypto {
     static async make_static_key(Salt,iterations){
         var Rand = wcrypto.random_uuidx(); // 256 bits
         return await wcrypto.derive_key_pb2aes(Rand,Salt,iterations); // AES 256-bit
+    }
+
+    /**
+     * Init static stuff
+     */ 
+    static init(){
     }
 }
 

@@ -11,16 +11,21 @@ var _Test_Indices = {
     my_store: { 
         foo:1, bar:2, foobar:u1, barfoo:u2, "foo.bar":1, "bar.foo":2,
         "foo,bar":1 // Compound index, remember compound indices can't be 2, or u2
+    },
+    my_secure_store: {
+        _secure, foo:1, "bar.blah":1
     }
 };
 
 // Main
 async function main(){
+    eidb.init();
     log("Testing...");
     log("Recommended to reopen db again and again for operations to avoid upgrade being blocked.");
 
     logw("Test db open"); // ---------------------------------------------------
-    var Db = await eidb.open_av("my_db", _Test_Indices);
+    // var Db = await eidb.open_av("my_db", _Test_Indices); // Regular open
+    var Db = await eidb.s_open_av("my_db", _Test_Indices);  // Secure open (facilitates encryption)
     log("Db:",Db);
     Db.close();
 
@@ -73,13 +78,18 @@ async function main(){
 
     logw("Test full-text search"); // ------------------------------------------
     var Db = await eidb.reopen(); // Clear fts_words, fts_ids stores first to test
-    var T  = Db.transaction(["my_store","fts_words","fts_ids"],RW);
+    var T  = Db.transaction(["my_store","fts_words","fts_ids",
+                             "#my_secure_store","#fts_words","#fts_ids"],RW);
     await T.object_store("my_store").clear();
     await T.object_store("fts_words").clear();
     await T.object_store("fts_ids").clear();
+    await T.object_store("#my_secure_store").clear();
+    await T.object_store("#fts_words").clear();
+    await T.object_store("#fts_ids").clear();
     Db.close();
 
     eidb.enable_fts(); // Should be right after open_av in production
+    // eidb.s_enable_fts(); // The same
     await eidb.insert_one(Sname,{foo:"foo bar foobar barfoox"});
     await eidb.insert_one(Sname,{foo:"foo foobar"});
     await eidb.update_one(Sname,{foo:"foo foobar"}, {foo:"foo abcxyz"});
@@ -97,34 +107,76 @@ async function main(){
 
     logw("Test sec module"); //-------------------------------------------------
     eidb.sec.ITERATIONS = 1000; // Default: 100,000; here using smaller value for fast testing
-    var Ek,Aks;
+    var Ek,Aks,Sk;
     log("Key chain:     ",[Ek,Aks]=await eidb.sec.get_key_chain("foobar","foobarspassword"));
-    log("Static key:    ",await eidb.sec.get_new_static_key("foobar"));
-    log("Recovery info: ",{Recovery_Key,Ciphertext,Iv}=await eidb.sec.gen_recovery_info(Ek,Aks));
+    log("Static key:    ",Sk=await eidb.sec.get_new_static_key("foobar"));
+    log("Recovery info: ",{Ciphertext,Iv,Recovery_Key}=await eidb.sec.gen_recovery_info(Ek,Aks));
     var Rtext,Rkey;
     log("Recovery text: ",Rtext=await eidb.sec.key_to_text(Recovery_Key));
     log("Back to key:   ",Rkey=await eidb.sec.text_to_key(Rtext));
     log("Recovered keys:",await eidb.sec.recover_key_chain(Ciphertext,Iv,Rkey));
 
     logw("Test CRUD ops (secure)"); // -----------------------------------------    
+    var Username = "user";
+    var Pw       = "123456";
+    [Ek,Aks] = await eidb.sec.get_key_chain(Username, Pw);    
+    eidb.sec.set_ea_keys(Ek,Aks);
+
+    var Sk = await eidb.sec.get_new_static_key(Username); // Only once on db creation
+    await eidb.sec.save_static_key(Sk);                   // Only once on db creation
+    Sk = await eidb.sec.load_static_key();
+    await eidb.do_op("_meta", _clear); // Clear to test with any username/pw below
+                                       // otherwise static key isn't decryptable.
+
+    await eidb.sec.prepare_keys(Username,Pw); // Put in eidb.sec to use
+    log("Ekey:     ", eidb.sec.Ekey);
+    log("Akeypair: ", eidb.sec.Akeypair);
+    log("Skey:     ", eidb.sec.Skey);
+    var Ek  = eidb.sec.Ekey; 
+    var Aks = eidb.sec.Akeypair;
+    var {Ciphertext,Iv,Recovery_Key}=await eidb.sec.gen_recovery_info(Ek,Aks)
+    var Text;
+    log("Recovery: ", Text=await eidb.sec.key_to_text(Recovery_Key)); // Give to user
+    await eidb.sec.save_recovery_info(Ciphertext,Iv);    
+    var Rk = await eidb.sec.text_to_key(Text);
+    log("Reco-load:", await eidb.sec.recover_and_set_keys(Rk));
+
     logw("Test CREATE (secure)");
-    // ...
-    return;
+    var id = await eidb.s_insert_one("my_secure_store",{foo:999, bar:{ blah:999 }});
+    log("Inserted id: ",id);
+    var Ids = await eidb.s_insert_many("my_secure_store",[{foo:"bar"},{bar:"foo"}]);
+    log("Inserted ids:",Ids);
 
     logw("Test READ (secure)");
-    // ...
+    log("Exists:   ",await eidb.s_exists("my_secure_store", {foo:"bar"}));
+    log("Count:    ",await eidb.s_count("my_secure_store", {foo:999}));
+    log("Count all:",await eidb.s_count_all("my_secure_store"));
+    log("Find one: ",await eidb.s_find_one("my_secure_store", {foo:999}));
+    log("Find many:",await eidb.s_find_many("my_secure_store", {foo:999}));
+    log("Find all: ",await eidb.s_find_all("my_secure_store"));
+    log("Filter:   ",await eidb.s_filter("my_secure_store", {foo:999}));
 
     logw("Test UPDATE (secure)");
-    // ...
+    await eidb.s_update_one("my_secure_store", {foo:999}, {foo:111,bar:{blah:new Date()}});
+    log("Update one:  ",await eidb.s_find_one("my_secure_store", {foo:111}));
+    await eidb.s_update_many("my_secure_store", {foo:111}, {foo:999,bar:{blah:new Date()}});
+    log("Update many: ",await eidb.s_find_many("my_secure_store", {foo:999}));
+    await eidb.s_upsert_one("my_secure_store", {foo:999}, {foo:111,bar:{blah:new Date()}});
+    log("Upsert one:  ",await eidb.s_find_one("my_secure_store", {foo:111}));
 
     logw("Test DELETE (secure)");
-    // ...
+    await eidb.s_remove_one("my_secure_store", {foo:111});
+    log("Remove one:  ",await eidb.s_find_one("my_secure_store", {foo:111}));
+    await eidb.s_remove_many("my_secure_store", {foo:"barx"});    
+    log("Remove many: ",await eidb.s_find_many("my_secure_store", {foo:"bar"}));    
 
     logw("Test op history (secure)"); // ---------------------------------------
-    // ...
+    log("The same as regular op_hist");
 
     logw("Test full-text search (secure)"); // ---------------------------------
-    // ...
+    await eidb.s_insert_one("my_secure_store",{foo:"bar"});
+    log("Num words:",await eidb.s_count_all("fts_words"));
+    log("FTS find: ",await eidb.s_find_many_by_terms("my_secure_store","bar blahblah"));
 
     logw("Test Web Crypto"); // ------------------------------------------------
     logw("Randomisation");

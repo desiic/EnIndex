@@ -12,8 +12,15 @@
 // IF IN NEED OF OP HISTORY OR FTS RESULTS IMMEDIATELY.
 
 // Modules
-import utils from "../utils.js";
-import idbx  from "../idbx.js";
+import idbx    from "../idbx.js";
+import idbxs   from "../idbxs.js";
+import wcrypto from "../wcrypto.js";
+import utils   from "../utils.js";
+
+// Shorthands
+const log  = console.log;
+const logw = console.warn;
+const loge = console.error;
 
 /**
  * FTS manager class
@@ -107,21 +114,37 @@ class fts {
     /**
      * Update FTS
      */ 
-    static async update_fts(Op, Store_Name, id, Obj){
+    static async update_fts(Op, Store_Name, id, Obj, secure=false){
         if (["create","update","delete"].indexOf(Op) == -1){
             loge("fts.update_fts: Bad operation:",Op);
             return;
         }
-
-        var Db = await idbx.reopen();
-        var T  = Db.transaction(["fts_words", "fts_ids"],RW);
-        // Word data store
-        var Swords = T.object_store("fts_words"); 
-        // Id data store
-        var Sids   = T.object_store("fts_ids");  
+        if (secure){
+            var Word_Store = "#fts_words";
+            var Id_Store   = "#fts_ids";
+        }
+        else{
+            var Word_Store = "fts_words";
+            var Id_Store   = "fts_ids";
+        }
 
         // Get unique words from Obj
         var Words = fts.obj_to_unique_words(Obj);
+
+        if (secure){
+            for (let i=0; i<Words.length; i++){
+                let Sword = (await wcrypto.encrypt_aes_fiv(Words[i], idbxs.Skey))[0];
+                Words[i]  = Sword;
+            }
+        }
+
+        // Open stores
+        var Db = await idbx.reopen();
+        var T  = Db.transaction([Word_Store, Id_Store],RW);
+        // Word data store
+        var Swords = T.object_store(Word_Store); 
+        // Id data store
+        var Sids   = T.object_store(Id_Store);
 
         // Update FTS data for words already in db
         // Considering the existence of tuple (store,word,id)
@@ -187,38 +210,38 @@ class fts {
     /**
      * Update FTS data, CRUD/C
      */ 
-    static update_fts_c(Store_Name, id, Obj){
+    static update_fts_c(Store_Name, id, Obj, secure=false){
         if (!fts.enabled) return;
 
         // Run in background, no await
-        fts.update_fts("create", Store_Name, id, Obj);
+        fts.update_fts("create", Store_Name, id, Obj, secure);
     }
 
     /**
      * Update FTS data, CRUD/R
      */ 
-    static update_fts_r(Store_Name, id, Obj){
+    static update_fts_r(Store_Name, id, Obj, secure=false){
         // NO POINTS TO UPDATE FTS ON READ, NOTHING CHANGES.
     }
 
     /**
      * Update FTS data, CRUD/U
      */ 
-    static update_fts_u(Store_Name, id, Obj){
+    static update_fts_u(Store_Name, id, Obj, secure=false){
         if (!fts.enabled) return;
 
         // Run in background, no await
-        fts.update_fts("update", Store_Name, id, Obj);
+        fts.update_fts("update", Store_Name, id, Obj, secure);
     }
 
     /**
      * Update FTS data, CRUD/D
      */ 
-    static update_fts_d(Store_Name, id, Obj){
+    static update_fts_d(Store_Name, id, Obj, secure=false){
         if (!fts.enabled) return;
 
         // Run in background, no await
-        fts.update_fts("delete", Store_Name, id, Obj);
+        fts.update_fts("delete", Store_Name, id, Obj, secure);
     }
 
     /**
@@ -243,7 +266,7 @@ class fts {
             Objs.push(await Store.get(value_is(id)));
 
         return Objs;
-    }
+    }    
 
     /**
      * Give objects scores
@@ -269,8 +292,9 @@ class fts {
 
             // Score for object is sum of score for terms with respect to object
             for (let Term of Terms){
+                let Term2      = utils.escape_for_regex(Term);
                 let term_score = Term2Score[Term];
-                let count      = (Str.match(new RegExp(Term,"g")) || []).length; // Always>0
+                let count      = (Str.match(new RegExp(Term2,"g")) || []).length; // Always>0
                 score         += term_score * count;
             }
 
@@ -287,18 +311,32 @@ class fts {
      * @return {Object} List of objects found, list of search terms, 
      *                  and list of excluded terms (terms not in FTS data)
      */ 
-    static async find_many_by_terms(Store_Name, Terms_Str, limit=1000){
+    static async find_many_by_terms(Store_Name, Terms_Str, limit=1000, secure=false){
         if (fts.enabled == false)
             logw("fts.find_many_by_terms: FTS is disabled, there might be results but no changes.");
-
-        var Db     = await eidb.reopen();
-        var T      = Db.transaction(["fts_words","fts_ids",Store_Name],RO);
-        var Swords = T.object_store("fts_words");
-        var Sids   = T.object_store("fts_ids");
-        var Store  = T.object_store(Store_Name);
+        if (secure){
+            var Word_Store = "#fts_words";
+            var Id_Store   = "#fts_ids";
+        }
+        else{
+            var Word_Store = "fts_words";
+            var Id_Store   = "fts_ids";
+        }    
 
         // Get terms
         var Terms = fts.str_to_unique_words(Terms_Str); // All lower-case words
+
+        if (secure){
+            for (let i=0; i<Terms.length; i++)
+                Terms[i] = (await wcrypto.encrypt_aes_fiv(Terms[i], idbxs.Skey))[0];
+        }
+
+        // Get stores
+        var Db     = await eidb.reopen();
+        var T      = Db.transaction([Word_Store,Id_Store,Store_Name],RO);
+        var Swords = T.object_store(Word_Store);
+        var Sids   = T.object_store(Id_Store);
+        var Store  = T.object_store(Store_Name);
         
         // Get id set sizes of all terms
         var Notfound_Terms = [];
@@ -309,7 +347,6 @@ class fts {
             
             // No such term in FTS data
             if (Obj==null){
-                let Item = {Term:Term, exists:false, size:0};
                 Notfound_Terms.push(Term);
                 continue;
             }
@@ -381,6 +418,12 @@ class fts {
             Items:Scored_Objs, Search_Terms:Search_Terms, Excluded_Terms:Notfound_Terms,
             Note:Note
         };
+    }
+
+    /**
+     * Init
+     */ 
+    static init(){
     }
 }
 

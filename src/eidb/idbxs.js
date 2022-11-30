@@ -3,8 +3,14 @@
  */
 
 // Modules
-import base    from "./base.js";
-import wcrypto from "./wcrypto.js";
+import base     from "./base.js";
+import utils    from "./utils.js";
+import wcrypto  from "./wcrypto.js";
+import idb      from "./idb.js";
+import idbx     from "./idbx.js";
+import cruds    from "./idbxs/cruds.js";
+import op_hists from "./idbxs/op-hists.js";
+import ftss     from "./idbxs/ftss.js";
 
 // Shorthands
 const log      = console.log;
@@ -12,20 +18,350 @@ const logw     = console.warn;
 const loge     = console.error;
 const new_lock = base.new_lock;
 
+// Constants
+var GLOBAL_DEFAULT_META = {
+    Store:            "_global", // Always _global
+    Etde_Skey:        null,      // Set by app
+    Etde_Skey_Iv:     null,      // Set by app
+    Etdr_Recovery:    null,      // Ciphertext of Enckey & Authkeypair
+    Etdr_Recovery_Iv: null       // Iv of recovery ciphertext
+};
+
 /**
  * Extended IndexedDB secure functionalities<br/>
  * NOTE: ACCESSIBLE THRU eidb.idbxs.* OR eidb.sec.*, 
  *       RECOMMENDED TO USE eidb.sec.*<br/>
+ * 
+ * KEY USAGE NOTE:
  * ```
+ * E2EE with asymmetric keys:
+ *   - Encryption: Public key,   Decryption: Private key
+ *   - Sign:       Private key,  Verify:     Public key
+ *   - Options:    RSA (Web Crypto: Can't derive from password without Web Crypto support or randfunc)
+ *                 EC  (Web Crypto: Derivable from password, but can't encrypt)
+ *                 See: https://diafygi.github.io/webcrypto-examples
+ * Solution:
+ *   - Encryption: Symmetric key,  Decryption: Symmetric key  (AES-GCM 256)
+ *   - Sign:       Private key,    Verify:     Public key     (EC P-256)
+ * ```
+ * 
  * Variable prefixes:
+ * ```
  * - Etde_: Encrypted by encryption key
  * - Etda_: Encrypted by authentication private key
  * - Etds_: Encrypted by static key
  * - Etdr_: Encrypted by recovery key
  * ``` 
  */ 
-class idbxs { // Aka sec
-    static ITERATIONS = 100000;     
+class idbxs { // Aka sec         
+
+    /**
+     * _________________________________________________________________________
+     */
+    SUB_NAMESPACES;
+
+    static cruds;
+    static op_hists;
+    static ftss;
+
+    /**
+     * _________________________________________________________________________
+     */
+    CONSTANTS;
+
+    static ITERATIONS = 100000; // For key derivatiion
+
+    /**
+     * _________________________________________________________________________
+     */
+    PROPERTIES;
+
+    static Ekey     = null; // Encryption key
+    static Akeypair = null; // Authentication key pair {privateKey:, publicKey:}
+    static Skey     = null; // Static key (save once at db creation, or on total re-encryption)
+    static Rkey     = null; // Recovery key (UNUSED, use separate variable)
+
+    /*
+     * _________________________________________________________________________
+     */
+    METHODS;
+
+    /**
+     * Open db with version set automatically (av, ie. auto-versioning)
+     * @param  {String} Db_Name - Database name
+     * @param  {Object} Indices - Index schema of database
+     * @return {Array}  Error or null, and database object
+     */
+    static async open_av(Db_Name,Indices){
+        // Check _secure marking in every store
+        var Store_Names = Object.keys(Indices);
+
+        for (let Store_Name of Store_Names){
+            if (Indices[Store_Name]._secure == null) continue;
+
+            // Remove marking 
+            delete Indices[Store_Name]._secure;
+
+            // Prefix store name with #
+            Indices["#"+Store_Name] = {...Indices[Store_Name]};
+            delete Indices[Store_Name];
+        }
+
+        // Open db
+        return await idbx.open_av(Db_Name,Indices);        
+    }
+
+    /**
+     * Turn value into secure value (encrypted by static key)
+     * @param  {String|Number} Value - A value
+     * @return {String}        Base64 ciphertext
+     */ 
+    static async value_to_svalue(Value){
+        var Ct_Iv = await wcrypto.encrypt_aes_fiv(Value, idbxs.Skey);
+        return Ct_Iv[0];
+    }
+
+    /**
+     * Turn regular object into secure object to save encrypted<br/>
+     * NOTICE: THE OUTPUT SECURE OBJECT CONTAINS ONLY ENCRYPTED PROPERTIES
+     *         THOSE ARE INDEXED, THE REST OF PROPERTIES ARE IN .Etds_Obj
+     */ 
+    static async obj_to_sobj(Store_Name,Obj){
+        if (idbxs.Skey==null) {
+            loge("idbxs.obj_to_sobj: Static key not set");
+            return;
+        }
+
+        // Get index name list
+        var Idx_Names = Object.keys(idbx.Indices[Store_Name]);
+            Idx_Names = Idx_Names.filter(X => X!="id");
+
+        // Create encrypted values
+        let Props = []; 
+
+        if (Obj.id != null)
+            var Sobj = {id: Obj.id};
+        else
+            var Sobj = {};
+
+        for (let Idx_Name of Idx_Names){            
+            let is_compound = Idx_Name.indexOf(",")>=0;
+
+            // Compound index
+            if (is_compound){
+                let Paths = Idx_Name.split(",");
+
+                for (let Path of Paths) 
+                    Props.push({
+                        Path:  Path,
+                        Value: utils.prop_get(Obj,Path)
+                    });
+            }
+            else{ // Regular index
+                Props.push({
+                    Path:  Idx_Name,
+                    Value: utils.prop_get(Obj,Idx_Name)
+                });
+            }
+
+            // Encrypt
+            for (let i=0; i<Props.length; i++){
+                let Ct_Iv       = await wcrypto.encrypt_aes_fiv(Props[i].Value, idbxs.Skey);
+                Props[i].Svalue = Ct_Iv[0]; // Ignore fixed IV value
+            }
+        }
+
+        // Put encrypted properties to secure obj
+        for (let Prop of Props){
+            let Path   = Prop.Path;
+            let Svalue = Prop.Svalue;
+            Sobj       = utils.prop_set(Sobj,Path,Svalue);
+        }
+
+        // Add Etds_Obj (object encrypted by static key)        
+        var Str       = utils.obj_to_json(Obj);
+        var Ct_Iv     = await wcrypto.encrypt_aes_fiv(Str, idbxs.Skey);
+        Sobj.Etds_Obj = Ct_Iv[0]; // Ignore fixed IV value
+
+        return Sobj;
+    }
+
+    /**
+     * Object to secure object, all depths<br/>
+     * Can't utilise JSON.parse object travel, its reviver is synchronous
+     * while encryption is async. Doing recursion.
+     */
+    static async #obj_to_sobj_full(Obj){
+        if (Obj==null) return null;
+
+        // Leaf values
+        if (!(Obj instanceof Object))
+            return (await wcrypto.encrypt_aes_fiv(Obj, idbxs.Skey))[0];
+
+        // Object
+        for (let Key in Obj) // 'for in' gives Key for both Object & Array
+            Obj[Key] = await idbxs.#obj_to_sobj_full(Obj[Key]);
+
+        return Obj;
+    }
+
+    /**
+     * Object to secure object, all depths<br/>
+     * Can't utilise JSON.parse object travel, its reviver is synchronous
+     * while encryption is async. Doing recursion.
+     */
+    static async obj_to_sobj_full(Obj){
+        var Clone = JSON.parse(JSON.stringify(Obj)); // Avoid changing Obj itself
+        return await idbxs.#obj_to_sobj_full(Clone);
+    }
+
+    /**
+     * Set enc/dec keys to be used by secure ops
+     */ 
+    static set_ea_keys(Ekey,Akeypair){
+        idbxs.Ekey     = Ekey;
+        idbxs.Akeypair = Akeypair;
+    }
+
+    /**
+     * Set static key
+     */
+    static set_static_key(Skey){
+        idbxs.Skey = Skey;
+    }
+
+    /**
+     * Ensure global metadata (ensure, and change no whole saving)
+     */ 
+    static async ensure_global_meta(Metastore){
+        var Meta = await idbxs.load_global_meta(Metastore);
+
+        if (Meta==null)
+            await Metastore.add(GLOBAL_DEFAULT_META);
+    }
+
+    /**
+     * Load global metadata (no whole saving of global meta)
+     */ 
+    static async load_global_meta(Metastore){
+        return await Metastore.index("Store").get(value_is("_global"));
+    }
+
+    /**
+     * Update global meta
+     */ 
+    static async update_global_meta(Metastore, Changes){
+        var Meta = await idbxs.load_global_meta(Metastore);
+        Meta     = {...Meta, ...Changes};
+        await Metastore.put(Meta);
+    }
+
+    /**
+     * Set static key in db metadata, only after setting static key, all other secure
+     * ops with read or write can be performed.<br/>
+     * WARN: CALL ONLY ONCE AFTER DB CREATION OR AFTER RE-ENCRYPTING ALL DATA
+     *       WITH NEW STATIC KEY.
+     * @param {Object}  Skey    - Static key to save to db
+     * @param {Boolean} enforce - Indicates whether to force setting a static key which
+     *                            may FATALLY result in failure of decryption 
+     *                            of all data. Defaulted to false.
+     */ 
+    static async save_static_key(Skey, enforce=false){
+        if (idbxs.Ekey==null || idbxs.Akeypair==null){
+            loge("idbxs.set_static_key: Encryption key and auth key pair must exist first, call set_ea_keys");
+            return;
+        }
+
+        // Encrypt static key
+        var Skey_Hex = await wcrypto.export_key_hex(Skey);
+        var Temp     = await wcrypto.encrypt_aes(Skey_Hex, idbxs.Ekey);
+        var [Etde_Skey,Etde_Skey_Iv] = Temp;        
+
+        // Load metadata
+        var Db   = await eidb.reopen();
+        var T    = Db.transaction("_meta",RW);
+        var S    = T.store1();
+        var Meta = await S.index("Store").get(value_is("_global")); // Store null is global meta
+
+        if (Meta == null){ // No global metadata, create
+            idbxs.ensure_global_meta(S);
+            Meta = await S.index("Store").get(value_is("_global")); // Load
+        }
+
+        // Static key exists and no enfore, return
+        if (Meta.Etde_Skey!=null && enforce==false){
+            logw("idbxs.set_static_key: Static key exists, no enforcing");
+            Db.close();
+            return;
+        }
+
+        // Static key exists or no, but enforcing, just overwrite
+        // Save encrypted static key to db
+        Meta.Etde_Skey    = Etde_Skey;
+        Meta.Etde_Skey_Iv = Etde_Skey_Iv;
+        S.put(Meta);
+        Db.close();
+    }
+
+    /**
+     * Get static key from db metadata
+     */ 
+    static async load_static_key(){
+        if (idbxs.Ekey==null || idbxs.Akeypair==null){
+            loge("idbxs.get_static_key: Encryption key and auth key pair must exist first, call set_ea_keys");
+            return;
+        }
+
+        // Get metadata
+        var Db   = await eidb.reopen();
+        var T    = Db.transaction("_meta",RW);
+        var S    = T.store1();
+        var Meta = await S.index("Store").get(value_is("_global"));
+
+        // Get encrypted static key
+        if (Meta == null){
+            logw("idbxs.get_static_key: Global metadata not set");
+            await idbxs.ensure_global_meta(S);
+            Db.close();
+            return;
+        }
+        if (Meta.Etde_Skey == null){
+            logw("idbxs.get_static_key: No static key in global metadata");
+            Db.close();
+            return;
+        }
+        var Etde_Skey    = Meta.Etde_Skey;
+        var Etde_Skey_Iv = Meta.Etde_Skey_Iv;
+
+        // Decrypt to get static key
+        var Skey_Hex = await wcrypto.decrypt_aes(Etde_Skey, Etde_Skey_Iv, idbxs.Ekey);
+        var Skey     = await wcrypto.import_key_aes_raw(Skey_Hex);
+
+        Db.close();
+        return Skey;
+    }
+
+    /**
+     * Prepare keys for secure ops
+     */ 
+    static async prepare_keys(Username,Password){
+        // Enc/dec keys
+        var [Ekey,Akeypair] = await idbxs.get_key_chain(Username,Password);
+        idbxs.set_ea_keys(Ekey,Akeypair);
+
+        // Static key
+        var Skey = await idbxs.load_static_key();
+
+        if (Skey==null){
+            logw("idbxs.prepare_keys: No static key, creating one...");
+            let Skey = await idbxs.get_new_static_key(Username);
+            let enforce;
+            await idbxs.save_static_key(Skey, enforce=true);
+        }
+
+        var Skey = await idbxs.load_static_key();
+        idbxs.set_static_key(Skey);
+    }
 
     /**
      * Get key chain from password<br/>
@@ -71,14 +407,12 @@ class idbxs { // Aka sec
      * Use recovery key to get back Enc_Key, Auth_Keypair, to set new 
      * password but it's not designed to get back the forgotten password.
      * Give user the Recovery Key (256bits), store (Iv,Ciphertext) in db:<br/>
-     * - Etdr_Re_Iv<br/>
-     * - Etdr_Re_Ciphertext
+     * - Etdr_Recovery<br/>
+     * - Etdr_Recovery_Iv
      * @return {Object} 3 items: Recovery key (AES-GCM), ciphertext of (Enc_Key,Auth_Keypair),
      *                  and IV (hex) used to create the ciphertext.
      */
-    static async gen_recovery_info(Enc_Key,Auth_Keypair){
-        var Token  = {Recovery_Key:null, Iv:null, Ciphertext:null};
-        
+    static async gen_recovery_info(Enc_Key,Auth_Keypair){        
         // Make recovery key
         var Re_Key = await wcrypto.generate_key_aes();
 
@@ -92,17 +426,31 @@ class idbxs { // Aka sec
         
         // Make ciphertext
         var [Ciphertext,Iv] = await wcrypto.encrypt_aes(Text, Re_Key);
-        Iv = wcrypto.bytes_to_hex(Iv);
 
-        return {Recovery_Key:Re_Key, Ciphertext:Ciphertext, Iv:Iv};
+        return {Ciphertext:Ciphertext, Iv:Iv, Recovery_Key:Re_Key};
+    }
+
+    /**
+     * Save recovery info
+     */ 
+    static async save_recovery_info(Ciphertext, Iv){
+        var Db   = await eidb.reopen();
+        var T    = Db.transaction("_meta",RW);
+        var S    = T.store1();
+
+        // Update meta
+        var Changes = { Etdr_Recovery:Ciphertext, Etdr_Recovery_Iv:Iv };
+        await idbxs.update_global_meta(S, Changes);
+
+        Db.close();
     }
 
     /**
      * Recover back Enc_Key, Auth_Keypair from recovery key, iv, and ciphertext
      */ 
     static async recover_key_chain(Ciphertext, Iv, Recovery_Key){ // Iv is in hex
-        var Iv   = wcrypto.hex_to_bytes(Iv);
         var Text = await wcrypto.decrypt_aes(Ciphertext, Iv, Recovery_Key);
+        if (Text==null) return null;
 
         // Enc_Key, and dxy of auth keys
         var [Ekeyhex,Dhex,Xhex,Yhex] = Text.split("::");
@@ -126,6 +474,69 @@ class idbxs { // Aka sec
         Akeypair.publicKey  = await wcrypto.import_key_ec_jwk(Jwk_Pub);
 
         return [Ekey,Akeypair];
+    }
+
+    /**
+     * Recover enc/auth keys and set keys to use
+     */ 
+    static async recover_and_set_keys(Recovery_Key){
+        if (!(Recovery_Key instanceof CryptoKey)){
+            loge("idbxs.recover_and_set_keys: First param is not CryptoKey");
+            return;
+        }
+
+        // Open db
+        var Db = await eidb.reopen();
+        var T  = Db.transaction("_meta",RO);
+        var S  = T.store1();
+
+        // Load recovery ciphertext and iv
+        var Meta = await idbxs.load_global_meta(S);
+
+        if (Meta==null){
+            loge("idbxs.recover_and_set_keys: Bad global metadata:",Meta);
+            Db.close();
+            return;
+        }
+
+        var Etdr_Recovery    = Meta.Etdr_Recovery;
+        var Etdr_Recovery_Iv = Meta.Etdr_Recovery_Iv;
+
+        if (Etdr_Recovery==null || Etdr_Recovery_Iv==null){
+            loge("idbxs.recovery_and_set_keys: No or bad recovery data in global metadata");
+            Db.close();
+            return;
+        }
+        
+        // Try to use recovery key to decrypt metadata to get enc/auth keys
+        // pass recover_key_chain means the recovery key matches recovery cipher text
+        // and IV in metadata.
+        var [Ek,Aks] = await idbxs.recover_key_chain(Etdr_Recovery, Etdr_Recovery_Iv, Recovery_Key);
+        
+        if (Ek==null || Aks==null || (!(Ek instanceof CryptoKey)) || 
+                (!(Aks.privateKey instanceof CryptoKey)) || (!(Aks.publicKey instanceof CryptoKey))){
+            loge("idbxs.recovery_and_set_keys: Failed to recover keys, found:",Ek,Aks);
+            Db.close();
+            return;
+        }
+
+        // Decrypt metadata to get static key
+        var Etde_Skey    = Meta.Etde_Skey;
+        var Etde_Skey_Iv = Meta.Etde_Skey_Iv;
+        var Sk_Hex       = await wcrypto.decrypt_aes(Etde_Skey, Etde_Skey_Iv, Ek);
+
+        if (Sk_Hex==null){
+            loge("idbxs.recovery_and_set_keys: Failed to decrypt for static key");
+            Db.close();
+            return;
+        }
+        var Sk = await wcrypto.import_key_aes_raw(Sk_Hex);
+
+        // Set keys to use
+        idbxs.set_ea_keys(Ek,Aks);
+        idbxs.set_static_key(Sk);
+        Db.close();
+        return [Ek,Aks];
     }
 
     /**
@@ -296,6 +707,19 @@ class idbxs { // Aka sec
         // Turn bytes into hex and get key
         var Hex = wcrypto.bytes_to_hex(Bytes);
         return await wcrypto.import_key_aes_raw(Hex);
+    }
+
+    /**
+     * Init
+     */ 
+    static init(){
+        idbxs.cruds    = cruds;
+        idbxs.op_hists = op_hists;
+        idbxs.ftss     = ftss;
+
+        idbxs.cruds    .init();
+        idbxs.op_hists .init();
+        idbxs.ftss     .init();
     }
 }
 

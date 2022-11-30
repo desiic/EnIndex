@@ -8,7 +8,7 @@ import cursor from "../idb/cursor.js";
 /**
  * IDBCursorWithValue wraper class
  */
- class cursor_with_value extends cursor {
+class cursor_with_value extends cursor {
     self = null;
 
     /**

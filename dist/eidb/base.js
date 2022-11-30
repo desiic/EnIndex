@@ -1,0 +1,1 @@
+var log=console.log,logw=console.warn,loge=console.error;class base{static new_lock(){var e;return[new Promise(((o,a)=>{e=o})),e]}static async stay_idle(e){var o=new Promise(((o,a)=>{setTimeout((()=>{o()}),e)}));await o}}export default base;
