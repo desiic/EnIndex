@@ -1,0 +1,1 @@
+import utils from"../utils.js";class ssession{static set(s,t){var o=utils.obj_to_json(t);sessionStorage[s]=o}static get(s){var t=sessionStorage[s];return utils.json_to_obj_bd(t)}}export default ssession;
