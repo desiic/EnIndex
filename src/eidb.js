@@ -77,8 +77,6 @@ class eidb {
      * Sub-namespace, utils
      */ 
     static utils;
-    static slocal;
-    static ssession;
 
     /**
      * _________________________________________________________________________
@@ -478,8 +476,6 @@ class eidb {
         eidb.sec      = idbxs; // The same as idbxs
         eidb.wcrypto  = wcrypto;
         eidb.utils    = utils;
-        eidb.slocal   = slocal;
-        eidb.ssession = ssession;
 
         eidb.idb.    init();
         eidb.idbx.   init();
