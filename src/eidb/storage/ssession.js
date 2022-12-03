@@ -24,7 +24,7 @@ class ssession {
             sessionStorage[Key] = Json;
         }
         catch(Err){
-            loge("ssession.set: Error:",Err);
+            // loge("ssession.set: Error:",Err);
             return null;
         }
     }
@@ -38,7 +38,7 @@ class ssession {
             return utils.json_to_obj_bd(Json);
         }
         catch(Err){
-            loge("ssession.get: Error:",Err);
+            // loge("ssession.get: Error:",Err);
             return null;
         }
     }

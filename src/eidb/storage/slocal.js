@@ -24,7 +24,7 @@ class slocal {
             localStorage[Key] = Json;
         }
         catch(Err){
-            loge("slocal.set: Error:",Err);
+            // loge("slocal.set: Error:",Err);
             return null;
         }
     }
@@ -38,7 +38,7 @@ class slocal {
             return utils.json_to_obj_bd(Json);
         }
         catch(Err){
-            loge("slocal.get: Error:",Err);
+            // loge("slocal.get: Error:",Err);
             return null;            
         }
     }

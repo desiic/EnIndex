@@ -1,1 +1,1 @@
-import utils from"../utils.js";class slocal{static set(t,o){var l=utils.obj_to_json(o);localStorage[t]=l}static get(t){var o=localStorage[t];return utils.json_to_obj_bd(o)}}export default slocal;
+import utils from"../utils.js";const log=console.log,logw=console.warn,loge=console.error;class slocal{static set(o,l){try{var t=utils.obj_to_json(l);localStorage[o]=t}catch(o){return loge("slocal.set: Error:",o),null}}static get(o){try{var l=localStorage[o];return utils.json_to_obj_bd(l)}catch(o){return loge("slocal.get: Error:",o),null}}}export default slocal;

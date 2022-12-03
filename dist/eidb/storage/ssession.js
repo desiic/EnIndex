@@ -1,1 +1,1 @@
-import utils from"../utils.js";class ssession{static set(s,t){var o=utils.obj_to_json(t);sessionStorage[s]=o}static get(s){var t=sessionStorage[s];return utils.json_to_obj_bd(t)}}export default ssession;
+import utils from"../utils.js";const log=console.log,logw=console.warn,loge=console.error;class ssession{static set(s,o){try{var t=utils.obj_to_json(o);sessionStorage[s]=t}catch(s){return loge("ssession.set: Error:",s),null}}static get(s){try{var o=sessionStorage[s];return utils.json_to_obj_bd(o)}catch(s){return loge("ssession.get: Error:",s),null}}}export default ssession;
