@@ -18,7 +18,7 @@ else
 fi
 
 echo "Minifying files..."
-Jsfiles=$(find ./src -d | grep -E '.js$')
+Jsfiles=$(find ./src -depth | grep -E '.js$')
 
 for Jsfile in ${Jsfiles[@]}; do
     echo -e "\nMinifying $Jsfile..."
