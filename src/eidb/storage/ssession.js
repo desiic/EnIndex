@@ -16,6 +16,13 @@ const loge = console.error;
 class ssession {
 
     /**
+     * Get all keys
+     */ 
+    static keys(){
+        return Object.keys(sessionStorage);
+    }
+
+    /**
      * Set object
      */ 
     static set(Key,Obj){

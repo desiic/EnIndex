@@ -16,6 +16,13 @@ const loge = console.error;
 class slocal {
 
     /**
+     * Get all keys
+     */ 
+    static keys(){
+        return Object.keys(localStorage);
+    }
+
+    /**
      * Set object
      */ 
     static set(Key,Obj){
