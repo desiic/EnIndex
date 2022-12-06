@@ -1,0 +1,1 @@
+import utils from"../utils.js";const log=console.log,logw=console.warn,loge=console.error;class slocal{static keys(){return Object.keys(localStorage)}static set(t,o){try{var l=utils.obj_to_json(o);localStorage[t]=l}catch(t){return null}}static get(t){try{var o=localStorage[t];return utils.json_to_obj_bd(o)}catch(t){return null}}}export default slocal;

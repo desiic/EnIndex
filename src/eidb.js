@@ -32,6 +32,8 @@ import factory   from "./eidb/idb/factory.js";
 import key_range from "./eidb/idb/key-range.js";
 import wcrypto   from "./eidb/wcrypto.js";
 import utils     from "./eidb/utils.js";
+import slocal    from "./eidb/storage/slocal.js";
+import ssession  from "./eidb/storage/ssession.js";
 
 // Shorthands
 var log  = console.log;
@@ -468,18 +470,23 @@ class eidb {
      */ 
     static init(){
         // Subnamespaces
-        eidb.idb     = idb;
-        eidb.idbx    = idbx;
-        eidb.idbxs   = idbxs;
-        eidb.sec     = idbxs; // The same as idbxs
-        eidb.wcrypto = wcrypto;
-        eidb.utils   = utils;
+        eidb.idb      = idb;
+        eidb.idbx     = idbx;
+        eidb.idbxs    = idbxs;
+        eidb.sec      = idbxs; // The same as idbxs
+        eidb.wcrypto  = wcrypto;
+        eidb.utils    = utils;
 
         eidb.idb.    init();
         eidb.idbx.   init();
         eidb.idbxs.  init(); // No .sec.init(), not twice.
         eidb.wcrypto.init();
         eidb.utils.  init();
+
+        // Subnamespace shortcuts, window.* binding but must put here 
+        // to ensure modules are imported completely coz they are modules, not others.
+        window.slocal   = slocal;
+        window.ssession = ssession;
 
         // Static properties
         eidb.Factory = new factory(window.indexedDB);

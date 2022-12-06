@@ -3,12 +3,14 @@
  */ 
 
 // Modules
+import base     from "./base.js";
 import * as ecc from "./ecc.js";
 
 // Shorthands
-var log  = console.log;
-var logw = console.warn;
-var loge = console.error;
+var log      = console.log;
+var logw     = console.warn;
+var loge     = console.error;
+var new_lock = base.new_lock;
 
 // Constants
 const BIT_LEN = 256;
@@ -36,27 +38,45 @@ class wcrypto {
 
     /**
      * Make ECDSA public key from private key
-     * NOTE: THIS IS USING Elliptic LIB, NOT WEB CRYPTO.
+     * NOTE:  THIS IS USING Elliptic LIB, NOT WEB CRYPTO.<br/>
+     * TO-DO: USE DIRECT BigInt CALCULATION SIMILAR TO ecc.js TO AVOID THE DEPENDENCY Elliptic.
      * @param  {String} Priv_Hex - Private key (number d) 
      * @return {Array}  Public key point (2 numbers x,y)
      */ 
-    static get_pubkey_point(Priv_Hex){
-        // Create curve
-        var Curve = elliptic.ec("p256");
-        // Get private key
-        var Privkey = Curve.keyFromPrivate(Priv_Hex);
-        // Get public key
-        var Pubkey = Privkey.getPublic();
+    static async get_pubkey_point(Priv_Hex){
+        // Elliptic is not ES6 lib, loaded in separate script tag, 
+        // but EnIndex is async load, make sure Elliptic is loaded before calling
+        var [Lock,unlock] = new_lock();
 
-        // Return EC public key as 2 numbers
-        // WARN: Not Pubkey.x, .y, they are different values compared to getX(), getY().
-        // .toString(16) is built-in to get hex.
-        var Xhex = Pubkey.getX().toString(16);
-        var Yhex = Pubkey.getY().toString(16);
-        while (Xhex.length<64) Xhex="0"+Xhex;
-        while (Yhex.length<64) Yhex="0"+Yhex;
+        setTimeout(()=>{
+            if (window.elliptic == null)
+                loge("wcrypto.get_pubkey_point: No Elliptic lib found.");
+        },30*1000);
 
-        return [Xhex, Yhex];
+        setTimeout(function wait4ellipic(){
+            if (window.elliptic == null){
+                setTimeout(wait4ellipic,0);
+                return;
+            }
+
+            // Create curve
+            var Curve = elliptic.ec("p256");
+            // Get private key
+            var Privkey = Curve.keyFromPrivate(Priv_Hex);
+            // Get public key
+            var Pubkey = Privkey.getPublic();
+
+            // Return EC public key as 2 numbers
+            // WARN: Not Pubkey.x, .y, they are different values compared to getX(), getY().
+            // .toString(16) is built-in to get hex.
+            var Xhex = Pubkey.getX().toString(16);
+            var Yhex = Pubkey.getY().toString(16);
+            while (Xhex.length<64) Xhex="0"+Xhex;
+            while (Yhex.length<64) Yhex="0"+Yhex;
+
+            unlock([Xhex, Yhex]);
+        },0);
+        return await Lock;
     }
 
     /**
@@ -675,7 +695,7 @@ class wcrypto {
         // are commented out.
         /*
         ecc.set_curve(p,n,G[0],G[1]);
-        var Pubkey = ecc.get_pubkey_point(G, d);  
+        var Pubkey = await ecc.get_pubkey_point(G, d);  
         */
 
         // (1) Get random ECDSA keypair ==========
@@ -695,7 +715,7 @@ class wcrypto {
             d = await wcrypto.digest_sha256(d);
 
         // Use lib to make public key, point(x,y)
-        var [x,y] = wcrypto.get_pubkey_point(d);
+        var [x,y] = await wcrypto.get_pubkey_point(d);
 
         // (3) Put private & public key into JWKs ==========
         // Convert d, x, y to base64url format to put back to JWK object
