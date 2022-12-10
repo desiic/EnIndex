@@ -460,10 +460,18 @@ class idbx {
         // Store index schema for later reference, eg. obj_to_sobj
         idbx.Indices = Indices;    
 
+        // Db names
+        var Dbnames = (await idb.databases()).map(X => X.name);
+
         // Check if indices changed
-        window._Db_Name     = Db_Name;
-        var New_Indices     = Indices;
-        var Cur_Indices     = await idbx.get_cur_indices(Db_Name);
+        window._Db_Name = Db_Name;
+        var New_Indices = Indices;
+
+        if (Dbnames.indexOf(Db_Name) >= 0) // Db is existing
+            var Cur_Indices = await idbx.get_cur_indices(Db_Name);
+        else
+            var Cur_Indices = {}; // Db not existing, empty index schema
+
         var Cur_Indices_Str = idbx.indices2str(Cur_Indices);
         var New_Indices_Str = idbx.indices2str(New_Indices);
         
