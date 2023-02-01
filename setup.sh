@@ -6,7 +6,10 @@ if [[ $BASH_SOURCE != $0 ]]; then
     return
 fi
 
-echo "Installing Terser..."
+echo "Installing JSDoc..."
+sudo npm i -g jsdoc
+
+echo -e "\nInstalling Terser..."
 sudo npm i -g terser
 echo "Done."
 # EOF
