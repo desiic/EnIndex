@@ -240,10 +240,18 @@ class idbx {
         return Keypath;
     }
 
+    // Check if db name exists
+    static async db_exists(Db_Name){
+        var Db_Names = (await idb.databases()).map(Db=>Db.name);
+        if (Db_Names.indexOf(Db_Name) == -1) return false;
+        return true;
+    }
+
     /**
      * Get current indices
      */
     static async get_cur_indices(Db_Name){
+        if (!await thisclass.db_exists(Db_Name)) return {};
         var Db = await idb.open(Db_Name);
 
         // Get indices
@@ -323,8 +331,14 @@ class idbx {
      * Upgrade db
      */
     static async upgrade_db(Db_Name, Cur_Indices, New_Indices){
-        var ver     = await idbx.get_cur_db_ver(Db_Name);
-        var new_ver = ver+1;
+        if (await thisclass.db_exists(Db_Name)){
+            var ver     = await idbx.get_cur_db_ver(Db_Name);
+            var new_ver = ver+1;
+        }
+        else{
+            var ver     = 0;
+            var new_ver = ver+1;
+        }
         log("idbx.upgrade_db: Upgrading to version",new_ver);
 
         // Open db with new version will trigger upgrade
@@ -581,5 +595,6 @@ class idbx {
 }
 
 // Module export
-export default idbx;
+const thisclass = idbx;
+export default thisclass;
 // EOF
