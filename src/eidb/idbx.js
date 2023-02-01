@@ -240,7 +240,9 @@ class idbx {
         return Keypath;
     }
 
-    // Check if db name exists
+    /** 
+     * Check if db name exists
+     */
     static async db_exists(Db_Name){
         var Db_Names = (await idb.databases()).map(Db=>Db.name);
         if (Db_Names.indexOf(Db_Name) == -1) return false;

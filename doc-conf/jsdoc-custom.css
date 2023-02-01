@@ -1,17 +1,17 @@
 /* Normal font size */
-html { font-size:14px !important; }
+/* html { font-size:14px !important; } */
 
 /* Light dots */
-ul { list-style:circle !important; }
+/* ul { list-style:circle !important; } */
 
 /* Outdent first item in UL in article */
-article ul >b:nth-child(1) { margin-left:-3rem !important; }
+/* article ul >b:nth-child(1) { margin-left:-3rem !important; } */
 
 /* Move module export description to bottom coz it's used for 
    very very long list of examples */
-.main-wrapper article {
+/* .main-wrapper article {
     display:flex; flex-direction:column;
-}   
+}    */
 /* In jsdoc-custom.js: */
 /*
 .main-wrapper article >.container-overview {
@@ -21,4 +21,11 @@ article ul >b:nth-child(1) { margin-left:-3rem !important; }
     display:none;
 }
 */
+
+#main { 
+    float:right !important; width:66vw !important; 
+}
+body >nav { 
+    float:left !important; width:calc(33vw - 50px) !important; padding-left:50px; 
+}
 /* EOF */

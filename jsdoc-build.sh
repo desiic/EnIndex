@@ -36,9 +36,20 @@ fi
 perl -pi -e $'s|data.sort\(\'longname, version, since\'\);|// No sort|g' publish.js
 cd ../..
 
+# jsdoc.json theme_opts:
+# "sections": ["Modules"],
+# "include_css": ["./doc-conf/jsdoc-custom.css"],
+# "include_js":  ["./doc-conf/jsdoc-custom.js"]
+
 echo -e "\nBuilding doc..."
-jsdoc -c doc-conf/jsdoc.json -t doc-themes/clean-jsdoc-theme-modded -R README.md \
+# jsdoc -c doc-conf/jsdoc.json -t doc-themes/clean-jsdoc-theme-modded -R README.md \
+# jsdoc -c doc-conf/jsdoc.json -t doc-themes/clean-jsdoc-theme -R README.md \
+jsdoc -c doc-conf/jsdoc.json -R README.md \
     -r doc-src -d doc
+
+# # Add custom CSS (docdash only, already in jsdoc.json for clean-jsdoc-theme)
+echo -e $'\n'                  >>doc/styles/jsdoc-default.css
+cat  doc-conf/jsdoc-custom.css >>doc/styles/jsdoc-default.css
 
 # # Add custom CSS (docdash only, already in jsdoc.json for clean-jsdoc-theme)
 # echo -e $'\n'         >>doc/styles/jsdoc.css
