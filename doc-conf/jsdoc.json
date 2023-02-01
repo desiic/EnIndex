@@ -34,10 +34,7 @@
                     "link": "https://github.com/desiic/enindex",
                     "target": "_blank"
                 }
-            ],
-            "sections": ["Modules"],
-            "include_css": ["./doc-conf/jsdoc-custom.css"],
-            "include_js":  ["./doc-conf/jsdoc-custom.js"]
+            ]
         }
     }
 }
