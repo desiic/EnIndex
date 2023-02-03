@@ -120,7 +120,10 @@ class cruds {
         var Scond = {};
 
         for (let Key in Cond)
-            Scond[Key] = await idbxs.value_to_svalue(Cond[Key]);
+            if ((Cond[Key] instanceof Array) && Key.indexOf(",")>=0) // Compound index
+                Scond[Key] = await idbxs.array_to_sarray(Cond[Key]);
+            else
+                Scond[Key] = await idbxs.value_to_svalue(Cond[Key]);
         
         // Check
         var res = await crud.exists(Store_Name,Scond, _secure);
@@ -145,7 +148,10 @@ class cruds {
         var Scond = {};
 
         for (let Key in Cond)
-            Scond[Key] = await idbxs.value_to_svalue(Cond[Key]);
+            if ((Cond[Key] instanceof Array) && Key.indexOf(",")>=0) // Compound index
+                Scond[Key] = await idbxs.array_to_sarray(Cond[Key]);
+            else
+                Scond[Key] = await idbxs.value_to_svalue(Cond[Key]);
         
         // Count
         var res = await crud.count(Store_Name,Scond, _secure);
@@ -183,7 +189,10 @@ class cruds {
         var Scond = {};
 
         for (let Key in Cond)
-            Scond[Key] = await idbxs.value_to_svalue(Cond[Key]);
+            if ((Cond[Key] instanceof Array) && Key.indexOf(",")>=0) // Compound index
+                Scond[Key] = await idbxs.array_to_sarray(Cond[Key]);
+            else
+                Scond[Key] = await idbxs.value_to_svalue(Cond[Key]);
         
         // Find
         var Sobj = await crud.find_one(Store_Name,Scond, _secure);
@@ -214,7 +223,10 @@ class cruds {
         var Scond = {};
 
         for (let Key in Cond)
-            Scond[Key] = await idbxs.value_to_svalue(Cond[Key]);
+            if ((Cond[Key] instanceof Array) && Key.indexOf(",")>=0) // Compound index
+                Scond[Key] = await idbxs.array_to_sarray(Cond[Key]);
+            else
+                Scond[Key] = await idbxs.value_to_svalue(Cond[Key]);
         
         // Find
         var Sobjs = await crud.find_many(Store_Name,Scond, limit,_secure);
@@ -290,7 +302,7 @@ class cruds {
         var Scond = {};
 
         for (let Key in Cond)
-            Scond[Key] = await idbxs.value_to_svalue(Cond[Key]);
+            Scond[Key] = await idbxs.value_to_svalue(Cond[Key]); // No compound index
         
         // Find
         var Sobjs = await crud.filter(Store_Name,Scond, limit,_secure);
@@ -326,7 +338,10 @@ class cruds {
         var Scond    = {};
 
         for (let Key in Cond)
-            Scond[Key] = await idbxs.value_to_svalue(Cond[Key]);
+            if ((Cond[Key] instanceof Array) && Key.indexOf(",")>=0) // Compound index
+                Scond[Key] = await idbxs.array_to_sarray(Cond[Key]);
+            else
+                Scond[Key] = await idbxs.value_to_svalue(Cond[Key]);
 
         // Apply changes to Etds_Obj
         var Sobj1 = await crud.find_one(Store_Name,Scond, _secure);
@@ -377,7 +392,10 @@ class cruds {
         var Scond        = {};
 
         for (let Key in Cond)
-            Scond[Key] = await idbxs.value_to_svalue(Cond[Key]);
+            if ((Cond[Key] instanceof Array) && Key.indexOf(",")>=0) // Compound index
+                Scond[Key] = await idbxs.array_to_sarray(Cond[Key]);
+            else
+                Scond[Key] = await idbxs.value_to_svalue(Cond[Key]);
 
         // Apply changes to Etds_Obj        
         var Sobj1s        = await crud.find_many(Store_Name,Scond, _secure);
@@ -458,7 +476,10 @@ class cruds {
         var Scond    = {};
 
         for (let Key in Cond)
-            Scond[Key] = await idbxs.value_to_svalue(Cond[Key]);
+            if ((Cond[Key] instanceof Array) && Key.indexOf(",")>=0) // Compound index
+                Scond[Key] = await idbxs.array_to_sarray(Cond[Key]);
+            else
+                Scond[Key] = await idbxs.value_to_svalue(Cond[Key]);
 
         // Apply changes to Etds_Obj
         var Sobj1 = await crud.find_one(Store_Name,Scond, _secure);
@@ -491,7 +512,10 @@ class cruds {
         var Scond = {};
 
         for (let Key in Cond)
-            Scond[Key] = await idbxs.value_to_svalue(Cond[Key]);
+            if ((Cond[Key] instanceof Array) && Key.indexOf(",")>=0) // Compound index
+                Scond[Key] = await idbxs.array_to_sarray(Cond[Key]);
+            else
+                Scond[Key] = await idbxs.value_to_svalue(Cond[Key]);
         
         // Find
         var Sobj = await crud.find_one(Store_Name,Scond, _secure);
@@ -523,7 +547,10 @@ class cruds {
         var Scond = {};
 
         for (let Key in Cond)
-            Scond[Key] = await idbxs.value_to_svalue(Cond[Key]);
+            if ((Cond[Key] instanceof Array) && Key.indexOf(",")>=0) // Compound index
+                Scond[Key] = await idbxs.array_to_sarray(Cond[Key]);
+            else
+                Scond[Key] = await idbxs.value_to_svalue(Cond[Key]);
         
         // Find
         var Objs  = [];
