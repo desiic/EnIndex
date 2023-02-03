@@ -348,9 +348,9 @@ class cruds {
         }
         Store_Name = "#"+Store_Name;
 
-        // Make encrypted obj, each infex field is encrypted to find,
+        // Make encrypted obj, each index field is encrypted to find,
         // whole obj is encrypted to 'Etds_Obj' field to load all inc. non indexed fields.        
-        var Schanges = await idbxs.obj_to_sobj_full(Changes);
+        var Schanges = await idbxs.obj_to_sobj_arb(Changes);        
         var Scond    = {};
 
         for (let Key in Cond)
@@ -361,13 +361,13 @@ class cruds {
                 Scond[Key] = await idbxs.array_to_sarray(Cond[Key]);
             else
                 Scond[Key] = await idbxs.value_to_svalue(Cond[Key]);
-
+        
         // Apply changes to Etds_Obj
         var Sobj1 = await crud.find_one(Store_Name,Scond, _secure);
         var Json  = await wcrypto.decrypt_aes_fiv(Sobj1.Etds_Obj, idbxs.Skey);
         var Obj   = utils.json_to_obj_bd(Json);
 
-        Obj  = {...Obj, ...Changes};
+        Obj  = {...Obj, ...Changes};        
         Json = utils.obj_to_json(Obj); 
         Schanges.Etds_Obj = (await wcrypto.encrypt_aes_fiv(Json, idbxs.Skey))[0];
         
@@ -406,7 +406,7 @@ class cruds {
         
         // Make encrypted obj, each infex field is encrypted to find,
         // whole obj is encrypted to 'Etds_Obj' field to load all inc. non indexed fields.        
-        var Schanges     = await idbxs.obj_to_sobj_full(Changes);
+        var Schanges     = await idbxs.obj_to_sobj_arb(Changes);
         var Schanges_Arr = []; // Each object has a separate Etds_Obj
         var Scond        = {};
 
@@ -494,7 +494,7 @@ class cruds {
 
         // Make encrypted obj, each infex field is encrypted to find,
         // whole obj is encrypted to 'Etds_Obj' field to load all inc. non indexed fields.        
-        var Schanges = await idbxs.obj_to_sobj_full(Changes);
+        var Schanges = await idbxs.obj_to_sobj_arb(Changes);
         var Scond    = {};
 
         for (let Key in Cond)

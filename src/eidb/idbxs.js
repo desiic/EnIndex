@@ -136,6 +136,7 @@ class idbxs { // Aka sec
     }
 
     /**
+     * WARN: THIS IS FULL OBJECT TO SAVE
      * Turn regular object into secure object to save encrypted<br/>
      * NOTICE: THE OUTPUT SECURE OBJECT CONTAINS ONLY ENCRYPTED PROPERTIES
      *         THOSE ARE INDEXED, THE REST OF PROPERTIES ARE IN .Etds_Obj
@@ -158,7 +159,7 @@ class idbxs { // Aka sec
         else
             var Sobj = {};
 
-        for (let Idx_Name of Idx_Names){            
+        for (let Idx_Name of Idx_Names){
             let is_compound = Idx_Name.indexOf(",")>=0;
 
             // Compound index
@@ -200,12 +201,26 @@ class idbxs { // Aka sec
         return Sobj;
     }
 
+    // Shallow arbitrary obj to secure object
+    static async obj_to_sobj_arb(Obj){
+        var Sobj = {};
+
+        for (let Field in Obj){
+            let Json    = utils.obj_to_json(Obj[Field]);
+            Sobj[Field] = (await wcrypto.encrypt_aes_fiv(Json, idbxs.Skey))[0];
+        }
+
+        return Sobj;
+    }
+
     /**
+     * UNUSED!
+     * WARN: THIS IS ARBITRARY OBJECT, EG. CHANGES
      * Object to secure object, all depths<br/>
      * Can't utilise JSON.parse object travel, its reviver is synchronous
      * while encryption is async. Doing recursion.
      */
-    static async #obj_to_sobj_full(Obj){
+    static async #obj_to_sobj_arb_rec(Obj){
         if (Obj==null) return null;
 
         // Leaf values
@@ -214,19 +229,20 @@ class idbxs { // Aka sec
 
         // Object
         for (let Key in Obj) // 'for in' gives Key for both Object & Array
-            Obj[Key] = await idbxs.#obj_to_sobj_full(Obj[Key]);
+            Obj[Key] = await idbxs.#obj_to_sobj_arb_rec(Obj[Key]);
 
         return Obj;
     }
 
     /**
+     * UNUSED!
      * Object to secure object, all depths<br/>
      * Can't utilise JSON.parse object travel, its reviver is synchronous
      * while encryption is async. Doing recursion.
      */
-    static async obj_to_sobj_full(Obj){
+    static async obj_to_sobj_arb_rec(Obj){
         var Clone = JSON.parse(JSON.stringify(Obj)); // Avoid changing Obj itself
-        return await idbxs.#obj_to_sobj_full(Clone);
+        return await idbxs.#obj_to_sobj_arb_rec(Clone);
     }
 
     /**
