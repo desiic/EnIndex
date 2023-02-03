@@ -120,6 +120,9 @@ class cruds {
         var Scond = {};
 
         for (let Key in Cond)
+            if (Key=="id")
+                Scond[Key] = Cond[Key];
+            else
             if ((Cond[Key] instanceof Array) && Key.indexOf(",")>=0) // Compound index
                 Scond[Key] = await idbxs.array_to_sarray(Cond[Key]);
             else
@@ -148,6 +151,9 @@ class cruds {
         var Scond = {};
 
         for (let Key in Cond)
+            if (Key=="id")
+                Scond[Key] = Cond[Key];
+            else
             if ((Cond[Key] instanceof Array) && Key.indexOf(",")>=0) // Compound index
                 Scond[Key] = await idbxs.array_to_sarray(Cond[Key]);
             else
@@ -189,6 +195,9 @@ class cruds {
         var Scond = {};
 
         for (let Key in Cond)
+            if (Key=="id")
+                Scond[Key] = Cond[Key];
+            else
             if ((Cond[Key] instanceof Array) && Key.indexOf(",")>=0) // Compound index
                 Scond[Key] = await idbxs.array_to_sarray(Cond[Key]);
             else
@@ -223,6 +232,9 @@ class cruds {
         var Scond = {};
 
         for (let Key in Cond)
+            if (Key=="id")
+                Scond[Key] = Cond[Key];
+            else
             if ((Cond[Key] instanceof Array) && Key.indexOf(",")>=0) // Compound index
                 Scond[Key] = await idbxs.array_to_sarray(Cond[Key]);
             else
@@ -302,9 +314,13 @@ class cruds {
         var Scond = {};
 
         for (let Key in Cond)
-            Scond[Key] = await idbxs.value_to_svalue(Cond[Key]); // No compound index
+            if (Key=="id")
+                Scond[Key] = Cond[Key];
+            else
+                Scond[Key] = await idbxs.value_to_svalue(Cond[Key]); // No compound index
         
         // Find
+        // TO-DO: RECHECK, Cond MAY CONTAIN PARTIAL VALUE INSTEAD OF WHOLE FIELD VALUE
         var Sobjs = await crud.filter(Store_Name,Scond, limit,_secure);
 
         // Decrypt
@@ -338,6 +354,9 @@ class cruds {
         var Scond    = {};
 
         for (let Key in Cond)
+            if (Key=="id")
+                Scond[Key] = Cond[Key];
+            else
             if ((Cond[Key] instanceof Array) && Key.indexOf(",")>=0) // Compound index
                 Scond[Key] = await idbxs.array_to_sarray(Cond[Key]);
             else
@@ -392,6 +411,9 @@ class cruds {
         var Scond        = {};
 
         for (let Key in Cond)
+            if (Key=="id")
+                Scond[Key] = Cond[Key];
+            else
             if ((Cond[Key] instanceof Array) && Key.indexOf(",")>=0) // Compound index
                 Scond[Key] = await idbxs.array_to_sarray(Cond[Key]);
             else
@@ -476,6 +498,9 @@ class cruds {
         var Scond    = {};
 
         for (let Key in Cond)
+            if (Key=="id")
+                Scond[Key] = Cond[Key];
+            else
             if ((Cond[Key] instanceof Array) && Key.indexOf(",")>=0) // Compound index
                 Scond[Key] = await idbxs.array_to_sarray(Cond[Key]);
             else
@@ -512,6 +537,9 @@ class cruds {
         var Scond = {};
 
         for (let Key in Cond)
+            if (Key=="id")
+                Scond[Key] = Cond[Key];
+            else
             if ((Cond[Key] instanceof Array) && Key.indexOf(",")>=0) // Compound index
                 Scond[Key] = await idbxs.array_to_sarray(Cond[Key]);
             else
@@ -547,6 +575,9 @@ class cruds {
         var Scond = {};
 
         for (let Key in Cond)
+            if (Key=="id")
+                Scond[Key] = Cond[Key];
+            else
             if ((Cond[Key] instanceof Array) && Key.indexOf(",")>=0) // Compound index
                 Scond[Key] = await idbxs.array_to_sarray(Cond[Key]);
             else

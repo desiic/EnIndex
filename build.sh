@@ -21,7 +21,7 @@ echo "Minifying files..."
 Jsfiles=$(find ./src -depth | grep -E '.js$')
 
 for Jsfile in ${Jsfiles[@]}; do
-    echo -e "\nMinifying $Jsfile..."
+    echo -e "Minifying $Jsfile..."
     Outfile=$(echo $Jsfile | perl -pe $'s/\/src/\/dist/g')
     mkdir -p $Outfile
 
