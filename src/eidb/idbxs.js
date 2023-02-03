@@ -117,7 +117,18 @@ class idbxs { // Aka sec
      * @return {String}        Base64 ciphertext
      */ 
     static async value_to_svalue(Value){
-        var Ct_Iv = await wcrypto.encrypt_aes_fiv(Value, idbxs.Skey);
+        var Text;
+
+        if ((Value instanceof Object) && !(Value instanceof Date))
+            Text = utils.obj_to_json(Value);
+        else{
+            if (Value instanceof Date)
+                Text = Value.toISOString();
+            else
+                Text = Value.toString();
+        }
+
+        var Ct_Iv = await wcrypto.encrypt_aes_fiv(Text, idbxs.Skey);
         return Ct_Iv[0];
     }
 
@@ -181,7 +192,18 @@ class idbxs { // Aka sec
 
             // Encrypt
             for (let i=0; i<Props.length; i++){
-                let Ct_Iv       = await wcrypto.encrypt_aes_fiv(Props[i].Value, idbxs.Skey);
+                let Text;
+
+                if ((Props[i].Value instanceof Object) && !(Props[i].Value instanceof Date))
+                    Text = utils.obj_to_json(Props[i].Value);
+                else{
+                    if (Props[i].Value instanceof Date)
+                        Text = Props[i].Value.toISOString();
+                    else
+                        Text = Props[i].Value.toString();
+                }
+
+                let Ct_Iv       = await wcrypto.encrypt_aes_fiv(Text, idbxs.Skey);
                 Props[i].Svalue = Ct_Iv[0]; // Ignore fixed IV value
             }
         }
@@ -206,8 +228,18 @@ class idbxs { // Aka sec
         var Sobj = {};
 
         for (let Field in Obj){
-            let Json    = utils.obj_to_json(Obj[Field]);
-            Sobj[Field] = (await wcrypto.encrypt_aes_fiv(Json, idbxs.Skey))[0];
+            let Text;
+
+            if ((Obj[Field] instanceof Object) && !(Obj[Field] instanceof Date))
+                Text = utils.obj_to_json(Obj[Field]);
+            else{    
+                if (Obj[Field] instanceof Date)
+                    Text = Obj[Field].toISOString();
+                else                
+                    Text = Obj[Field].toString();
+            }
+
+            Sobj[Field] = (await wcrypto.encrypt_aes_fiv(Text, idbxs.Skey))[0];
         }
 
         return Sobj;
@@ -227,7 +259,11 @@ class idbxs { // Aka sec
         if (!(Obj instanceof Object))
             return (await wcrypto.encrypt_aes_fiv(Obj, idbxs.Skey))[0];
 
-        // Object
+        // Date object
+        if (Obj instanceof Date)
+            return (await wcrypto.encrypt_aes_fiv(Obj.toISOString(), idbxs.Skey))[0];
+
+        // Regular object
         for (let Key in Obj) // 'for in' gives Key for both Object & Array
             Obj[Key] = await idbxs.#obj_to_sobj_arb_rec(Obj[Key]);
 
