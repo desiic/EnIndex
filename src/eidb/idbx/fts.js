@@ -262,9 +262,12 @@ class fts {
         // Get objects from ids
         var Objs = [];
 
-        for (let id of Ids)
-            Objs.push(await Store.get(value_is(id)));
+        for (let id of Ids){
+            let Obj = await Store.get(value_is(id));
 
+            if (Obj!=null) Objs.push(Obj);
+            else           logw("fts.#term_to_objs: Found bad id:",id);
+        }
         return Objs;
     }    
 
@@ -407,9 +410,12 @@ class fts {
         // Convert ids to objs
         var Objs = [];
 
-        for (let id of Ids)
-            Objs.push(await Store.get(value_is(id)));
+        for (let id of Ids){
+            let Obj = await Store.get(value_is(id));
 
+            if (Obj!=null) Objs.push(Obj);
+            else           logw("fts.find_many_by_terms: Found bad id:",id);
+        }
         var Scored_Objs = fts.#score_objs(Objs,Search_Terms);    
 
         // Close db con and return 
