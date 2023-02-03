@@ -122,6 +122,20 @@ class idbxs { // Aka sec
     }
 
     /**
+     * Turn values into secure values (encrypted by static key)
+     * @param  {Array} Values - Multiple values
+     * @return {Array}          Base64 ciphertexts
+     */ 
+    static async array_to_sarray(Values){
+        var Results = [];
+
+        for (let Value of Values)
+            Results.push(await thisclass.value_to_svalue(Value));
+
+        return Results;
+    }
+
+    /**
      * Turn regular object into secure object to save encrypted<br/>
      * NOTICE: THE OUTPUT SECURE OBJECT CONTAINS ONLY ENCRYPTED PROPERTIES
      *         THOSE ARE INDEXED, THE REST OF PROPERTIES ARE IN .Etds_Obj
@@ -723,5 +737,6 @@ class idbxs { // Aka sec
     }
 }
 
-export default idbxs;
+const thisclass = idbxs;
+export default thisclass;
 // EOF
