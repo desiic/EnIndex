@@ -241,7 +241,7 @@ class cruds {
                 Scond[Key] = await idbxs.value_to_svalue(Cond[Key]);
         
         // Find
-        var Sobjs = await crud.find_many(Store_Name,Scond, limit,_secure);
+        var Sobjs = await crud.find_many(Store_Name,Scond, limit,_secure);        
 
         // Decrypt
         var Objs = [];
