@@ -49,6 +49,13 @@ class slocal {
             return null;            
         }
     }
+
+    /**
+     * Clear
+     */ 
+    static clear(Key){
+        delete localStorage[Key];
+    }
 }
 
 export default slocal;
