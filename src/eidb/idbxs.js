@@ -408,25 +408,90 @@ class idbxs { // Aka sec
     }
 
     /**
-     * Prepare keys for secure ops
+     * ACCESS START, USE THIS:
+     * Prepare keys for secure ops<br/>
+     * App dev: Use try/catch to check if Username and Password are okay, 
+     *          use loop to enter again and again if necessary.
      */ 
     static async prepare_keys(Username,Password){
-        // Enc/dec keys
-        var [Ekey,Akeypair] = await idbxs.get_key_chain(Username,Password);
-        idbxs.set_ea_keys(Ekey,Akeypair);
+        // Try keys in slocal
+        var Ekey_Hex     = slocal.get("Ekey_Hex");
+        var Akeypriv_Jwk = slocal.get("Akeypriv_Jwk");
+        var Akeypub_Jwk  = slocal.get("Akeypub_Jwk");
+        var keys_ok      = false;
 
-        // Static key
-        var Skey = await idbxs.load_static_key();
+        if (Ekey_Hex!=null && Akeypriv_Jwk!=null && Akeypub_Jwk!=null){
+            var Ekey     = await wcrypto.import_key_aes_raw(Ekey_Hex);
+            var Akeypriv = await wcrypto.import_key_ec_jwk(Akeypriv_Jwk);
+            var Akeypub  = await wcrypto.import_key_ec_jwk(Akeypub_Jwk);
+            var Akeypair = {privateKey:Akeypriv, publicKey:Akeypub};
+            idbxs.set_ea_keys(Ekey,Akeypair);
 
+            try {
+                // Static key
+                log("Trying stored keys...");
+                var Skey = await idbxs.load_static_key();
+                if (Skey==null) keys_ok=false;
+                else            keys_ok=true;
+            }
+            catch(Err){/*false*/}
+        }
+
+        // Try Username and Password
+        if (!keys_ok){
+            // Enc/dec keys
+            var [Ekey,Akeypair] = await idbxs.get_key_chain(Username,Password);
+            idbxs.set_ea_keys(Ekey,Akeypair);
+            var Akeypriv = Akeypair.privateKey;
+            var Akeypub  = Akeypair.publicKey;
+
+            // Static key
+            // Bad Username&Password will fail here
+            log("Trying keys from username and password...");
+            var Skey = await idbxs.load_static_key();
+        }
+
+        // First ever call goes here
         if (Skey==null){
             logw("idbxs.prepare_keys: No static key, creating one...");
-            let Skey = await idbxs.get_new_static_key(Username);
+            Skey = await idbxs.get_new_static_key(Username);
             let enforce;
             await idbxs.save_static_key(Skey, enforce=true);
         }
-
-        var Skey = await idbxs.load_static_key();
         idbxs.set_static_key(Skey);
+
+        // All okay, save keys to slocal
+        slocal.set("Ekey_Hex",     await wcrypto.export_key_hex(Ekey));
+        slocal.set("Akeypriv_Jwk", await wcrypto.export_key_jwk(Akeypriv));
+        slocal.set("Akeypub_Jwk",  await wcrypto.export_key_jwk(Akeypub));
+    }
+
+    /**
+     * ACCESS LOCK, USE THIS:
+     * Lock out access by clearing keys from slocal
+     */ 
+    static clear_keys(){
+        slocal.clear("Ekey_Hex");
+        slocal.clear("Akeypriv_Jwk");
+        slocal.clear("Akeypub_Jwk");
+    }
+
+    /**
+     * Set username and password (user for chaning username or password, or both at once)
+     */ 
+    static async set_user_and_pw(Username,Password){
+        // Get current static key
+        var Skey = await idbxs.load_static_key();
+        if (Skey==null) return new Error("failed-to-load-static-key");
+        idbxs.set_static_key(Skey);
+
+        // NEW Enc/dec keys
+        var [Ekey,Akeypair] = await idbxs.get_key_chain(Username,Password);
+        idbxs.set_ea_keys(Ekey,Akeypair);
+
+        // Save back static key encrypted with new Ekey
+        let enforce;
+        await idbxs.save_static_key(Skey, enforce=true);
     }
 
     /**

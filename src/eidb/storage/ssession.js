@@ -49,6 +49,13 @@ class ssession {
             return null;
         }
     }
+
+    /**
+     * Clear
+     */ 
+    static clear(Key){
+        delete sessionStorage[Key];
+    }
 }
 
 export default ssession;
