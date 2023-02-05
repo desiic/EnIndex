@@ -310,16 +310,45 @@ class idbxs { // Aka sec
      * Load global metadata (no whole saving of global meta)
      */ 
     static async load_global_meta(Metastore){
-        return await Metastore.index("Store").get(value_is("_global"));
+        var Orig_Param = Metastore;
+
+        if (Metastore==null){
+            // Open db
+            var Db    = await eidb.reopen();
+            var T     = Db.transaction("_meta",RO);
+            var S     = T.store1();
+            Metastore = S;
+        }
+
+        // Load and return
+        var Res = await Metastore.index("Store").get(value_is("_global"));
+        if (Orig_Param==null) Db.close();
+        return Res;
     }
 
     /**
      * Update global meta
      */ 
     static async update_global_meta(Metastore, Changes){
+        var Orig_Param = Metastore;
+
+        if (Metastore==null){
+            // Open db
+            var Db    = await eidb.reopen();
+            var T     = Db.transaction("_meta",RW);
+            var S     = T.store1();
+            Metastore = S;
+        }
+
+        // Load
         var Meta = await idbxs.load_global_meta(Metastore);
-        Meta     = {...Meta, ...Changes};
+
+        // Update
+        Meta = {...Meta, ...Changes};
         await Metastore.put(Meta);
+
+        // Close db if opened
+        if (Orig_Param==null) Db.close();
     }
 
     /**
