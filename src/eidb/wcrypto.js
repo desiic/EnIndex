@@ -3,8 +3,11 @@
  */ 
 
 // Modules
-import base     from "./base.js";
+import base from "./base.js";
+/*
+EXPERIMENTAL:
 import * as ecc from "./ecc.js";
+*/
 
 // Shorthands
 var log      = console.log;
