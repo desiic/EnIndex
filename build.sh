@@ -31,4 +31,7 @@ for Jsfile in ${Jsfiles[@]}; do
     
     terser $Jsfile -m -c -o $Outfile
 done
+
+echo -e "\nPacking into bundle..."
+webpack bundle --stats-error-details
 # EOF
