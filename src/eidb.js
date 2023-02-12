@@ -822,7 +822,8 @@ var EXPORTS_CLASS;
 // Global bindings, whole lib
 // EnIndex library global object
 window.eidb = eidb;
-log("[EI] EnIndex loaded in",window.location.href);
+var L       = window.location;
+log("[EI] EnIndex loaded in", `${L.protocol}//${L.host}${L.pathname}`);
 
 /**
  * Note
