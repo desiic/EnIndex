@@ -116,7 +116,7 @@ class fts {
      */ 
     static async update_fts(Op, Store_Name, id, Obj, secure=false){
         if (["create","update","delete"].indexOf(Op) == -1){
-            loge("fts.update_fts: Bad operation:",Op);
+            loge("[EI] fts.update_fts: Bad operation:",Op);
             return;
         }
         if (secure){
@@ -266,7 +266,7 @@ class fts {
             let Obj = await Store.get(value_is(id));
 
             if (Obj!=null) Objs.push(Obj);
-            else           logw("fts.#term_to_objs: Found bad id:",id);
+            else           logw("[EI] fts.#term_to_objs: Found bad id:",id);
         }
         return Objs;
     }    
@@ -316,7 +316,7 @@ class fts {
      */ 
     static async find_many_by_terms(Store_Name, Terms_Str, limit=1000, secure=false){
         if (fts.enabled == false)
-            logw("fts.find_many_by_terms: FTS is disabled, there might be results but no changes.");
+            logw("[EI] fts.find_many_by_terms: FTS is disabled, there might be results but no changes.");
         if (secure){
             var Word_Store = "#fts_words";
             var Id_Store   = "#fts_ids";
@@ -414,7 +414,7 @@ class fts {
             let Obj = await Store.get(value_is(id));
 
             if (Obj!=null) Objs.push(Obj);
-            else           logw("fts.find_many_by_terms: Found bad id:",id);
+            else           logw("[EI] fts.find_many_by_terms: Found bad id:",id);
         }
         var Scored_Objs = fts.#score_objs(Objs,Search_Terms);    
 

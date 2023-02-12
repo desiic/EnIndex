@@ -341,7 +341,7 @@ class idbx {
             var ver     = 0;
             var new_ver = ver+1;
         }
-        log("idbx.upgrade_db: Upgrading to version",new_ver);
+        log("[EI] idbx.upgrade_db: Upgrading to version",new_ver);
 
         // Open db with new version will trigger upgrade
         var Db = await idb.open(Db_Name, new_ver);
@@ -356,7 +356,7 @@ class idbx {
                 Del_Stores.push(Store_Name);
 
         for (let Store_Name of Del_Stores){
-            log("idbx.upgrade_db: Found unused store:",Store_Name);
+            log("[EI] idbx.upgrade_db: Found unused store:",Store_Name);
             // WARN: AVOID LOSING USERS' DATA, WON'T DELETE, COMMENTED OUT:
             // Db.delete_object_store(Store_Name); // Indices are deleted together
 
@@ -381,13 +381,13 @@ class idbx {
             }
 
         for (let Store_Name of Cre_Stores){
-            log("idbx.upgrade_db: Creating new store:",Store_Name);
+            log("[EI] idbx.upgrade_db: Creating new store:",Store_Name);
             let S = Db.create_object_store(Store_Name);
 
             for (let Index_Name in New_Indices[Store_Name]){
                 let type          = New_Indices[Store_Name][Index_Name];
                 let Index_Keypath = idbx.indexname_to_keypath(Index_Name);
-                log("idbx.upgrade_db: Creating new index:",Store_Name,"/",Index_Name);
+                log("[EI] idbx.upgrade_db: Creating new index:",Store_Name,"/",Index_Name);
                 S.create_index(Index_Name,Index_Keypath,type);
             }
         }
@@ -413,7 +413,7 @@ class idbx {
             // Del unused
             for (let Idx_Name of Cur_Idx_Names)
                 if (New_Idx_Names.indexOf(Idx_Name)==-1){
-                    log("idbx.upgrade_db: Deleting unused index:",Store_Name,"/",Idx_Name);
+                    log("[EI] idbx.upgrade_db: Deleting unused index:",Store_Name,"/",Idx_Name);
                     S.delete_index(Idx_Name);
                     Del_Idx_Names.push(Idx_Name);
                 }
@@ -423,7 +423,7 @@ class idbx {
                 if (Cur_Idx_Names.indexOf(Idx_Name)==-1){
                     let type        = New_Indices[Store_Name][Idx_Name];
                     let Idx_Keypath = idbx.indexname_to_keypath(Idx_Name);
-                    log("idbx.upgrade_db: Creating new index:",Store_Name,"/",Idx_Name);
+                    log("[EI] idbx.upgrade_db: Creating new index:",Store_Name,"/",Idx_Name);
                     S.create_index(Idx_Name,Idx_Keypath,type);
                     Cre_Idx_Names.push(Idx_Name);
                 }
@@ -440,7 +440,7 @@ class idbx {
                 if (New_Indices[Store_Name][Idx_Name] != Cur_Indices[Store_Name][Idx_Name]){
                     let type        = New_Indices[Store_Name][Idx_Name];
                     let Idx_Keypath = idbx.indexname_to_keypath(Idx_Name);
-                    log("idbx.upgrade_db: Updating index to new type:",Store_Name,"/",Idx_Name+":"+type);
+                    log("[EI] idbx.upgrade_db: Updating index to new type:",Store_Name,"/",Idx_Name+":"+type);
                     S.delete_index(Idx_Name);
                     S.create_index(Idx_Name,Idx_Keypath, type); // New type
                 }    
@@ -458,11 +458,11 @@ class idbx {
      */
     static async open_av(Db_Name,Indices){
         if (Db_Name==null) { 
-            loge("idbx.open_av: Db name cannot be null");
+            loge("[EI] idbx.open_av: Db name cannot be null");
             return;
         }
         if (Indices==null){
-            loge("idbx.open_av: Indices name cannot be null");
+            loge("[EI] idbx.open_av: Indices name cannot be null");
             return;
         }        
 
@@ -535,7 +535,7 @@ class idbx {
      */
     static async get_prop(Store_Name,Prop_Name){
         if (window._Db_Name==null || window._Db_Name.trim().length==0){
-            loge("idbx.get_prop: Call 'idb.open', 'idbx.open_av', or 'idbx.set_db' first");
+            loge("[EI] idbx.get_prop: Call 'idb.open', 'idbx.open_av', or 'idbx.set_db' first");
             return;
         }
 
@@ -552,7 +552,7 @@ class idbx {
      */
     static async do_op(Store_Name,Op_Name,...Args){
         if (window._Db_Name==null || window._Db_Name.trim().length==0){
-            loge("idbx.do_op: Call 'idb.open', 'idbx.open_av', or 'idbx.set_db' first");
+            loge("[EI] idbx.do_op: Call 'idb.open', 'idbx.open_av', or 'idbx.set_db' first");
             return;
         }
 
@@ -575,7 +575,7 @@ class idbx {
         var Db = await idb.open(Db_Name, new_ver);
 
         if (Db instanceof Error){
-            loge(`idbx.del_obj_store: Failed to delete object store '${Store_Name}' `+
+            loge(`[EI] idbx.del_obj_store: Failed to delete object store '${Store_Name}' `+
                  `in db '${Db_Name}', error:`,Db);
             return;
         }

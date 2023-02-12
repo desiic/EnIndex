@@ -87,7 +87,7 @@ class op_hist {
         if (!op_hist.enabled || Ids==null || Ids.length==0)
             return;
         if (["create","read","update","delete"].indexOf(Op_Type) == -1){
-            loge("op_hist.update_op_hist: No such operation type:",Op_Type);
+            loge("[EI] op_hist.update_op_hist: No such operation type:",Op_Type);
             return;
         }
 
@@ -198,7 +198,7 @@ class op_hist {
         var Db = await idbx.reopen();
 
         if (Db instanceof Error){
-            loge("op_hist.clear_op_hist: Failed to open db, error:",Db);
+            loge("[EI] op_hist.clear_op_hist: Failed to open db, error:",Db);
             return;
         }
 

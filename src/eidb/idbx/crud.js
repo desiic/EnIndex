@@ -42,7 +42,7 @@ class crud {
         var new_id = await Store.add(Obj_);
 
         if (new_id instanceof Error){
-            loge("crud.insert_one: Failed, error:",new_id);
+            loge("[EI] crud.insert_one: Failed, error:",new_id);
             if (Store==null) Db.close();
             return null;
         }
@@ -79,7 +79,7 @@ class crud {
             let Req = Store.self.add(Obj_); // MUST BE 'let' HERE, EACH Req IS DIFFERENT.
 
             Req.onerror = (Ev)=>{
-                loge("crud.insert_many: Failed to add object, error:",Ev.target.error);
+                loge("[EI] crud.insert_many: Failed to add object, error:",Ev.target.error);
                 Ids.push(null);
                 if (Ids.length == Objs.length) unlock();
             };
@@ -109,7 +109,7 @@ class crud {
         var Index = Store.index(Keys[0]);
 
         if (Index instanceof Error){
-            loge("crud.get_1stcond_obj: Failed to get index, "+
+            loge("[EI] crud.get_1stcond_obj: Failed to get index, "+
                  "add this index to schema:",Store.Name,"/",Keys[0]);
             return null;
         }
@@ -127,7 +127,7 @@ class crud {
         var Index = Store.index(Keys[0]);
 
         if (Index instanceof Error){
-            loge("crud.get_1stcond_obj: Failed to get index, "+
+            loge("[EI] crud.get_1stcond_obj: Failed to get index, "+
                  "add this index to schema:",Store.Name,"/",Keys[0]);
             return null;
         }
@@ -153,7 +153,7 @@ class crud {
             let Index = Store.index(Key);
 
             if (Index instanceof Error){
-                loge("crud.get_1stcond_obj: Failed to get index, "+
+                loge("[EI] crud.get_1stcond_obj: Failed to get index, "+
                      "add this index to schema:",Store.Name,"/",Key);
                 return null;
             }
@@ -185,7 +185,7 @@ class crud {
             let Index = Store.index(Key);
 
             if (Index instanceof Error){
-                loge("crud.get_1stcond_obj: Failed to get index, "+
+                loge("[EI] crud.get_1stcond_obj: Failed to get index, "+
                      "add this index to schema:",Store.Name,"/",Key);
                 return null;
             }
@@ -536,7 +536,7 @@ class crud {
             let Req         = Store.self.put(Replacement);
             
             Req.onerror = (Ev)=>{
-                loge("crud.update_many: Failed to update object:",Obj);
+                loge("[EI] crud.update_many: Failed to update object:",Obj);
                 Updated_Objs.push(null);
                 if (Updated_Objs.length == Objs.length) unlock();
                 if (Updated_Objs.length >= limit)       unlock();

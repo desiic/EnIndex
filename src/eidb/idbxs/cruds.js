@@ -33,7 +33,7 @@ class cruds {
      */
     static async insert_one(Store_Name,Obj){
         if (idbxs.Skey==null) {
-            loge("cruds.insert_one: Static key not set");
+            loge("[EI] cruds.insert_one: Static key not set");
             return;
         }
         Store_Name = "#"+Store_Name;
@@ -53,7 +53,7 @@ class cruds {
      */
     static async insert_many(Store_Name,Objs){
         if (idbxs.Skey==null) {
-            loge("cruds.insert_many: Static key not set");
+            loge("[EI] cruds.insert_many: Static key not set");
             return;
         }
         Store_Name = "#"+Store_Name;
@@ -110,7 +110,7 @@ class cruds {
      */
     static async exists(Store_Name,Cond){
         if (idbxs.Skey==null) {
-            loge("cruds.exists: Static key not set");
+            loge("[EI] cruds.exists: Static key not set");
             return;
         }
         Store_Name = "#"+Store_Name;
@@ -141,7 +141,7 @@ class cruds {
      */
     static async count(Store_Name,Cond){
         if (idbxs.Skey==null) {
-            loge("cruds.count: Static key not set");
+            loge("[EI] cruds.count: Static key not set");
             return;
         }
         Store_Name = "#"+Store_Name;
@@ -171,7 +171,7 @@ class cruds {
      */
     static async count_all(Store_Name){
         if (idbxs.Skey==null) {
-            loge("cruds.count_all: Static key not set");
+            loge("[EI] cruds.count_all: Static key not set");
             return;
         }
         Store_Name = "#"+Store_Name;
@@ -185,7 +185,7 @@ class cruds {
      */
     static async find_one(Store_Name,Cond){
         if (idbxs.Skey==null) {
-            loge("cruds.find_one: Static key not set");
+            loge("[EI] cruds.find_one: Static key not set");
             return;
         }
         Store_Name = "#"+Store_Name;
@@ -222,7 +222,7 @@ class cruds {
      */
     static async find_many(Store_Name,Cond, limit=Number.MAX_SAFE_INTEGER){
         if (idbxs.Skey==null) {
-            loge("cruds.find_many: Static key not set");
+            loge("[EI] cruds.find_many: Static key not set");
             return;
         }
         Store_Name = "#"+Store_Name;
@@ -262,7 +262,7 @@ class cruds {
      */
     static async find_all(Store_Name){
         if (idbxs.Skey==null) {
-            loge("cruds.find_all: Static key not set");
+            loge("[EI] cruds.find_all: Static key not set");
             return;
         }
         Store_Name = "#"+Store_Name;
@@ -304,7 +304,7 @@ class cruds {
      */ 
     static async filter(Store_Name,Cond, limit=Number.MAX_SAFE_INTEGER){
         if (idbxs.Skey==null) {
-            loge("cruds.filter: Static key not set");
+            loge("[EI] cruds.filter: Static key not set");
             return;
         }
         Store_Name = "#"+Store_Name;
@@ -343,7 +343,7 @@ class cruds {
      */
     static async update_one(Store_Name,Cond,Changes){
         if (idbxs.Skey==null) {
-            loge("cruds.update_one: Static key not set");
+            loge("[EI] cruds.update_one: Static key not set");
             return;
         }
         Store_Name = "#"+Store_Name;
@@ -394,7 +394,7 @@ class cruds {
      */
     static async update_many(Store_Name,Cond,Changes, limit=Number.MAX_SAFE_INTEGER){
         if (idbxs.Skey==null) {
-            loge("cruds.update_many: Static key not set");
+            loge("[EI] cruds.update_many: Static key not set");
             return;
         }
         Store_Name = "#"+Store_Name;
@@ -450,7 +450,7 @@ class cruds {
 
             S.put(Sobj1,null, wait=false,(Res)=>{
                 if (Res instanceof Error){
-                    loge("cruds.update_many: Error:",Res);
+                    loge("[EI] cruds.update_many: Error:",Res);
                     Sobj2s.push(null);
                 }
                 else 
@@ -487,7 +487,7 @@ class cruds {
      */
     static async upsert_one(Store_Name,Cond,Changes){
         if (idbxs.Skey==null) {
-            loge("cruds.upsert_one: Static key not set");
+            loge("[EI] cruds.upsert_one: Static key not set");
             return;
         }
         Store_Name = "#"+Store_Name;
@@ -527,7 +527,7 @@ class cruds {
      */
     static async remove_one(Store_Name,Cond){
         if (idbxs.Skey==null) {
-            loge("cruds.remove_one: Static key not set");
+            loge("[EI] cruds.remove_one: Static key not set");
             return;
         }
         Store_Name = "#"+Store_Name;
@@ -565,7 +565,7 @@ class cruds {
      */
     static async remove_many(Store_Name,Cond){
         if (idbxs.Skey==null) {
-            loge("cruds.remove_many: Static key not set");
+            loge("[EI] cruds.remove_many: Static key not set");
             return;
         }
         Store_Name = "#"+Store_Name;

@@ -102,7 +102,7 @@ class utils {
 
         // Invalid
         if (Tokens.length == 0){
-            loge("utils.prop_set: Invalid path");
+            loge("[EI] utils.prop_set: Invalid path");
             return;
         }
 
@@ -136,7 +136,7 @@ class utils {
 
         // Invalid
         if (Tokens.length == 0){
-            loge("utils.prop_get: Invalid path");
+            loge("[EI] utils.prop_get: Invalid path");
             return;
         }
 

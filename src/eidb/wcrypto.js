@@ -53,7 +53,7 @@ class wcrypto {
 
         setTimeout(()=>{
             if (window.elliptic == null)
-                loge("wcrypto.get_pubkey_point: No Elliptic lib found.");
+                loge("[EI] wcrypto.get_pubkey_point: No Elliptic lib found.");
         },30*1000);
 
         setTimeout(function wait4ellipic(){
@@ -92,7 +92,7 @@ class wcrypto {
      */ 
     static get_random_values_unsigned(bits,count){ // 8, 16, 32, 64
         if (bits!=8 && bits!=16 && bits!=32 && bits!=64){
-            loge("wcrypto.get_random_values_unsigned: Bits must be 8, 16, 32, or 64");
+            loge("[EI] wcrypto.get_random_values_unsigned: Bits must be 8, 16, 32, or 64");
             return;
         }
 
@@ -110,7 +110,7 @@ class wcrypto {
      */ 
     static get_random_values_signed(bits,count){ // 8, 16, 32, 64
         if (bits!=8 && bits!=16 && bits!=32 && bits!=64){
-            loge("wcrypto.get_random_values_signed: Bits must be 8, 16, 32, or 64");
+            loge("[EI] wcrypto.get_random_values_signed: Bits must be 8, 16, 32, or 64");
             return;
         }
 
@@ -491,7 +491,7 @@ class wcrypto {
                       importKey("raw",Bytes,{name:"PBKDF2"},extractable=false,Usages);
         }
         catch(Err){
-            loge("wcrypto.import_key_pb_raw: Failed to import, error:",Err);
+            loge("[EI] wcrypto.import_key_pb_raw: Failed to import, error:",Err);
             return null;
         }
         return Key;
@@ -502,7 +502,7 @@ class wcrypto {
      */ 
     static async import_key_aes_raw(Hex){
         if (Hex.length != BIT_LEN/8 * 2) { // AES 256-bit
-            loge("wcrypto.import_key_raw: Hex of key must be of length 64 chars");
+            loge("[EI] wcrypto.import_key_raw: Hex of key must be of length 64 chars");
             return null;
         }
 
@@ -516,7 +516,7 @@ class wcrypto {
                       importKey("raw",Bytes,{name:"AES-GCM"},extractable=true,Usages);
         }
         catch(Err){
-            loge("wcrypto.import_key_aes_raw: Failed to import, error:",Err);
+            loge("[EI] wcrypto.import_key_aes_raw: Failed to import, error:",Err);
             return null;
         }
         return Key;
@@ -540,7 +540,7 @@ class wcrypto {
                          extractable=true,Usages);
         }
         catch(Err){
-            loge("wcrypto.import_key_rsa_jwk: Failed to import, error:",Err);
+            loge("[EI] wcrypto.import_key_rsa_jwk: Failed to import, error:",Err);
             return null;
         }
     }
@@ -563,7 +563,7 @@ class wcrypto {
                          extractable=true,Usages);
         }
         catch(Err){
-            loge("wcrypto.import_key_ec_jwk: Failed to import, error:",Err);
+            loge("[EI] wcrypto.import_key_ec_jwk: Failed to import, error:",Err);
             return null;
         }
     }
@@ -584,7 +584,7 @@ class wcrypto {
             return Obj;
         }
         catch(Err){
-            loge("wcrypto.export_key_jwk: Failed to export, error:",Err);
+            loge("[EI] wcrypto.export_key_jwk: Failed to export, error:",Err);
             return null;
         }
     }
@@ -608,7 +608,7 @@ class wcrypto {
             return wcrypto.buff_to_hex(Bits);
         }
         catch(Err){
-            loge("wcrypto.derive_bits_pb: Failed to derive, error:",Err);
+            loge("[EI] wcrypto.derive_bits_pb: Failed to derive, error:",Err);
             return null;
         }
     }
@@ -637,7 +637,7 @@ class wcrypto {
             return Key;
         }
         catch(Err){
-            loge("wcrypto.derive_key_pb2aes: Failed to derive, error:",Err);
+            loge("[EI] wcrypto.derive_key_pb2aes: Failed to derive, error:",Err);
             return null;
         }
     }
@@ -757,7 +757,7 @@ class wcrypto {
             var Cipherbuff = await window.crypto.subtle.encrypt(Algo,Key,Bytes); // ArrayBuffer
         }
         catch(Err){
-            loge("wcrypto.encrypt_aes: Failed to encrypt, error:",Err);
+            loge("[EI] wcrypto.encrypt_aes: Failed to encrypt, error:",Err);
             return null;
         }
 
@@ -784,7 +784,7 @@ class wcrypto {
             var Cipherbuff = await window.crypto.subtle.encrypt(Algo,Key,Bytes); // ArrayBuffer
         }
         catch(Err){
-            loge("wcrypto.encrypt_rsa: Failed to encrypt, error:",Err);
+            loge("[EI] wcrypto.encrypt_rsa: Failed to encrypt, error:",Err);
             return null;
         }
 
@@ -810,7 +810,7 @@ class wcrypto {
             var Buff = await window.crypto.subtle.decrypt(Algo,Key,Bytes);
         }
         catch(Err){
-            loge("wcrypto.decrypt_aes: Failed to decrypt, error:",Err);
+            loge("[EI] wcrypto.decrypt_aes: Failed to decrypt, error:",Err);
             return null;
         }
 
@@ -837,7 +837,7 @@ class wcrypto {
             var Buff = await window.crypto.subtle.decrypt(Algo,Key,Bytes);
         }
         catch(Err){
-            loge("wcrypto.decrypt_rsa: Failed to decrypt, error:",Err);
+            loge("[EI] wcrypto.decrypt_rsa: Failed to decrypt, error:",Err);
             return null;
         }
 
@@ -870,7 +870,7 @@ class wcrypto {
             var Buff = await window.crypto.subtle.sign(Algo,Privkey,Bytes);
         }
         catch(Err){
-            loge("wcrypto.sign: Failed to sign, error:",Err);
+            loge("[EI] wcrypto.sign: Failed to sign, error:",Err);
             return null;
         }
 
@@ -897,7 +897,7 @@ class wcrypto {
             return await window.crypto.subtle.verify(Algo,Pubkey,Sig_Bytes,Text_Bytes);
         }
         catch(Err){
-            loge("wcrypto.verify: Failed to verify, error:",Err);
+            loge("[EI] wcrypto.verify: Failed to verify, error:",Err);
             return null;
         }
     }

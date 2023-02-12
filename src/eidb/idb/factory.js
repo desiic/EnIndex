@@ -40,7 +40,7 @@ class factory {
             return await this.self.databases();
         }
         catch (Dom_Exception){
-            loge("factory.databases: Error:",Dom_Exception);
+            loge("[EI] factory.databases: Error:",Dom_Exception);
             return Dom_Exception;
         }
     }
@@ -82,7 +82,7 @@ class factory {
             var Req = this.self.open(Name,version);
         }
         catch (Err){ // eg. when version is 0 or negative
-            loge("idb.open: Error caught:",Err);
+            loge("[EI] idb.open: Error caught:",Err);
             Err.Status = "errored";
             return Err;
         }
@@ -102,14 +102,14 @@ class factory {
             // TO-DO: Fix "DOMException: The connection was closed" when callin open_av,
             // open_av already returned db with to-upgrade but this onerror still fired.
             // Temporary commented this error log line out:
-            // loge("idb.open: Failed with error:",Ev.target.error);            
+            // loge("[EI] idb.open: Failed with error:",Ev.target.error);            
             Err_Obj = Ev.target.error;
             unlock("errored"); // Nothing next but just clear the lock, no sequence to cancel
         };        
         Req.onblocked = function(Ev){
-            logw(`idb.open: Upgrade blocked, requested to change to version ${version}`);
-            logw("Check source code, shouldn't be blocked by connections in current tab or other tabs.");
-            logw("Tip: Avoid being blocked by using temporary connections in all tabs\x20"+
+            logw(`[EI] idb.open: Upgrade blocked, requested to change to version ${version}`);
+            logw("[EI] Check source code, shouldn't be blocked by connections in current tab or other tabs.");
+            logw("[EI] Tip: Avoid being blocked by using temporary connections in all tabs\x20"+
                  "together with IDBDatabase.versionchange event.");
 
             Ev_Obj = Ev;     
@@ -118,23 +118,23 @@ class factory {
         };
         Req.onupgradeneeded = function(Ev){
             if (Sequence_Cancel_Reason != null){
-                logw(`idb.open: Upgrade cancelled due to '${Sequence_Cancel_Reason}' event fired right previously`);
+                logw(`[EI] idb.open: Upgrade cancelled due to '${Sequence_Cancel_Reason}' event fired right previously`);
                 unlock(); // Redundant, no longer awaited
                 return;
             }
 
-            log(`idb.open: Upgrade needed, to version ${version}`);
+            log(`[EI] idb.open: Upgrade needed, to version ${version}`);
             unlock("to-upgrade");
             Sequence_Cancel_Reason = "to-upgrade";
         };
         Req.onsuccess = function(Ev){
             if (Sequence_Cancel_Reason != null){
-                logw(`idb.open: Open cancelled due to '${Sequence_Cancel_Reason}' event fired right previously`);
+                logw(`[EI] idb.open: Open cancelled due to '${Sequence_Cancel_Reason}' event fired right previously`);
                 unlock(); // Redundant, no longer awaited
                 return;
             }
 
-            // log(`idb.open: Database opened successfully`); // Avoid log polution, commented out
+            // log(`[EI] idb.open: Database opened successfully`); // Avoid log polution, commented out
             unlock("opened");
         };
         var Result = await Lock;

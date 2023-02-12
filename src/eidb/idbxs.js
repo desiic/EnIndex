@@ -154,7 +154,7 @@ class idbxs { // Aka sec
      */ 
     static async obj_to_sobj(Store_Name,Obj){
         if (idbxs.Skey==null) {
-            loge("idbxs.obj_to_sobj: Static key not set");
+            loge("[EI] idbxs.obj_to_sobj: Static key not set");
             return;
         }
 
@@ -363,7 +363,7 @@ class idbxs { // Aka sec
      */ 
     static async save_static_key(Skey, enforce=false){
         if (idbxs.Ekey==null || idbxs.Akeypair==null){
-            loge("idbxs.set_static_key: Encryption key and auth key pair must exist first, call set_ea_keys");
+            loge("[EI] idbxs.set_static_key: Encryption key and auth key pair must exist first, call set_ea_keys");
             return;
         }
 
@@ -385,7 +385,7 @@ class idbxs { // Aka sec
 
         // Static key exists and no enfore, return
         if (Meta.Etde_Skey!=null && enforce==false){
-            logw("idbxs.set_static_key: Static key exists, no enforcing");
+            logw("[EI] idbxs.set_static_key: Static key exists, no enforcing");
             Db.close();
             return;
         }
@@ -403,7 +403,7 @@ class idbxs { // Aka sec
      */ 
     static async load_static_key(){
         if (idbxs.Ekey==null || idbxs.Akeypair==null){
-            loge("idbxs.get_static_key: Encryption key and auth key pair must exist first, call set_ea_keys");
+            loge("[EI] idbxs.get_static_key: Encryption key and auth key pair must exist first, call set_ea_keys");
             return;
         }
 
@@ -415,13 +415,13 @@ class idbxs { // Aka sec
 
         // Get encrypted static key
         if (Meta == null){
-            logw("idbxs.get_static_key: Global metadata not set");
+            logw("[EI] idbxs.get_static_key: Global metadata not set");
             await idbxs.ensure_global_meta(S);
             Db.close();
             return;
         }
         if (Meta.Etde_Skey == null){
-            logw("idbxs.get_static_key: No static key in global metadata");
+            logw("[EI] idbxs.get_static_key: No static key in global metadata");
             Db.close();
             return;
         }
@@ -458,7 +458,7 @@ class idbxs { // Aka sec
 
             try {
                 // Static key
-                log("Trying stored keys...");
+                log("[EI] Trying stored keys...");
                 var Skey = await idbxs.load_static_key();
                 if (Skey==null) keys_ok=false;
                 else            keys_ok=true;
@@ -476,13 +476,13 @@ class idbxs { // Aka sec
 
             // Static key
             // Bad Username&Password will fail here
-            log("Trying keys from username and password...");
+            log("[EI] Trying keys from username and password...");
             var Skey = await idbxs.load_static_key();
         }
 
         // First ever call goes here
         if (Skey==null){
-            logw("idbxs.prepare_keys: No static key, creating one...");
+            logw("[EI] idbxs.prepare_keys: No static key, creating one...");
             Skey = await idbxs.get_new_static_key(Username);
             let enforce;
             await idbxs.save_static_key(Skey, enforce=true);
@@ -537,12 +537,12 @@ class idbxs { // Aka sec
         Username = Username.trim();
         Password = Password.trim();
         
-        log(`Creating key chain, ${idbxs.ITERATIONS} iterations`);
+        log(`[EI] Creating key chain, ${idbxs.ITERATIONS} iterations`);
         var start                  = performance.now();
         var Salt                   = await wcrypto.digest_sha256(Username);
         var [Enc_Key,Auth_Keypair] = await wcrypto.password2keys(Password,Salt,idbxs.ITERATIONS);
         var fin                    = performance.now();
-        log(`Key chain made in ${(fin-start)/1000} seconds`);
+        log(`[EI] Key chain made in ${(fin-start)/1000} seconds`);
 
         return [Enc_Key,Auth_Keypair];
     }
@@ -641,7 +641,7 @@ class idbxs { // Aka sec
      */ 
     static async recover_and_set_keys(Recovery_Key){
         if (!(Recovery_Key instanceof CryptoKey)){
-            loge("idbxs.recover_and_set_keys: First param is not CryptoKey");
+            loge("[EI] idbxs.recover_and_set_keys: First param is not CryptoKey");
             return;
         }
 
@@ -654,7 +654,7 @@ class idbxs { // Aka sec
         var Meta = await idbxs.load_global_meta(S);
 
         if (Meta==null){
-            loge("idbxs.recover_and_set_keys: Bad global metadata:",Meta);
+            loge("[EI] idbxs.recover_and_set_keys: Bad global metadata:",Meta);
             Db.close();
             return;
         }
@@ -663,7 +663,7 @@ class idbxs { // Aka sec
         var Etdr_Recovery_Iv = Meta.Etdr_Recovery_Iv;
 
         if (Etdr_Recovery==null || Etdr_Recovery_Iv==null){
-            loge("idbxs.recovery_and_set_keys: No or bad recovery data in global metadata");
+            loge("[EI] idbxs.recovery_and_set_keys: No or bad recovery data in global metadata");
             Db.close();
             return;
         }
@@ -675,7 +675,7 @@ class idbxs { // Aka sec
         
         if (Ek==null || Aks==null || (!(Ek instanceof CryptoKey)) || 
                 (!(Aks.privateKey instanceof CryptoKey)) || (!(Aks.publicKey instanceof CryptoKey))){
-            loge("idbxs.recovery_and_set_keys: Failed to recover keys, found:",Ek,Aks);
+            loge("[EI] idbxs.recovery_and_set_keys: Failed to recover keys, found:",Ek,Aks);
             Db.close();
             return;
         }
@@ -686,7 +686,7 @@ class idbxs { // Aka sec
         var Sk_Hex       = await wcrypto.decrypt_aes(Etde_Skey, Etde_Skey_Iv, Ek);
 
         if (Sk_Hex==null){
-            loge("idbxs.recovery_and_set_keys: Failed to decrypt for static key");
+            loge("[EI] idbxs.recovery_and_set_keys: Failed to decrypt for static key");
             Db.close();
             return;
         }
@@ -853,7 +853,7 @@ class idbxs { // Aka sec
 
         for (let Word of Words)
             if (Dict.indexOf(Word) == -1){
-                loge("idbxs.text_to_key: Invalid word:",Word);
+                loge("[EI] idbxs.text_to_key: Invalid word:",Word);
                 return;
             }
 

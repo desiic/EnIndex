@@ -822,7 +822,7 @@ var EXPORTS_CLASS;
 // Global bindings, whole lib
 // EnIndex library global object
 window.eidb = eidb;
-log("EnIndex loaded");
+log("[EI] EnIndex loaded");
 
 /**
  * Note
