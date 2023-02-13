@@ -871,7 +871,7 @@ class eidb {
 // Load log
 var L = window.location;
 log("[EI] EnIndex loaded in", `${L.protocol}//${L.host}${L.pathname}`);
-log("     by this import:",import.meta.url);
+log("     by this import:",import.meta.url.replace("http:","").replace("https:",""));
 
 /**
  * Note
