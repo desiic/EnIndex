@@ -21,6 +21,9 @@ const logw     = console.warn;
 const loge     = console.error;
 const new_lock = base.new_lock;
 
+// Constants
+const _secure = true;
+
 /**
  * CRUD secure<br/>
  * WARN: FOR ENCRYPTED CRUD OPS: ALL Cond PASSED TO METHODS IN THIS CLASS ARE ALL DIRECT VALUES,

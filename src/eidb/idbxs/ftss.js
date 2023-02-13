@@ -22,6 +22,9 @@ const log  = console.log;
 const logw = console.warn;
 const loge = console.error;
 
+// Constants
+const _secure = true;
+
 /**
  * FTS secure
  */
