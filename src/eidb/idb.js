@@ -32,7 +32,7 @@ class idb{
      * @return {Object} See `eidb.idb.factory` class [here](module-eidb_idb_factory-factory.html#.open)
      */
     static async open(Name, version){
-        window._Db_Name = Name;
+        eidb._Db_Name = Name; // Save for reopen() to use
         return await eidb.Factory.open(Name,version);
     }
 

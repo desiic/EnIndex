@@ -3,6 +3,7 @@
  */
 
 // Modules
+import eidb    from "../../eidb.js";
 import base    from "../base.js";
 import utils   from "../utils.js";
 import op_hist from "./op-hist.js";
@@ -31,7 +32,7 @@ class crud {
      */
     static async insert_one(Store_Name,Obj, secure=false,Original_Obj=null){
         var Db    = await eidb.reopen();
-        var T     = Db.transaction(Store_Name,RW);
+        var T     = Db.transaction(Store_Name,eidb.RW);
         var Store = T.store1()
 
         // Got store, next
@@ -64,7 +65,7 @@ class crud {
      */
     static async insert_many(Store_Name,Objs, secure=false,Original_Objs=null){
         var Db    = await eidb.reopen();
-        var T     = Db.transaction(Store_Name,RW);            
+        var T     = Db.transaction(Store_Name,eidb.RW);            
         var Store = T.store1();
 
         // Got store, next
@@ -214,7 +215,7 @@ class crud {
      */
     static async exists(Store_Name,Cond, secure=false){
         var Db    = await eidb.reopen();
-        var T     = Db.transaction(Store_Name,RO);
+        var T     = Db.transaction(Store_Name,eidb.RO);
         var Store = T.store1();
 
         // Got store, next
@@ -243,7 +244,7 @@ class crud {
      */
     static async count(Store_Name,Cond, secure=false){
         var Db    = await eidb.reopen();
-        var T     = Db.transaction(Store_Name,RO);
+        var T     = Db.transaction(Store_Name,eidb.RO);
         var Store = T.store1();
 
         // Got store, next
@@ -270,7 +271,7 @@ class crud {
      */
     static async count_all(Store_Name, secure=false){
         var Db    = await eidb.reopen();
-        var T     = Db.transaction(Store_Name,RO);
+        var T     = Db.transaction(Store_Name,eidb.RO);
         var Store = T.store1();
 
         // Got store, next
@@ -286,7 +287,7 @@ class crud {
      */
     static async find_one(Store_Name,Cond, secure=false){
         var Db    = await eidb.reopen();
-        var T     = Db.transaction(Store_Name,RO);
+        var T     = Db.transaction(Store_Name,eidb.RO);
         var Store = T.store1();
 
         // Got store, next
@@ -309,7 +310,7 @@ class crud {
         if (Ids.length==0) { Db.close(); return null; }
 
         // Update op history & return        
-        var Obj = await Store.get(value_is(Ids[0]));
+        var Obj = await Store.get(eidb.value_is(Ids[0]));
         op_hist.update_op_hist_r(Store.Name, Ids);
         Db.close();
         return Obj;
@@ -323,7 +324,7 @@ class crud {
      */
     static async find_many(Store_Name,Cond, limit=Number.MAX_SAFE_INTEGER, secure=false){
         var Db    = await eidb.reopen();
-        var T     = Db.transaction(Store_Name,RO);
+        var T     = Db.transaction(Store_Name,eidb.RO);
         var Store = T.store1();
 
         // Got store, next
@@ -345,7 +346,7 @@ class crud {
         var [Lock,unlock] = new_lock();
 
         for (let id of Ids){
-            let Req = Store.self.get(value_is(id).self)
+            let Req = Store.self.get(eidb.value_is(id).self)
 
             Req.onerror = (Ev)=>{
                 Objs.push(null);
@@ -370,7 +371,7 @@ class crud {
      */
     static async find_all(Store_Name, secure=false){
         var Db    = await eidb.reopen();
-        var T     = Db.transaction(Store_Name,RO);
+        var T     = Db.transaction(Store_Name,eidb.RO);
         var Store = T.store1();
 
         // Got store, next
@@ -419,19 +420,19 @@ class crud {
      */ 
     static async filter(Store_Name,Cond, limit=Number.MAX_SAFE_INTEGER, secure=false){
         var Db    = await eidb.reopen();
-        var T     = Db.transaction(Store_Name,RO);
+        var T     = Db.transaction(Store_Name,eidb.RO);
         var Store = T.store1();
 
         // Got store, next
         var Objs = [];
 
-        await Store.open_cursor(range_gte(0),"next",Cursor=>{
+        await Store.open_cursor(eidb.range_gte(0),"next",Cursor=>{
             var Value = Cursor.value;
 
             if (crud.obj_matches_cond(Value,Cond))
                 Objs.push(Value);
             if (Objs.length >= limit)
-                return _stop;
+                return eidb._stop;
         });
 
         Db.close();
@@ -446,7 +447,7 @@ class crud {
      */
     static async update_one(Store_Name,Cond,Changes, secure=false,Original_Obj=null){
         var Db    = await eidb.reopen();
-        var T     = Db.transaction(Store_Name,RW);
+        var T     = Db.transaction(Store_Name,eidb.RW);
         var Store = T.store1();
 
         // Got store, next
@@ -479,7 +480,7 @@ class crud {
         var Ids = await crud.intersect_cond(Store,Cond);
         if (Ids==null || Ids.length==0) { Db.close(); return null; }
 
-        var Obj = await Store.get(value_is(Ids[0]));
+        var Obj = await Store.get(eidb.value_is(Ids[0]));
         if (Obj==null) { Db.close(); return null; }
 
         // Apply changes
@@ -504,7 +505,7 @@ class crud {
      */
     static async update_many(Store_Name,Cond,Changes, limit=Number.MAX_SAFE_INTEGER, secure=false){
         var Db    = await eidb.reopen();
-        var T     = Db.transaction(Store_Name,RW);
+        var T     = Db.transaction(Store_Name,eidb.RW);
         var Store = T.store1();
 
         // Got store, next
@@ -569,7 +570,7 @@ class crud {
      */
     static async upsert_one(Store_Name,Cond,Changes, secure=false,Original_Obj=null){
         var Db    = await eidb.reopen();
-        var T     = Db.transaction(Store_Name,RW);
+        var T     = Db.transaction(Store_Name,eidb.RW);
         var Store = T.store1();
 
         // Got store, next
@@ -616,7 +617,7 @@ class crud {
         if (Ids==null || Ids.length==0) { Db.close(); return null; }
 
         // Insert
-        var Obj = await Store.get(value_is(Ids[0]));
+        var Obj = await Store.get(eidb.value_is(Ids[0]));
 
         if (Obj==null){
             let id = await Store.add(Changes_);
@@ -653,7 +654,7 @@ class crud {
      */
     static async remove_one(Store_Name,Cond, secure=false,Original_Obj=null){
         var Db    = await eidb.reopen();
-        var T     = Db.transaction(Store_Name,RW);
+        var T     = Db.transaction(Store_Name,eidb.RW);
         var Store = T.store1();
 
         // Got store, next
@@ -665,7 +666,7 @@ class crud {
             let Obj = await crud.get_1stcond_obj(Store,Cond);
             if (Obj==null) { Db.close(); return null; }
             
-            let id = await Store.delete(value_is(Obj.id));
+            let id = await Store.delete(eidb.value_is(Obj.id));
             op_hist.update_op_hist_d(Store.Name, [Obj.id]);
 
             if (secure)
@@ -682,7 +683,7 @@ class crud {
         var Ids  = Objs.map(X=>X.id);
         if (Ids==null || Ids.length==0) { Db.close(); return null; }
         
-        var id = await Store.delete(value_is(Ids[0]));
+        var id = await Store.delete(eidb.value_is(Ids[0]));
         op_hist.update_op_hist_d(Store.Name, [Ids[0]]);
 
         if (secure)
@@ -702,7 +703,7 @@ class crud {
      */
     static async remove_many(Store_Name,Cond, secure=false,Original_Objs=null){
         var Db    = await eidb.reopen();
-        var T     = Db.transaction(Store_Name,RW);
+        var T     = Db.transaction(Store_Name,eidb.RW);
         var Store = T.store1();
 
         // Got store, next
@@ -729,7 +730,7 @@ class crud {
         var count         = 0;
 
         for (let id of Ids){
-            let Req = Store.self.delete(value_is(id).self);
+            let Req = Store.self.delete(eidb.value_is(id).self);
 
             Req.onerror = (Ev)=>{
                 count++;

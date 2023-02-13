@@ -258,7 +258,7 @@ class idbx {
 
         // Get indices
         var Indices = {};        
-        var T       = Db.transaction(Db.Object_Store_Names,RO);
+        var T       = Db.transaction(Db.Object_Store_Names,eidb.RO);
 
         for (let Store_Name of Db.Object_Store_Names){
             // Ignore unused store to avoid upgrade being triggered again and again
@@ -480,7 +480,7 @@ class idbx {
         var Dbnames = (await idb.databases()).map(X => X.name);
 
         // Check if indices changed
-        window._Db_Name = Db_Name;
+        eidb._Db_Name = Db_Name; // Save for reopen()
         var New_Indices = Indices;
 
         if (Dbnames.indexOf(Db_Name) >= 0) // Db is existing
@@ -510,15 +510,18 @@ class idbx {
     /**
      * Re-open db with name set by idb.open or idbx.open_av
      */
-    static async reopen(){
-        return await idb.open(window._Db_Name);
+    static async reopen(Dbname=null){
+        if (Dbname==null)
+            return await idb.open(eidb._Db_Name);
+
+        return await idb.open(Dbname);
     }
 
     /**
      * Get number of db connections
      */ 
     static num_db_cons(){
-        return window._num_db_cons;
+        return eidb._num_db_cons;
     }
 
     /**
@@ -526,7 +529,7 @@ class idbx {
      * Don't call this method, for testing purpose
      */
     static set_db(Name){
-        window._Db_Name = Name;
+        eidb._Db_Name = Name;
     }
 
     /**
@@ -534,13 +537,13 @@ class idbx {
      * TO-DO: Add error checking
      */
     static async get_prop(Store_Name,Prop_Name){
-        if (window._Db_Name==null || window._Db_Name.trim().length==0){
+        if (eidb._Db_Name==null || eidb._Db_Name.trim().length==0){
             loge("[EI] idbx.get_prop: Call 'idb.open', 'idbx.open_av', or 'idbx.set_db' first");
             return;
         }
 
-        var Db     = await idb.open(window._Db_Name);
-        var T      = Db.transaction(Store_Name,RW);
+        var Db     = await idb.open(eidb._Db_Name);
+        var T      = Db.transaction(Store_Name,eidb.RW);
         var S      = T.store1();
         var Result = S[Prop_Name];
         return Result;
@@ -551,13 +554,13 @@ class idbx {
      * TO-DO: Add error checking
      */
     static async do_op(Store_Name,Op_Name,...Args){
-        if (window._Db_Name==null || window._Db_Name.trim().length==0){
+        if (eidb._Db_Name==null || eidb._Db_Name.trim().length==0){
             loge("[EI] idbx.do_op: Call 'idb.open', 'idbx.open_av', or 'idbx.set_db' first");
             return;
         }
 
-        var Db     = await idb.open(window._Db_Name);
-        var T      = Db.transaction(Store_Name,RW);
+        var Db     = await idb.open(eidb._Db_Name);
+        var T      = Db.transaction(Store_Name,eidb.RW);
         var S      = T.store1();
         var Result = await S[Op_Name](...Args);
         return Result;

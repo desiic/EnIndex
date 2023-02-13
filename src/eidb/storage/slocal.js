@@ -58,5 +58,6 @@ class slocal {
     }
 }
 
-export default slocal;
+const thisclass = slocal;
+export default thisclass;
 // EOF

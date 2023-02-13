@@ -26,9 +26,7 @@ class base{
      */ 
     static async stay_idle(ms){
         var Lock = new Promise((res,rej)=>{
-            setTimeout(()=>{
-                res();
-            },ms);
+            setTimeout(()=>{ res(); },ms);
         });
         await Lock;
     }

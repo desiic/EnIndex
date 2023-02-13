@@ -3,6 +3,7 @@
  */
 
 // Modules
+import eidb     from "../eidb.js";
 import base     from "./base.js";
 import utils    from "./utils.js";
 import wcrypto  from "./wcrypto.js";
@@ -315,13 +316,13 @@ class idbxs { // Aka sec
         if (Metastore==null){
             // Open db
             var Db    = await eidb.reopen();
-            var T     = Db.transaction("_meta",RO);
+            var T     = Db.transaction("_meta",eidb.RO);
             var S     = T.store1();
             Metastore = S;
         }
 
         // Load and return
-        var Res = await Metastore.index("Store").get(value_is("_global"));
+        var Res = await Metastore.index("Store").get(eidb.value_is("_global"));
         if (Orig_Param==null) Db.close();
         return Res;
     }
@@ -335,7 +336,7 @@ class idbxs { // Aka sec
         if (Metastore==null){
             // Open db
             var Db    = await eidb.reopen();
-            var T     = Db.transaction("_meta",RW);
+            var T     = Db.transaction("_meta",eidb.RW);
             var S     = T.store1();
             Metastore = S;
         }
@@ -374,13 +375,13 @@ class idbxs { // Aka sec
 
         // Load metadata
         var Db   = await eidb.reopen();
-        var T    = Db.transaction("_meta",RW);
+        var T    = Db.transaction("_meta",eidb.RW);
         var S    = T.store1();
-        var Meta = await S.index("Store").get(value_is("_global")); // Store null is global meta
+        var Meta = await S.index("Store").get(eidb.value_is("_global")); // Store null is global meta
 
         if (Meta == null){ // No global metadata, create
             idbxs.ensure_global_meta(S);
-            Meta = await S.index("Store").get(value_is("_global")); // Load
+            Meta = await S.index("Store").get(eidb.value_is("_global")); // Load
         }
 
         // Static key exists and no enfore, return
@@ -409,9 +410,9 @@ class idbxs { // Aka sec
 
         // Get metadata
         var Db   = await eidb.reopen();
-        var T    = Db.transaction("_meta",RW);
+        var T    = Db.transaction("_meta",eidb.RW);
         var S    = T.store1();
-        var Meta = await S.index("Store").get(value_is("_global"));
+        var Meta = await S.index("Store").get(eidb.value_is("_global"));
 
         // Get encrypted static key
         if (Meta == null){
@@ -444,9 +445,9 @@ class idbxs { // Aka sec
      */ 
     static async prepare_keys(Username,Password){
         // Try keys in slocal
-        var Ekey_Hex     = slocal.get("Ekey_Hex");
-        var Akeypriv_Jwk = slocal.get("Akeypriv_Jwk");
-        var Akeypub_Jwk  = slocal.get("Akeypub_Jwk");
+        var Ekey_Hex     = eidb.slocal.get("Ekey_Hex");
+        var Akeypriv_Jwk = eidb.slocal.get("Akeypriv_Jwk");
+        var Akeypub_Jwk  = eidb.slocal.get("Akeypub_Jwk");
         var keys_ok      = false;
 
         if (Ekey_Hex!=null && Akeypriv_Jwk!=null && Akeypub_Jwk!=null){
@@ -490,9 +491,9 @@ class idbxs { // Aka sec
         idbxs.set_static_key(Skey);
 
         // All okay, save keys to slocal
-        slocal.set("Ekey_Hex",     await wcrypto.export_key_hex(Ekey));
-        slocal.set("Akeypriv_Jwk", await wcrypto.export_key_jwk(Akeypriv));
-        slocal.set("Akeypub_Jwk",  await wcrypto.export_key_jwk(Akeypub));
+        eidb.slocal.set("Ekey_Hex",     await wcrypto.export_key_hex(Ekey));
+        eidb.slocal.set("Akeypriv_Jwk", await wcrypto.export_key_jwk(Akeypriv));
+        eidb.slocal.set("Akeypub_Jwk",  await wcrypto.export_key_jwk(Akeypub));
     }
 
     /**
@@ -500,9 +501,9 @@ class idbxs { // Aka sec
      * Lock out access by clearing keys from slocal
      */ 
     static clear_keys(){
-        slocal.clear("Ekey_Hex");
-        slocal.clear("Akeypriv_Jwk");
-        slocal.clear("Akeypub_Jwk");
+        eidb.slocal.clear("Ekey_Hex");
+        eidb.slocal.clear("Akeypriv_Jwk");
+        eidb.slocal.clear("Akeypub_Jwk");
     }
 
     /**
@@ -595,7 +596,7 @@ class idbxs { // Aka sec
      */ 
     static async save_recovery_info(Ciphertext, Iv){
         var Db   = await eidb.reopen();
-        var T    = Db.transaction("_meta",RW);
+        var T    = Db.transaction("_meta",eidb.RW);
         var S    = T.store1();
 
         // Update meta
@@ -647,7 +648,7 @@ class idbxs { // Aka sec
 
         // Open db
         var Db = await eidb.reopen();
-        var T  = Db.transaction("_meta",RO);
+        var T  = Db.transaction("_meta",eidb.RO);
         var S  = T.store1();
 
         // Load recovery ciphertext and iv

@@ -2,6 +2,7 @@
  * @module eidb/idb/object_store
  */
 // Modules
+import eidb              from "../../eidb.js";
 import base              from "../base.js";
 import index             from "../idb/index.js";
 import transaction       from "./transaction.js";
@@ -170,16 +171,16 @@ class object_store {
      */
     create_index(Name,Key_Path,Key_Type){
         try {
-            if (Key_Type==n1)
+            if (Key_Type==eidb.n1)
                 var Params={unique:false, multiEntry:false};
             else
-            if (Key_Type==n2)
+            if (Key_Type==eidb.n2)
                 var Params={unique:false, multiEntry:true};
             else
-            if (Key_Type==u1)
+            if (Key_Type==eidb.u1)
                 var Params={unique:true, multiEntry:false};
             else
-            if (Key_Type==u2)
+            if (Key_Type==eidb.u2)
                 var Params={unique:true, multiEntry:true};
             else{}
 

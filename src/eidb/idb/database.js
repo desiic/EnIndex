@@ -2,6 +2,7 @@
  * @module eidb/idb/database
  */
 // Modules
+import eidb         from "../../eidb.js";
 import base         from "../base.js";
 import transaction  from "./transaction.js";
 import object_store from "./object-store.js";
@@ -90,7 +91,7 @@ class database {
      */
     close(){
         // Reduce number of db cons
-        window._num_db_cons -= 1;
+        eidb._num_db_cons -= 1;
 
         return this.self.close(); // No exceptions
     }

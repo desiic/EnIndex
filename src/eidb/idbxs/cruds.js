@@ -7,6 +7,7 @@
 // USE MODULES IN idb.* INSTEAD.
 
 // Modules
+import eidb    from "../../eidb.js";
 import base    from "../base.js";
 import crud    from "../idbx/crud.js";
 import fts     from "../idbx/fts.js";
@@ -438,7 +439,7 @@ class cruds {
         
         // Update
         var Db            = await eidb.reopen();
-        var T             = Db.transaction(Store_Name,RW);
+        var T             = Db.transaction(Store_Name,eidb.RW);
         var S             = T.store1();
         var done          = 0;
         var Sobj2s        = [];

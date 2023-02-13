@@ -2,6 +2,7 @@
  * @module eidb/idb/factory
  */
 // Modules
+import eidb        from "../../eidb.js";
 import base        from "../base.js";
 import database    from "./database.js";
 import transaction from "./transaction.js";
@@ -158,8 +159,8 @@ class factory {
             Db.Transaction = new transaction(Req.transaction);
 
             // Count number of connections
-            if (window._num_db_cons==null) window._num_db_cons =1;
-            else                           window._num_db_cons+=1;
+            if (eidb._num_db_cons==null) eidb._num_db_cons =1;
+            else                         eidb._num_db_cons+=1;
 
             return Db;
         }
@@ -170,8 +171,8 @@ class factory {
             Db.to_upgrade = false;
 
             // Count number of connections
-            if (window._num_db_cons==null) window._num_db_cons =1;
-            else                           window._num_db_cons+=1;
+            if (eidb._num_db_cons==null) eidb._num_db_cons =1;
+            else                         eidb._num_db_cons+=1;
             
             return Db;
         }
