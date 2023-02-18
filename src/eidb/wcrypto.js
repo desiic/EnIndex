@@ -21,6 +21,10 @@ const BIT_LEN = 256;
 // Fixed IV for searching with index feature.
 // WARN: THESE FIXED IV VALUES SHOULD STAY UNCHANGED.
 //       0->15 is teddious, stepping 2 is even (maybe easy?), using stepping 3:
+// FIXED_IV is for encrypting data with Static Key (Skey), it must be the same
+// for every piece of data to encrypt or fail to search for a text becoz
+// of not knowing the IV to encrypt and look for ciphertext. While it's fixed and only one, 
+// randomise this FIXED_IV or no it's kinda the same.
 const FIXED_IV_BYTES = new Uint8Array([0,3,6,9, 12,15,18,21, 24,27,30,33, 36,39,42,45]); 
 const FIXED_IV       = "000306090c0f1215181b1e2124272a2d";
 
@@ -32,7 +36,7 @@ const FIXED_IV       = "000306090c0f1215181b1e2124272a2d";
 class wcrypto {
     static BIT_LEN        = BIT_LEN;
     static FIXED_IV_BYTES = FIXED_IV_BYTES;
-    static FIXED_IV       = FIXED_IV;
+    static FIXED_IV       = FIXED_IV; // Can be changed, per user, stored as Etds_Data_Iv in meta.
 
     /**
      * _________________________________________________________________________
@@ -770,7 +774,7 @@ class wcrypto {
      * encrypted search on index for field value.
      */ 
     static async encrypt_aes_fiv(Text, Key){ // fiv: Fixed IV
-        return await wcrypto.encrypt_aes(Text, Key, FIXED_IV)
+        return await wcrypto.encrypt_aes(Text, Key, thisclass.FIXED_IV)
     }
 
     /**
@@ -823,7 +827,7 @@ class wcrypto {
      * encrypted search on index for field value.
      */
     static async decrypt_aes_fiv(Ciphertext, Key){
-        return await wcrypto.decrypt_aes(Ciphertext, FIXED_IV, Key);
+        return await wcrypto.decrypt_aes(Ciphertext, thisclass.FIXED_IV, Key);
     }
 
     /**
@@ -978,5 +982,6 @@ class wcrypto {
     }
 }
 
-export default wcrypto;
+const thisclass = wcrypto;
+export default thisclass;
 // EOF
