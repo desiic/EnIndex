@@ -438,6 +438,23 @@ class idbxs { // Aka sec
     }
 
     /**
+     * Save data IV, used with static key to encrypt/decrypt data.
+     * Metadata must be already existing.
+     */
+    static async save_data_iv(Dataiv_Hex){
+        await eidb.update_one("_meta", {Store:"_global"}, {Etds_Data_Iv: Dataiv_Hex});
+    }
+
+    /**
+     * Load data IV
+     */
+    static async load_data_iv(){
+        var Meta = await eidb.find_one("_meta", {Store:"_global"});
+        if (Meta==null) return null;
+        return Meta.Etds_Data_Iv;
+    }
+
+    /**
      * ACCESS START, USE THIS:
      * Prepare keys for secure ops<br/>
      * App dev: Use try/catch to check if Username and Password are okay, 
@@ -447,7 +464,7 @@ class idbxs { // Aka sec
         // Try keys in slocal
         var Ekey_Hex     = eidb.slocal.get("Ekey_Hex");
         var Akeypriv_Jwk = eidb.slocal.get("Akeypriv_Jwk");
-        var Akeypub_Jwk  = eidb.slocal.get("Akeypub_Jwk");
+        var Akeypub_Jwk  = eidb.slocal.get("Akeypub_Jwk");        
         var keys_ok      = false;
 
         if (Ekey_Hex!=null && Akeypriv_Jwk!=null && Akeypub_Jwk!=null){
@@ -482,13 +499,23 @@ class idbxs { // Aka sec
         }
 
         // First ever call goes here
+        var Dataiv_Hex = null; // Data IV (to encrypt/decrypt with Skey)
+
         if (Skey==null){
             logw("[EI] idbxs.prepare_keys: No static key, creating one...");
-            Skey = await idbxs.get_new_static_key(Username);
+            Skey       = await idbxs.get_new_static_key(Username);
+            Dataiv_Hex = await wcrypto.bytes_to_hex(await wcrypto.random_iv());
             let enforce;
             await idbxs.save_static_key(Skey, enforce=true);
+            await idbxs.save_data_iv(Dataiv_Hex);
         }
         idbxs.set_static_key(Skey);
+        
+        // Set IV for *_fiv functions
+        if (Dataiv_Hex!=null) // New static key, new data iv
+            thisclass.FIXED_IV = Dataiv_Hex;
+        else // Load from metadata, metadata and Skey is already existing 
+            thisclass.FIXED_IV = await thisclass.load_data_iv();
 
         // All okay, save keys to slocal
         eidb.slocal.set("Ekey_Hex",     await wcrypto.export_key_hex(Ekey));

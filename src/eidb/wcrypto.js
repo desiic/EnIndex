@@ -36,7 +36,7 @@ const FIXED_IV       = "000306090c0f1215181b1e2124272a2d";
 class wcrypto {
     static BIT_LEN        = BIT_LEN;
     static FIXED_IV_BYTES = FIXED_IV_BYTES;
-    static FIXED_IV       = FIXED_IV;
+    static FIXED_IV       = FIXED_IV; // Can be changed, per user, stored as Etds_Data_Iv in meta.
 
     /**
      * _________________________________________________________________________
@@ -774,7 +774,7 @@ class wcrypto {
      * encrypted search on index for field value.
      */ 
     static async encrypt_aes_fiv(Text, Key){ // fiv: Fixed IV
-        return await wcrypto.encrypt_aes(Text, Key, FIXED_IV)
+        return await wcrypto.encrypt_aes(Text, Key, thisclass.FIXED_IV)
     }
 
     /**
@@ -827,7 +827,7 @@ class wcrypto {
      * encrypted search on index for field value.
      */
     static async decrypt_aes_fiv(Ciphertext, Key){
-        return await wcrypto.decrypt_aes(Ciphertext, FIXED_IV, Key);
+        return await wcrypto.decrypt_aes(Ciphertext, thisclass.FIXED_IV, Key);
     }
 
     /**
@@ -982,5 +982,6 @@ class wcrypto {
     }
 }
 
-export default wcrypto;
+const thisclass = wcrypto;
+export default thisclass;
 // EOF
