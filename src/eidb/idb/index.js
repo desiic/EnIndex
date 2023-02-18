@@ -98,7 +98,7 @@ class index {
             return await Lock;
         }
         catch (Dom_Exception){
-            loge("index.count: Error:",Dom_Exception);
+            loge("[EI] index.count: Error:",Dom_Exception);
             return Dom_Exception;
         }            
     }
@@ -128,7 +128,7 @@ class index {
             return await Lock;
         }
         catch (Dom_Exception){
-            loge("index.get: Error:",Dom_Exception);
+            loge("[EI] index.get: Error:",Dom_Exception);
             return Dom_Exception;
         }            
     }
@@ -158,7 +158,7 @@ class index {
             return await Lock;
         }
         catch (Dom_Exception){
-            loge("index.get_all: Error:",Dom_Exception);
+            loge("[EI] index.get_all: Error:",Dom_Exception);
             return Dom_Exception;
         }            
     }
@@ -188,7 +188,7 @@ class index {
             return await Lock;
         }
         catch (Dom_Exception){
-            loge("index.get_all_keys: Error:",Dom_Exception);
+            loge("[EI] index.get_all_keys: Error:",Dom_Exception);
             return Dom_Exception;
         }            
     }
@@ -218,7 +218,7 @@ class index {
             return await Lock;
         }
         catch (Dom_Exception){
-            loge("index.get_key: Error:",Dom_Exception);
+            loge("[EI] index.get_key: Error:",Dom_Exception);
             return Dom_Exception;
         }            
     }
@@ -263,7 +263,7 @@ class index {
             return await Lock;
         }
         catch (Dom_Exception){
-            loge("index.open_cursor: Error:",Dom_Exception);
+            loge("[EI] index.open_cursor: Error:",Dom_Exception);
             return Dom_Exception;
         }            
     }
@@ -308,7 +308,7 @@ class index {
             return await Lock;
         }
         catch (Dom_Exception){
-            loge("index.open_key_cursor: Error:",Dom_Exception);
+            loge("[EI] index.open_key_cursor: Error:",Dom_Exception);
             return Dom_Exception;
         }            
     }

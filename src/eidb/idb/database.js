@@ -2,6 +2,7 @@
  * @module eidb/idb/database
  */
 // Modules
+import eidb         from "../../eidb.js";
 import base         from "../base.js";
 import transaction  from "./transaction.js";
 import object_store from "./object-store.js";
@@ -90,7 +91,7 @@ class database {
      */
     close(){
         // Reduce number of db cons
-        window._num_db_cons -= 1;
+        eidb._num_db_cons -= 1;
 
         return this.self.close(); // No exceptions
     }
@@ -106,7 +107,7 @@ class database {
             return new object_store(this.self.createObjectStore(Name,Options));
         }
         catch (Dom_Exception){
-            loge("database.create_object_store: Error:",Dom_Exception);
+            loge("[EI] database.create_object_store: Error:",Dom_Exception);
             return Dom_Exception;
         }
     }
@@ -120,7 +121,7 @@ class database {
             return this.self.deleteObjectStore(Name);
         }
         catch (Dom_Exception){
-            loge("database.delete_object_store: Error:",Dom_Exception);
+            loge("[EI] database.delete_object_store: Error:",Dom_Exception);
             return Dom_Exception;
         }
     }
@@ -142,7 +143,7 @@ class database {
             return new transaction(this.self.transaction(Store_Names, Mode, Options));
         }
         catch (Dom_Exception){
-            loge("database.transaction: Error:",Dom_Exception);
+            loge("[EI] database.transaction: Error:",Dom_Exception);
             return Dom_Exception;
         }
     }

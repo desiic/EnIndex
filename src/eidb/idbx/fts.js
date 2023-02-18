@@ -12,6 +12,7 @@
 // IF IN NEED OF OP HISTORY OR FTS RESULTS IMMEDIATELY.
 
 // Modules
+import eidb    from "../../eidb.js";
 import idbx    from "../idbx.js";
 import idbxs   from "../idbxs.js";
 import wcrypto from "../wcrypto.js";
@@ -81,7 +82,7 @@ class fts {
      */ 
     static async obj_exists(Store,Index_Name,Value){
         var Index = Store.index(Index_Name);
-        var Key   = await Index.get_key(value_is(Value));
+        var Key   = await Index.get_key(eidb.value_is(Value));
         return Key!=null;
     }
 
@@ -90,7 +91,7 @@ class fts {
      * Requirement: Pair Store_Name & Word must be already in fts_words store
      */ 
     static async increase_num_objs(Swords, Store_Name, Word){
-        var Entry = await Swords.index("Store,Word").get(value_is([Store_Name,Word]));
+        var Entry = await Swords.index("Store,Word").get(eidb.value_is([Store_Name,Word]));
         Entry.num_obj_ids++;
         await Swords.put(Entry);
     }
@@ -100,7 +101,7 @@ class fts {
      * Requirement: Pair Store_Name & Word must be already in fts_words store
      */ 
     static async decrease_num_objs(Swords, Store_Name, Word){
-        var Entry = await Swords.index("Store,Word").get(value_is([Store_Name,Word]));
+        var Entry = await Swords.index("Store,Word").get(eidb.value_is([Store_Name,Word]));
 
         if (Entry.num_obj_ids > 0)
             Entry.num_obj_ids--;
@@ -108,7 +109,7 @@ class fts {
         if (Entry.num_obj_ids > 0)
             await Swords.put(Entry);
         else
-            await Swords.delete(value_is(Entry.id));
+            await Swords.delete(eidb.value_is(Entry.id));
     }
 
     /**
@@ -116,7 +117,7 @@ class fts {
      */ 
     static async update_fts(Op, Store_Name, id, Obj, secure=false){
         if (["create","update","delete"].indexOf(Op) == -1){
-            loge("fts.update_fts: Bad operation:",Op);
+            loge("[EI] fts.update_fts: Bad operation:",Op);
             return;
         }
         if (secure){
@@ -140,7 +141,7 @@ class fts {
 
         // Open stores
         var Db = await idbx.reopen();
-        var T  = Db.transaction([Word_Store, Id_Store],RW);
+        var T  = Db.transaction([Word_Store, Id_Store],eidb.RW);
         // Word data store
         var Swords = T.object_store(Word_Store); 
         // Id data store
@@ -186,20 +187,20 @@ class fts {
             // Op 'delete
             else{
                 // (store,word) existing, id is inexistent --> del (store,word,id)
-                await Sids.index("Store,Word,obj_id").delete(value_is([Store_Name,Word,id]));
+                await Sids.index("Store,Word,obj_id").delete(eidb.value_is([Store_Name,Word,id]));
                 await fts.decrease_num_objs(Swords, Store_Name, Word);
             }
         }
 
         // More update:
         // Load words matching (store,id) in FTS data for 'update' case
-        var Existing_Words = await Sids.index("Store,obj_id").get_all(value_is([Store_Name,id]));
+        var Existing_Words = await Sids.index("Store,obj_id").get_all(eidb.value_is([Store_Name,id]));
             Existing_Words = Existing_Words.map(X => X.Word);
         var Removed_Words  = Existing_Words.filter(W => Words.indexOf(W)==-1);    
 
         // Remove (store,* of Removed_Words,id)
         for (let Word of Removed_Words){
-            await Sids.index("Store,Word,obj_id").delete(value_is([Store_Name,Word,id]));
+            await Sids.index("Store,Word,obj_id").delete(eidb.value_is([Store_Name,Word,id]));
             await fts.decrease_num_objs(Swords, Store_Name, Word);
         }
 
@@ -254,19 +255,19 @@ class fts {
         var Ids = [];
 
         await Sids.index("Store,Word").open_cursor(
-                value_is([Store_Name,Term]),"next",Cursor=>{
+                eidb.value_is([Store_Name,Term]),"next",Cursor=>{
             Ids.push(Cursor.value.obj_id);
-            if (Ids.length >= limit) return _stop;
+            if (Ids.length >= limit) return eidb._stop;
         });
 
         // Get objects from ids
         var Objs = [];
 
         for (let id of Ids){
-            let Obj = await Store.get(value_is(id));
+            let Obj = await Store.get(eidb.value_is(id));
 
             if (Obj!=null) Objs.push(Obj);
-            else           logw("fts.#term_to_objs: Found bad id:",id);
+            else           logw("[EI] fts.#term_to_objs: Found bad id:",id);
         }
         return Objs;
     }    
@@ -316,7 +317,7 @@ class fts {
      */ 
     static async find_many_by_terms(Store_Name, Terms_Str, limit=1000, secure=false){
         if (fts.enabled == false)
-            logw("fts.find_many_by_terms: FTS is disabled, there might be results but no changes.");
+            logw("[EI] fts.find_many_by_terms: FTS is disabled, there might be results but no changes.");
         if (secure){
             var Word_Store = "#fts_words";
             var Id_Store   = "#fts_ids";
@@ -336,7 +337,7 @@ class fts {
 
         // Get stores
         var Db     = await eidb.reopen();
-        var T      = Db.transaction([Word_Store,Id_Store,Store_Name],RO);
+        var T      = Db.transaction([Word_Store,Id_Store,Store_Name],eidb.RO);
         var Swords = T.object_store(Word_Store);
         var Sids   = T.object_store(Id_Store);
         var Store  = T.object_store(Store_Name);
@@ -346,7 +347,7 @@ class fts {
         var Search_Sets    = []; // Sets of terms to search        
 
         for (let Term of Terms){
-            let Obj = await Swords.index("Store,Word").get(value_is([Store_Name,Term]));
+            let Obj = await Swords.index("Store,Word").get(eidb.value_is([Store_Name,Term]));
             
             // No such term in FTS data
             if (Obj==null){
@@ -392,13 +393,13 @@ class fts {
         var Ids         = [];
 
         await Sids.index("Store,Word").open_cursor(
-                value_is([Store_Name,Term1]),"next",async Cursor=>{
+                eidb.value_is([Store_Name,Term1]),"next",async Cursor=>{
             var id           = Cursor.value.obj_id;
             var id_is_in_all = true;
 
             // Check if id is in all other terms
             for (let Term of Other_Terms){ // Other sets
-                if (await Sids.index("Store,Word,obj_id").count(value_is([Store_Name,Term,id])) == 0){                    
+                if (await Sids.index("Store,Word,obj_id").count(eidb.value_is([Store_Name,Term,id])) == 0){                    
                     id_is_in_all = false;
                     break;
                 }
@@ -411,10 +412,10 @@ class fts {
         var Objs = [];
 
         for (let id of Ids){
-            let Obj = await Store.get(value_is(id));
+            let Obj = await Store.get(eidb.value_is(id));
 
             if (Obj!=null) Objs.push(Obj);
-            else           logw("fts.find_many_by_terms: Found bad id:",id);
+            else           logw("[EI] fts.find_many_by_terms: Found bad id:",id);
         }
         var Scored_Objs = fts.#score_objs(Objs,Search_Terms);    
 

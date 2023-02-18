@@ -6,6 +6,11 @@
 // Convenient wrapper for IndexedDB APIs with encryption
 // See: https://developer.mozilla.org/en-US/docs/Web/API/IndexedDB_API
 
+// USAGE GUIDE:
+//   - import eidb & eidb.init()      --> with global convenient bindings
+//   - import eidb & eidb.init(false) --> no global bindings
+//   - import eidb.js?[marking] & eidb.init(false) --> no global bindings, another instance.
+
 // Conventions
 // ===========
 // Naming rules:
@@ -466,9 +471,304 @@ class eidb {
     METHODS(){}
 
     /**
+     * Init globals, bindings in window.*
+     */
+    static init_essential_globals(with_globals){
+        /**
+         * _____________________________________________________________________
+         */
+        var EXPORTS_LITERALS; // Kinda keywords
+
+        /**
+         * Key type literal: non-unique, single-entry
+         */ 
+        if (with_globals) window.n1 = eidb.n1; // Index schema, use 1 for syntax colouring, eg. field:1
+        
+        /**
+         * Key type literal: non-unique, multi-entry
+         */ 
+        if (with_globals) window.n2 = eidb.n2; // Index schema, use 2 for syntax colouring, eg. field:2
+        
+        /**
+         * Key type literal: unique, single-entry
+         */ 
+        if (with_globals) window.u1 = eidb.u1; // Index schema eg. field:u1
+        
+        /**
+         * Key type literal: non-unique, single-entry
+         */ 
+        if (with_globals) window.u2 = eidb.u2; // Index schema eg. field:u2
+        
+        /**
+        * Secure mode for store
+        */ 
+        eidb._secure = true;
+        if (with_globals) window._secure = true;
+        
+        /**
+        * Result of cursor callback to stop iterating
+        */ 
+        eidb._stop = "stop";
+        if (with_globals) window._stop = "stop";
+        
+        /*
+         * _____________________________________________________________________
+         */
+        var EXPORTS_CONSTANTS;
+        
+        /**
+        * Read-only transaction mode
+        */
+        const RO = eidb.RO;
+        if (with_globals) window.RO = RO;
+        
+        /**
+        * Read-write transaction mode
+        */
+        const RW = eidb.RW;
+        if (with_globals) window.RW = RW;
+        
+        /*
+        Range	            Code
+        All keys ≥ x	    IDBKeyRange.lowerBound (x)
+        All keys > x	    IDBKeyRange.lowerBound (x, true)
+        All keys ≤ y	    IDBKeyRange.upperBound (y)
+        All keys < y	    IDBKeyRange.upperBound (y, true)
+        All keys ≥ x && ≤ y	IDBKeyRange.bound (x, y)
+        All keys > x &&< y	IDBKeyRange.bound (x, y, true, true)
+        All keys > x && ≤ y	IDBKeyRange.bound (x, y, true, false)
+        All keys ≥ x &&< y	IDBKeyRange.bound (x, y, false, true)
+        The key = z	        IDBKeyRange.only (z)
+        */
+        /**
+        * Indicates that left value in index value range is included
+        */
+        const WITH_LEFT = false;
+        eidb.WITH_LEFT = WITH_LEFT;
+        if (with_globals) window.WITH_LEFT = WITH_LEFT;
+        
+        /**
+        * Indicates that right value in key range is included
+        */
+        const WITH_RIGHT = false;
+        eidb.WITH_RIGHT = WITH_RIGHT;
+        if (with_globals) window.WITH_RIGHT = WITH_RIGHT;
+        
+        /**
+        * Indicates that left value in key range is EXCLUDED
+        */
+        const NO_LEFT = true;
+        eidb.NO_LEFT = NO_LEFT;
+        if (with_globals) window.NO_LEFT = NO_LEFT;
+        
+        /**
+        * Indicates that right value in key range is EXCLUDED
+        */
+        const NO_RIGHT = true;
+        eidb.NO_RIGHT = NO_RIGHT;
+        if (with_globals) window.NO_RIGHT = NO_RIGHT;
+        
+        /*
+         * _____________________________________________________________________
+         */
+        var EXPORTS_METHODS;
+        
+        /**
+        * Key range (greater than or equal)
+        */
+        const range_gte = (x)=>new key_range(IDBKeyRange.lowerBound(x));
+        eidb.range_gte = range_gte;
+        if (with_globals) window.range_gte = range_gte;
+        
+        /**
+        * Key range (greater than)
+        */
+        const range_gt = (x)=>new key_range(IDBKeyRange.lowerBound(x, true));
+        eidb.range_gt = range_gt;
+        if (with_globals) window.range_gt = range_gt;
+        
+        /**
+        * Key range (less than or equal)
+        */
+        const range_lte = (y)=>new key_range(IDBKeyRange.upperBound(y)); 
+        eidb.range_lte = range_lte;
+        if (with_globals) window.range_lte = range_lte;
+        
+        /**
+        * Key range (less than)
+        */
+        const range_lt = (y)=>new key_range(IDBKeyRange.upperBound(y, true)); 
+        eidb.range_lt = range_lt;
+        if (with_globals) window.range_lt = range_lt;
+        
+        /**
+        * Key range between 2 values: [..], (..], [..), or (..)
+        * @param {Any}     x   - Left value
+        * @param {Any}     y   - Right value
+        * @param {Boolean} exl - Indicates whether to exclude left value
+        * @param {Boolean} exr - Indicates whether to exclude right value
+        */
+        const range_between = (x,y,exl,exr)=>new key_range(IDBKeyRange.bound(x,y, exl,exr));
+        eidb.range_between = range_between;
+        if (with_globals) window.range_between = range_between;
+        
+        /**
+        * Key range of exact only 1 value
+        */
+        const value_is = (z)=>new key_range(IDBKeyRange.only(z));
+        eidb.value_is = value_is;        
+        if (with_globals) window.value_is = value_is;
+        
+        // Global bindings, base functionalities
+        /** 
+        * Create async/await lock, example:
+        * ```
+        * var [Lock,unlock] = new_lock();
+        * ```
+        */
+        /** @func new_lock */
+        const new_lock = base.new_lock;
+        eidb.new_lock = new_lock;
+        if (with_globals) window.new_lock = new_lock;
+        
+        /** 
+        * Stay idle for a number of milliseconds (similar to sleep but the thread
+        * is actually still running, so it's not sleep)
+        */
+        /** @func stay_idle */
+        const stay_idle = base.stay_idle;
+        eidb.stay_idle = stay_idle;        
+        if (with_globals) window.stay_idle = stay_idle;
+        
+        /*
+         * _____________________________________________________________________
+         */
+        var EXPORTS_CLASS;
+        
+        // Global bindings, whole lib
+        // EnIndex library global object
+        if (with_globals) window.eidb = eidb;
+
+        // Subnamespace shortcuts, window.* binding but must put here 
+        // to ensure modules are imported completely coz they are modules, not others.
+        eidb.slocal   = slocal;
+        eidb.ssession = ssession;
+        if (with_globals) window.slocal   = slocal;
+        if (with_globals) window.ssession = ssession;
+    }
+
+    /**
+     * More globals
+     */ 
+    static init_more_globals(with_globals){
+        /*
+         * _____________________________________________________________________
+         */
+        var EXPORTS_OP_NAMES;
+    
+        /**
+        * Operation name to work with eidb.do_op, eg.: `eidb.do_op("my-store",_add,{})`
+        */
+        const _add = "add";
+        eidb._add = _add;
+        if (with_globals) window._add = _add;
+        
+        /**
+        * Operation name to work with eidb.do_op
+        */
+        const _clear = "clear";
+        eidb._clear = _clear;         
+        if (with_globals) window._clear = _clear;
+        
+        /**
+        * Operation name to work with eidb.do_op
+        */
+        const _count = "count";
+        eidb._count = _count;
+        if (with_globals) window._count = _count;
+        
+        /**
+        * Operation name to work with eidb.do_op
+        */
+        const _create_index = "create_index";
+        eidb._create_index = _create_index;
+        if (with_globals) window._create_index = _create_index;
+        
+        /**
+        * Operation name to work with eidb.do_op
+        */
+        const _delete = "delete";
+        eidb._delete = _delete;
+        if (with_globals) window._delete = _delete;
+         
+        /**
+        * Operation name to work with eidb.do_op
+        */
+        const _delete_index = "delete_index";
+        eidb._delete_index = _delete_index;
+        if (with_globals) window._delete_index = _delete_index;
+        
+        /**
+        * Operation name to work with eidb.do_op
+        */
+        const _get = "get";
+        eidb._get = _get;
+        if (with_globals) window._get = _get;
+        
+        /**
+        * Operation name to work with eidb.do_op
+        */
+        const _get_all = "get_all";
+        eidb._get_all = _get_all;
+        if (with_globals) window._get_all = _get_all;
+        
+        /**
+        * Operation name to work with eidb.do_op
+        */
+        const _get_all_keys = "get_all_keys";
+        eidb._get_all_keys = _get_all_keys;
+        if (with_globals) window._get_all_keys = _get_all_keys;
+        
+        /**
+        * Operation name to work with eidb.do_op
+        */
+        const _get_key = "get_key";
+        eidb._get_key = _get_key;
+        if (with_globals) window._get_key = _get_key;
+        
+        /**
+        * Operation name to work with eidb.do_op
+        */
+        const _index = "index";
+        eidb._index = _index;
+        if (with_globals) window._index = _index;
+         
+        /**
+        * Operation name to work with eidb.do_op
+        */
+        const _open_cursor = "open_cursor";
+        eidb._open_cursor = _open_cursor;
+        if (with_globals) window._open_cursor = _open_cursor;
+        
+        /**
+        * Operation name to work with eidb.do_op
+        */
+        const _open_key_cursor = "open_key_cursor";
+        eidb._open_key_cursor = _open_key_cursor;
+        if (with_globals) window._open_key_cursor = _open_key_cursor;
+        
+        /**
+        * Operation name to work with eidb.do_op
+        */
+        const _put = "put";
+        eidb._put = _put;
+        if (with_globals) window._put = _put;
+    }
+
+    /**
      * Initialise EnIndex library
      */ 
-    static init(){
+    static init(with_globals=true){
         // Subnamespaces
         eidb.idb      = idb;
         eidb.idbx     = idbx;
@@ -483,10 +783,9 @@ class eidb {
         eidb.wcrypto.init();
         eidb.utils.  init();
 
-        // Subnamespace shortcuts, window.* binding but must put here 
-        // to ensure modules are imported completely coz they are modules, not others.
-        window.slocal   = slocal;
-        window.ssession = ssession;
+        // Global bindings in window.*
+        thisclass.init_essential_globals(with_globals);
+        thisclass.init_more_globals(with_globals);
 
         // Static properties
         eidb.Factory = new factory(window.indexedDB);
@@ -566,263 +865,13 @@ class eidb {
         eidb.s_enable_fts         = idbxs.ftss.enable_fts;
         eidb.s_disable_fts        = idbxs.ftss.disable_fts;
         eidb.s_find_many_by_terms = idbxs.ftss.find_many_by_terms;
-
-        // Global bindings to window global object -----------------------------
-        // See after this class, leave them at module scope 
-        // to be documented.
     }
 }
 
-/**
- * _____________________________________________________________________________
- */
-var EXPORTS_LITERALS; // Kinda keywords
-
-/**
- * Key type literal: non-unique, single-entry
- */ 
-window.n1 = eidb.n1; // Index schema, use 1 for syntax colouring, eg. field:1
-
-/**
- * Key type literal: non-unique, multi-entry
- */ 
-window.n2 = eidb.n2; // Index schema, use 2 for syntax colouring, eg. field:2
- 
-/**
- * Key type literal: unique, single-entry
- */ 
-window.u1 = eidb.u1; // Index schema eg. field:u1
- 
-/**
- * Key type literal: non-unique, single-entry
- */ 
-window.u2 = eidb.u2; // Index schema eg. field:u2
-
-/**
- * Secure mode for store
- */ 
-window._secure = true;
-
-/**
- * Result of cursor callback to stop iterating
- */ 
-window._stop = "stop";
-
-/**
- * _____________________________________________________________________________
- */
-var EXPORTS_CONSTANTS;
-
-/**
- * Read-only transaction mode
- */
-const RO = eidb.RO;
-window.RO = RO;
- 
-/**
- * Read-write transaction mode
- */
-const RW = eidb.RW;
-window.RW = RW;
-
-/*
-Range	            Code
-All keys ≥ x	    IDBKeyRange.lowerBound (x)
-All keys > x	    IDBKeyRange.lowerBound (x, true)
-All keys ≤ y	    IDBKeyRange.upperBound (y)
-All keys < y	    IDBKeyRange.upperBound (y, true)
-All keys ≥ x && ≤ y	IDBKeyRange.bound (x, y)
-All keys > x &&< y	IDBKeyRange.bound (x, y, true, true)
-All keys > x && ≤ y	IDBKeyRange.bound (x, y, true, false)
-All keys ≥ x &&< y	IDBKeyRange.bound (x, y, false, true)
-The key = z	        IDBKeyRange.only (z)
-*/
-/**
- * Indicates that left value in index value range is included
- */
-const WITH_LEFT = false;
-window.WITH_LEFT = WITH_LEFT;
-
-/**
- * Indicates that right value in key range is included
- */
-const WITH_RIGHT = false;
-window.WITH_RIGHT = WITH_RIGHT;
-
-/**
- * Indicates that left value in key range is EXCLUDED
- */
-const NO_LEFT = true;
-window.NO_LEFT = NO_LEFT;
-
-/**
- * Indicates that right value in key range is EXCLUDED
- */
-const NO_RIGHT = true;
-window.NO_RIGHT = NO_RIGHT;
-
-/**
- * _____________________________________________________________________________
- */
-var EXPORTS_OP_NAMES;
-
-/**
- * Operation name to work with eidb.do_op, eg.: `eidb.do_op("my-store",_add,{})`
- */
-const _add = "add";
-window._add = _add;
-
-/**
- * Operation name to work with eidb.do_op
- */
-const _clear = "clear";
-window._clear = _clear;
-
-/**
- * Operation name to work with eidb.do_op
- */
-const _count = "count";
-window._count = _count;
-
-/**
- * Operation name to work with eidb.do_op
- */
-const _create_index = "create_index";
-window._create_index = _create_index;
-
-/**
- * Operation name to work with eidb.do_op
- */
-const _delete = "delete";
-window._delete = _delete;
-
-/**
- * Operation name to work with eidb.do_op
- */
-const _delete_index = "delete_index";
-window._delete_index = _delete_index;
-
-/**
- * Operation name to work with eidb.do_op
- */
-const _get = "get";
-window._get = _get;
-
-/**
- * Operation name to work with eidb.do_op
- */
-const _get_all = "get_all";
-window._get_all = _get_all;
-
-/**
- * Operation name to work with eidb.do_op
- */
-const _get_all_keys = "get_all_keys";
-window._get_all_keys = _get_all_keys;
-
-/**
- * Operation name to work with eidb.do_op
- */
-const _get_key = "get_key";
-window._get_key = _get_key;
-
-/**
- * Operation name to work with eidb.do_op
- */
-const _index = "index";
-window._index = _index;
-
-/**
- * Operation name to work with eidb.do_op
- */
-const _open_cursor = "open_cursor";
-window._open_cursor = _open_cursor;
-
-/**
- * Operation name to work with eidb.do_op
- */
-const _open_key_cursor = "open_key_cursor";
-window._open_key_cursor = _open_key_cursor;
-
-/**
- * Operation name to work with eidb.do_op
- */
-const _put = "put";
-window._put = _put;
-
-/*
- * _____________________________________________________________________________
- */
-var EXPORTS_METHODS;
-
-/**
- * Key range (greater than or equal)
- */
-const range_gte = (x)=>new key_range(IDBKeyRange.lowerBound(x));
-window.range_gte = range_gte;
-
-/**
- * Key range (greater than)
- */
-const range_gt = (x)=>new key_range(IDBKeyRange.lowerBound(x, true));
-window.range_gt = range_gt;
-
-/**
- * Key range (less than or equal)
- */
-const range_lte = (y)=>new key_range(IDBKeyRange.upperBound(y)); 
-window.range_lte = range_lte;
-
-/**
- * Key range (less than)
- */
-const range_lt = (y)=>new key_range(IDBKeyRange.upperBound(y, true)); 
-window.range_lt = range_lt;
-
-/**
- * Key range between 2 values: [..], (..], [..), or (..)
- * @param {Any}     x   - Left value
- * @param {Any}     y   - Right value
- * @param {Boolean} exl - Indicates whether to exclude left value
- * @param {Boolean} exr - Indicates whether to exclude right value
- */
-const range_between = (x,y,exl,exr)=>new key_range(IDBKeyRange.bound(x,y, exl,exr));
-window.range_between = range_between;
-
-/**
- * Key range of exact only 1 value
- */
-const value_is = (z)=>new key_range(IDBKeyRange.only(z));
-window.value_is = value_is;
-
-// Global bindings, base functionalities
-/** 
- * Create async/await lock, example:
- * ```
- * var [Lock,unlock] = new_lock();
- * ```
- */
-/** @func new_lock */
-const new_lock = base.new_lock;
-window.new_lock = new_lock;
-
-/** 
- * Stay idle for a number of milliseconds (similar to sleep but the thread
- * is actually still running, so it's not sleep)
- */
-/** @func stay_idle */
-const stay_idle = base.stay_idle;
-window.stay_idle = stay_idle;
-
-/*
- * _____________________________________________________________________________
- */
-var EXPORTS_CLASS;
-
-// Global bindings, whole lib
-// EnIndex library global object
-window.eidb = eidb;
-log("EnIndex loaded");
+// Load log
+var L = window.location;
+log("[EI] EnIndex loaded in", `${L.protocol}//${L.host}${L.pathname}`);
+log("     by this import:",import.meta.url.replace("http:","").replace("https:",""));
 
 /**
  * Note
@@ -882,5 +931,6 @@ log("EnIndex loaded");
 // WARNING: The 'Examples' block above should be right above this export
 // to be used as module description by JSDoc.
 // Module export, for submodules to use only, outer JS uses window.* above
-export default eidb; 
+const thisclass = eidb;
+export default thisclass; 
 // EOF

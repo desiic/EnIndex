@@ -80,7 +80,7 @@ class cursor {
             this.self.advance(count);
         }
         catch (Dom_Exception){
-            loge("cursor.advance: Error:",Dom_Exception);
+            loge("[EI] cursor.advance: Error:",Dom_Exception);
             return Dom_Exception;
         }
     }
@@ -93,7 +93,7 @@ class cursor {
             this.self.continue(Key);
         }
         catch (Dom_Exception){
-            loge("cursor.continue(K): Error:",Dom_Exception);
+            loge("[EI] cursor.continue(K): Error:",Dom_Exception);
             return Dom_Exception;
         }
     }
@@ -106,7 +106,7 @@ class cursor {
             this.self.continuePrimaryKey(Key,Prim_Key);
         }
         catch (Dom_Exception){
-            loge("cursor.continue(K,Pk): Error:",Dom_Exception);
+            loge("[EI] cursor.continue(K,Pk): Error:",Dom_Exception);
             return Dom_Exception;
         }
     }
@@ -128,7 +128,7 @@ class cursor {
             return await Lock;
         }
         catch (Dom_Exception){
-            loge("cursor.delete: Error:",Dom_Exception);
+            loge("[EI] cursor.delete: Error:",Dom_Exception);
             return Dom_Exception;
         }
     }
@@ -150,7 +150,7 @@ class cursor {
             return await Lock;
         }
         catch (Dom_Exception){
-            loge("cursor.update: Error:",Dom_Exception);
+            loge("[EI] cursor.update: Error:",Dom_Exception);
             return Dom_Exception;
         }
     }

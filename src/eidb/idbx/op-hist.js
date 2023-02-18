@@ -87,7 +87,7 @@ class op_hist {
         if (!op_hist.enabled || Ids==null || Ids.length==0)
             return;
         if (["create","read","update","delete"].indexOf(Op_Type) == -1){
-            loge("op_hist.update_op_hist: No such operation type:",Op_Type);
+            loge("[EI] op_hist.update_op_hist: No such operation type:",Op_Type);
             return;
         }
 
@@ -100,9 +100,9 @@ class op_hist {
         }
 
         // Find
-        var T   = Db.transaction(OP_HIST_STORE,RW);
+        var T   = Db.transaction(OP_HIST_STORE,eidb.RW);
         var S   = T.store1();
-        var Obj = await S.index("Store_Name").get(value_is(Store_Name));
+        var Obj = await S.index("Store_Name").get(eidb.value_is(Store_Name));
         
         // Create object for store if not existing
         if (Obj == null){
@@ -183,9 +183,9 @@ class op_hist {
         var Db = await idbx.reopen();
 
         // Get CRUD/C entries (multiple ids inside each)
-        var T       = Db.transaction(OP_HIST_STORE,RO);
+        var T       = Db.transaction(OP_HIST_STORE,eidb.RO);
         var S       = T.store1();
-        var Op_Hist = await S.index("Store_Name").get(value_is(Store_Name));
+        var Op_Hist = await S.index("Store_Name").get(eidb.value_is(Store_Name));
 
         Db.close();
         return Op_Hist;
@@ -198,14 +198,14 @@ class op_hist {
         var Db = await idbx.reopen();
 
         if (Db instanceof Error){
-            loge("op_hist.clear_op_hist: Failed to open db, error:",Db);
+            loge("[EI] op_hist.clear_op_hist: Failed to open db, error:",Db);
             return;
         }
 
         // Clear
-        var T = Db.transaction(OP_HIST_STORE,RW);
+        var T = Db.transaction(OP_HIST_STORE,eidb.RW);
         var S = T.store1();
-        await S.delete(range_gte(0)); // Primary key (primary index)
+        await S.delete(eidb.range_gte(0)); // Primary key (primary index)
 
         Db.close();
     }

@@ -67,7 +67,7 @@ class key_range {
             return this.self.includes(Range.self);
         }
         catch (Dom_Exception){
-            loge("key_range.includes: Error:",Dom_Exception);
+            loge("[EI] key_range.includes: Error:",Dom_Exception);
             return Dom_Exception;
         }
     }

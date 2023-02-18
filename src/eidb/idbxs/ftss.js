@@ -22,6 +22,9 @@ const log  = console.log;
 const logw = console.warn;
 const loge = console.error;
 
+// Constants
+const _secure = true;
+
 /**
  * FTS secure
  */
@@ -145,7 +148,7 @@ class ftss {
      */ 
     static async find_many_by_terms(Store_Name, Terms_Str, limit=1000){
         if (idbxs.Skey==null) {
-            loge("ftss.find_many_by_terms: Static key not set");
+            loge("[EI] ftss.find_many_by_terms: Static key not set");
             return;
         }
         Store_Name = "#"+Store_Name;

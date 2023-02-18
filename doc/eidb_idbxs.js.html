@@ -31,6 +31,7 @@
  */
 
 // Modules
+import eidb     from "../eidb.js";
 import base     from "./base.js";
 import utils    from "./utils.js";
 import wcrypto  from "./wcrypto.js";
@@ -182,7 +183,7 @@ class idbxs { // Aka sec
      */ 
     static async obj_to_sobj(Store_Name,Obj){
         if (idbxs.Skey==null) {
-            loge("idbxs.obj_to_sobj: Static key not set");
+            loge("[EI] idbxs.obj_to_sobj: Static key not set");
             return;
         }
 
@@ -343,13 +344,13 @@ class idbxs { // Aka sec
         if (Metastore==null){
             // Open db
             var Db    = await eidb.reopen();
-            var T     = Db.transaction("_meta",RO);
+            var T     = Db.transaction("_meta",eidb.RO);
             var S     = T.store1();
             Metastore = S;
         }
 
         // Load and return
-        var Res = await Metastore.index("Store").get(value_is("_global"));
+        var Res = await Metastore.index("Store").get(eidb.value_is("_global"));
         if (Orig_Param==null) Db.close();
         return Res;
     }
@@ -363,7 +364,7 @@ class idbxs { // Aka sec
         if (Metastore==null){
             // Open db
             var Db    = await eidb.reopen();
-            var T     = Db.transaction("_meta",RW);
+            var T     = Db.transaction("_meta",eidb.RW);
             var S     = T.store1();
             Metastore = S;
         }
@@ -391,7 +392,7 @@ class idbxs { // Aka sec
      */ 
     static async save_static_key(Skey, enforce=false){
         if (idbxs.Ekey==null || idbxs.Akeypair==null){
-            loge("idbxs.set_static_key: Encryption key and auth key pair must exist first, call set_ea_keys");
+            loge("[EI] idbxs.set_static_key: Encryption key and auth key pair must exist first, call set_ea_keys");
             return;
         }
 
@@ -402,18 +403,18 @@ class idbxs { // Aka sec
 
         // Load metadata
         var Db   = await eidb.reopen();
-        var T    = Db.transaction("_meta",RW);
+        var T    = Db.transaction("_meta",eidb.RW);
         var S    = T.store1();
-        var Meta = await S.index("Store").get(value_is("_global")); // Store null is global meta
+        var Meta = await S.index("Store").get(eidb.value_is("_global")); // Store null is global meta
 
         if (Meta == null){ // No global metadata, create
             idbxs.ensure_global_meta(S);
-            Meta = await S.index("Store").get(value_is("_global")); // Load
+            Meta = await S.index("Store").get(eidb.value_is("_global")); // Load
         }
 
         // Static key exists and no enfore, return
         if (Meta.Etde_Skey!=null &amp;&amp; enforce==false){
-            logw("idbxs.set_static_key: Static key exists, no enforcing");
+            logw("[EI] idbxs.set_static_key: Static key exists, no enforcing");
             Db.close();
             return;
         }
@@ -431,25 +432,25 @@ class idbxs { // Aka sec
      */ 
     static async load_static_key(){
         if (idbxs.Ekey==null || idbxs.Akeypair==null){
-            loge("idbxs.get_static_key: Encryption key and auth key pair must exist first, call set_ea_keys");
+            loge("[EI] idbxs.get_static_key: Encryption key and auth key pair must exist first, call set_ea_keys");
             return;
         }
 
         // Get metadata
         var Db   = await eidb.reopen();
-        var T    = Db.transaction("_meta",RW);
+        var T    = Db.transaction("_meta",eidb.RW);
         var S    = T.store1();
-        var Meta = await S.index("Store").get(value_is("_global"));
+        var Meta = await S.index("Store").get(eidb.value_is("_global"));
 
         // Get encrypted static key
         if (Meta == null){
-            logw("idbxs.get_static_key: Global metadata not set");
+            logw("[EI] idbxs.get_static_key: Global metadata not set");
             await idbxs.ensure_global_meta(S);
             Db.close();
             return;
         }
         if (Meta.Etde_Skey == null){
-            logw("idbxs.get_static_key: No static key in global metadata");
+            logw("[EI] idbxs.get_static_key: No static key in global metadata");
             Db.close();
             return;
         }
@@ -472,9 +473,9 @@ class idbxs { // Aka sec
      */ 
     static async prepare_keys(Username,Password){
         // Try keys in slocal
-        var Ekey_Hex     = slocal.get("Ekey_Hex");
-        var Akeypriv_Jwk = slocal.get("Akeypriv_Jwk");
-        var Akeypub_Jwk  = slocal.get("Akeypub_Jwk");
+        var Ekey_Hex     = eidb.slocal.get("Ekey_Hex");
+        var Akeypriv_Jwk = eidb.slocal.get("Akeypriv_Jwk");
+        var Akeypub_Jwk  = eidb.slocal.get("Akeypub_Jwk");
         var keys_ok      = false;
 
         if (Ekey_Hex!=null &amp;&amp; Akeypriv_Jwk!=null &amp;&amp; Akeypub_Jwk!=null){
@@ -486,7 +487,7 @@ class idbxs { // Aka sec
 
             try {
                 // Static key
-                log("Trying stored keys...");
+                log("[EI] Trying stored keys...");
                 var Skey = await idbxs.load_static_key();
                 if (Skey==null) keys_ok=false;
                 else            keys_ok=true;
@@ -504,13 +505,13 @@ class idbxs { // Aka sec
 
             // Static key
             // Bad Username&amp;Password will fail here
-            log("Trying keys from username and password...");
+            log("[EI] Trying keys from username and password...");
             var Skey = await idbxs.load_static_key();
         }
 
         // First ever call goes here
         if (Skey==null){
-            logw("idbxs.prepare_keys: No static key, creating one...");
+            logw("[EI] idbxs.prepare_keys: No static key, creating one...");
             Skey = await idbxs.get_new_static_key(Username);
             let enforce;
             await idbxs.save_static_key(Skey, enforce=true);
@@ -518,9 +519,9 @@ class idbxs { // Aka sec
         idbxs.set_static_key(Skey);
 
         // All okay, save keys to slocal
-        slocal.set("Ekey_Hex",     await wcrypto.export_key_hex(Ekey));
-        slocal.set("Akeypriv_Jwk", await wcrypto.export_key_jwk(Akeypriv));
-        slocal.set("Akeypub_Jwk",  await wcrypto.export_key_jwk(Akeypub));
+        eidb.slocal.set("Ekey_Hex",     await wcrypto.export_key_hex(Ekey));
+        eidb.slocal.set("Akeypriv_Jwk", await wcrypto.export_key_jwk(Akeypriv));
+        eidb.slocal.set("Akeypub_Jwk",  await wcrypto.export_key_jwk(Akeypub));
     }
 
     /**
@@ -528,9 +529,9 @@ class idbxs { // Aka sec
      * Lock out access by clearing keys from slocal
      */ 
     static clear_keys(){
-        slocal.clear("Ekey_Hex");
-        slocal.clear("Akeypriv_Jwk");
-        slocal.clear("Akeypub_Jwk");
+        eidb.slocal.clear("Ekey_Hex");
+        eidb.slocal.clear("Akeypriv_Jwk");
+        eidb.slocal.clear("Akeypub_Jwk");
     }
 
     /**
@@ -565,12 +566,12 @@ class idbxs { // Aka sec
         Username = Username.trim();
         Password = Password.trim();
         
-        log(`Creating key chain, ${idbxs.ITERATIONS} iterations`);
+        log(`[EI] Creating key chain, ${idbxs.ITERATIONS} iterations`);
         var start                  = performance.now();
         var Salt                   = await wcrypto.digest_sha256(Username);
         var [Enc_Key,Auth_Keypair] = await wcrypto.password2keys(Password,Salt,idbxs.ITERATIONS);
         var fin                    = performance.now();
-        log(`Key chain made in ${(fin-start)/1000} seconds`);
+        log(`[EI] Key chain made in ${(fin-start)/1000} seconds`);
 
         return [Enc_Key,Auth_Keypair];
     }
@@ -623,7 +624,7 @@ class idbxs { // Aka sec
      */ 
     static async save_recovery_info(Ciphertext, Iv){
         var Db   = await eidb.reopen();
-        var T    = Db.transaction("_meta",RW);
+        var T    = Db.transaction("_meta",eidb.RW);
         var S    = T.store1();
 
         // Update meta
@@ -669,20 +670,20 @@ class idbxs { // Aka sec
      */ 
     static async recover_and_set_keys(Recovery_Key){
         if (!(Recovery_Key instanceof CryptoKey)){
-            loge("idbxs.recover_and_set_keys: First param is not CryptoKey");
+            loge("[EI] idbxs.recover_and_set_keys: First param is not CryptoKey");
             return;
         }
 
         // Open db
         var Db = await eidb.reopen();
-        var T  = Db.transaction("_meta",RO);
+        var T  = Db.transaction("_meta",eidb.RO);
         var S  = T.store1();
 
         // Load recovery ciphertext and iv
         var Meta = await idbxs.load_global_meta(S);
 
         if (Meta==null){
-            loge("idbxs.recover_and_set_keys: Bad global metadata:",Meta);
+            loge("[EI] idbxs.recover_and_set_keys: Bad global metadata:",Meta);
             Db.close();
             return;
         }
@@ -691,7 +692,7 @@ class idbxs { // Aka sec
         var Etdr_Recovery_Iv = Meta.Etdr_Recovery_Iv;
 
         if (Etdr_Recovery==null || Etdr_Recovery_Iv==null){
-            loge("idbxs.recovery_and_set_keys: No or bad recovery data in global metadata");
+            loge("[EI] idbxs.recovery_and_set_keys: No or bad recovery data in global metadata");
             Db.close();
             return;
         }
@@ -703,7 +704,7 @@ class idbxs { // Aka sec
         
         if (Ek==null || Aks==null || (!(Ek instanceof CryptoKey)) || 
                 (!(Aks.privateKey instanceof CryptoKey)) || (!(Aks.publicKey instanceof CryptoKey))){
-            loge("idbxs.recovery_and_set_keys: Failed to recover keys, found:",Ek,Aks);
+            loge("[EI] idbxs.recovery_and_set_keys: Failed to recover keys, found:",Ek,Aks);
             Db.close();
             return;
         }
@@ -714,7 +715,7 @@ class idbxs { // Aka sec
         var Sk_Hex       = await wcrypto.decrypt_aes(Etde_Skey, Etde_Skey_Iv, Ek);
 
         if (Sk_Hex==null){
-            loge("idbxs.recovery_and_set_keys: Failed to decrypt for static key");
+            loge("[EI] idbxs.recovery_and_set_keys: Failed to decrypt for static key");
             Db.close();
             return;
         }
@@ -881,7 +882,7 @@ class idbxs { // Aka sec
 
         for (let Word of Words)
             if (Dict.indexOf(Word) == -1){
-                loge("idbxs.text_to_key: Invalid word:",Word);
+                loge("[EI] idbxs.text_to_key: Invalid word:",Word);
                 return;
             }
 
@@ -929,7 +930,7 @@ export default thisclass;
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.0</a> on Sun Feb 05 2023 15:23:54 GMT+0700 (Indochina Time)
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.0</a> on Sat Feb 18 2023 13:58:44 GMT+0700 (Indochina Time)
 </footer>
 
 <script> prettyPrint(); </script>
