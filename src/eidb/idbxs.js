@@ -364,7 +364,7 @@ class idbxs { // Aka sec
      */ 
     static async save_static_key(Skey, enforce=false){
         if (idbxs.Ekey==null || idbxs.Akeypair==null){
-            loge("[EI] idbxs.set_static_key: Encryption key and auth key pair must exist first, call set_ea_keys");
+            loge("[EI] idbxs.save_static_key: Encryption key and auth key pair must exist first, call set_ea_keys");
             return;
         }
 
@@ -386,7 +386,7 @@ class idbxs { // Aka sec
 
         // Static key exists and no enfore, return
         if (Meta.Etde_Skey!=null && enforce==false){
-            logw("[EI] idbxs.set_static_key: Static key exists, no enforcing");
+            logw("[EI] idbxs.save_static_key: Static key exists, no enforcing");
             Db.close();
             return;
         }
@@ -404,7 +404,7 @@ class idbxs { // Aka sec
      */ 
     static async load_static_key(){
         if (idbxs.Ekey==null || idbxs.Akeypair==null){
-            loge("[EI] idbxs.get_static_key: Encryption key and auth key pair must exist first, call set_ea_keys");
+            loge("[EI] idbxs.load_static_key: Encryption key and auth key pair must exist first, call set_ea_keys");
             return;
         }
 
@@ -416,13 +416,13 @@ class idbxs { // Aka sec
 
         // Get encrypted static key
         if (Meta == null){
-            logw("[EI] idbxs.get_static_key: Global metadata not set");
+            logw("[EI] idbxs.load_static_key: Global metadata not set");
             await idbxs.ensure_global_meta(S);
             Db.close();
             return;
         }
         if (Meta.Etde_Skey == null){
-            logw("[EI] idbxs.get_static_key: No static key in global metadata");
+            logw("[EI] idbxs.load_static_key: No static key in global metadata");
             Db.close();
             return;
         }

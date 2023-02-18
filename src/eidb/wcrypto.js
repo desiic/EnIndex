@@ -21,6 +21,10 @@ const BIT_LEN = 256;
 // Fixed IV for searching with index feature.
 // WARN: THESE FIXED IV VALUES SHOULD STAY UNCHANGED.
 //       0->15 is teddious, stepping 2 is even (maybe easy?), using stepping 3:
+// FIXED_IV is for encrypting data with Static Key (Skey), it must be the same
+// for every piece of data to encrypt or fail to search for a text becoz
+// of not knowing the IV to encrypt and look for ciphertext. While it's fixed and only one, 
+// randomise this FIXED_IV or no it's kinda the same.
 const FIXED_IV_BYTES = new Uint8Array([0,3,6,9, 12,15,18,21, 24,27,30,33, 36,39,42,45]); 
 const FIXED_IV       = "000306090c0f1215181b1e2124272a2d";
 
