@@ -83,6 +83,8 @@ class utils {
      */ 
     static json_to_obj_bd(Json){ // Binary date
         return JSON.parse(Json,(K,V)=>{
+            if (V==null)
+                return null;
             if (V.constructor != String)
                 return V;
 
