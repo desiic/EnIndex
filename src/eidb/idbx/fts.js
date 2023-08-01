@@ -74,6 +74,7 @@ class fts {
      */
     static obj_to_unique_words(Obj){
         var Str = utils.obj_to_valuestr(Obj)
+        log(Str)///
         return fts.str_to_unique_words(Str);
     }
 
@@ -130,7 +131,9 @@ class fts {
         }
 
         // Get unique words from Obj
+        log("-------------------------------")///
         var Words = fts.obj_to_unique_words(Obj);
+        if (Obj.Umaker) log(Obj,"->",Words)///
 
         if (secure){
             for (let i=0; i<Words.length; i++){
