@@ -178,6 +178,9 @@ class op_hist {
 
     /**
      * Get operation history entries
+     * WARN: PARAM max IS CURRENTLY UNUSED, LET APP HANDLES THIS max ITSELF
+     *       COZ THERE MIGHT BE OVERLAPPING ITEM IDS BETWEEN CREATE & UPDATE OPS
+     *       AND THAT KIND OF STUFF.
      */ 
     static async get_op_hist(Store_Name, max){
         var Db = await idbx.reopen();
