@@ -33,7 +33,7 @@ class crud {
     static async insert_one(Store_Name,Obj, secure=false,Original_Obj=null){
         var Db    = await eidb.reopen();
         var T     = Db.transaction(Store_Name,eidb.RW);
-        var Store = T.store1()
+        var Store = T.store1();
 
         // Got store, next
         var Obj_ = {...Obj}; // Clone to delete id
@@ -48,8 +48,10 @@ class crud {
             return null;
         }
 
+        // Op history
         op_hist.update_op_hist_c(Store.Name, [new_id]);
 
+        // FTS
         if (secure)
             ftss.update_fts_c(Store.Name, new_id, Original_Obj);
         else
