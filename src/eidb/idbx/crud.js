@@ -756,6 +756,35 @@ class crud {
     }
 
     /**
+     * Remove all objects in an object store
+     * WARN: THIS METHOD DOESN'T UPDATE FTS DATA, 
+     *       USE WHEN FTS DATA ARE EMPTIED OUT TOGETHER ONLY.
+     * @return {null}
+     */
+    static async remove_all(Store_Name){
+        var Db    = await eidb.reopen();
+        var T     = Db.transaction(Store_Name,eidb.RW);
+        var Store = T.store1();
+
+        // Remove all
+        var [Lock,unlock] = new_lock();
+        var Req           = Store.self.delete(eidb.range_gte(0).self);
+
+        Req.onerror = (Ev)=>{
+            loge("[EI] crud.remove_all: Failed to delete, event:",Ev);
+            unlock();
+        };
+        Req.onsuccess = (Ev)=>{
+            unlock();
+        };
+        await Lock;
+
+        // Close db
+        Db.close();
+        return null;
+    }
+
+    /**
      */
     static init(){
     } 

@@ -277,7 +277,10 @@ class eidb {
      * Alias of `eidb.idbx.crud.remove_many` [See here](module-eidb_idbx_crud-crud.html#.remove_many)</br>
      * CRUD/DELETE
      */
-    static remove_many;   
+    static remove_many;
+
+    // Alias of eidb.idbx.crud.remove_all
+    static remove_all;   
     
     // OP HISTORY **************************************************************
     /**
@@ -820,6 +823,7 @@ class eidb {
         eidb.upsert_one  = idbx.crud.upsert_one;
         eidb.remove_one  = idbx.crud.remove_one;
         eidb.remove_many = idbx.crud.remove_many;
+        eidb.remove_all  = idbx.crud.remove_all;
 
         // Op history
         eidb.set_max_history    = idbx.op_hist.set_max_history;
