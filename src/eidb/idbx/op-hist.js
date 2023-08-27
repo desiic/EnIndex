@@ -32,12 +32,16 @@ const OP2FIELDNAME = {
     "delete": "Recent_Deletes"
 };
 
+function $_____CLASS_____(){}
+
 /**
  * CRUD operation history
  */ 
 class op_hist {
     static max_history = 1000;
     static enabled     = false;
+
+    #_____UTILS_____(){}
 
     /**
      * Change default max entries per op type in history
@@ -79,6 +83,8 @@ class op_hist {
         return Docmetas;
     }
 
+    #_____UPDATERS_____(){}
+
     /**
      * Update op hist CRUD<br/>
      * NOTE: NOT TO AWAIT HISTORY|FTS METHODS, BE IN BACKGROUND
@@ -104,7 +110,7 @@ class op_hist {
         var S   = T.store1();
         var Obj = await S.index("Store_Name").get(eidb.value_is(Store_Name));
         
-        // Create object for store if not existing
+        // Create recent-data object for store if not existing
         if (Obj == null){
             let Obj      = {Store_Name};
             let Docmetas = []; // Assign to one of Recent_*
@@ -125,21 +131,29 @@ class op_hist {
             return;
         }
 
-        // Combine ids
+        // Add new id or modify Timestamp
         var Docmetas = Obj[OP2FIELDNAME[Op_Type]];
         var Cur_Ids  = Docmetas.map(X=>X.id);
         var Now      = new Date();
+        var Id2Index = {};
+
+        // Map to find index in Docmetas
+        for (let i=0; i<Docmetas.length; i++)
+            Id2Index[Docmetas[i].id] = i;
         
         for (let id of Ids)
             if (Cur_Ids.indexOf(id) == -1)
-                Docmetas.push({ id:id, Timestamp:Now });
+                Docmetas.push({ id:id, Timestamp:Now }); // New entry
+            else{ 
+                // Old entry, change timestamp
+                Docmetas[Id2Index[id]].Timestamp = Now;
+            }
 
         Docmetas = op_hist.sort_docmetas_des(Docmetas);
-        Docmetas = Docmetas.slice(0, op_hist.max_history);
-
-        Obj[OP2FIELDNAME[Op_Type]] = Docmetas; // Put back into Obj
+        Docmetas = Docmetas.slice(0, op_hist.max_history);        
 
         // Save to op_hist store and close db con
+        Obj[OP2FIELDNAME[Op_Type]] = Docmetas; // Put back into Obj
         await S.put(Obj);
         Db.close();
     }
@@ -194,6 +208,8 @@ class op_hist {
         return Op_Hist;
     }
 
+    #_____MAINS_____(){}
+
     /**
      * Clear operation history, caller should await, to let user see result.
      */ 
@@ -212,6 +228,8 @@ class op_hist {
 
         Db.close();
     }
+
+    #_____CORE_____(){}
 
     /**
      * Init
