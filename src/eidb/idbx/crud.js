@@ -53,7 +53,7 @@ class crud {
      * Get objects by 1 condition only<br/>
      * Keys of Conds are all index names.
      */
-    static async get_1stcond_objs(Store,Cond){ // Cond can't be empty {}
+    static async get_1stcond_objs(Store,Cond, limit=Number.MAX_SAFE_INTEGER){ // Cond can't be empty {}
         var Keys  = Object.keys(Cond);
         var Index = Store.index(Keys[0]);
 
@@ -63,8 +63,15 @@ class crud {
             return null;
         }
 
-        var Range = Cond[Keys[0]];        
-        return await Index.get_all(Range);
+        // Open cursor to get max number of objects specified by 'limit'
+        var Range = Cond[Keys[0]];
+        var Objs  = [];
+
+        await Index.open_cursor(Range,"next",Cursor=>{
+            Objs.push(Cursor.value);
+            if (Objs.length>=limit) return "stop";
+        });
+        return Objs;
     }
 
     /**
@@ -298,7 +305,7 @@ class crud {
 
         // Single cond
         if (Keys.length==1){
-            let Objs = await crud.get_1stcond_objs(Store,Cond);
+            let Objs = await crud.get_1stcond_objs(Store,Cond); // No limit
             Db.close();
             return Objs.length;
         }
@@ -378,7 +385,7 @@ class crud {
 
         // Single cond
         if (Keys.length==1){
-            let Objs = await crud.get_1stcond_objs(Store,Cond);
+            let Objs = await crud.get_1stcond_objs(Store,Cond, limit);
             Db.close();
             return Objs;
         }
@@ -530,7 +537,7 @@ class crud {
 
         // Single cond
         if (Keys.length==1){
-            var Objs = await crud.get_1stcond_objs(Store,Cond);
+            var Objs = await crud.get_1stcond_objs(Store,Cond, limit);
             if (Objs==null)     { Db.close(); return null; }
             if (Objs.length==0) { Db.close(); return []; }
         }
@@ -730,7 +737,7 @@ class crud {
         var Ids  = [];
 
         if (Keys.length==1){
-            Objs = await crud.get_1stcond_objs(Store,Cond);            
+            Objs = await crud.get_1stcond_objs(Store,Cond); // No limit
             Ids = Objs.map(Obj=>Obj.id);
             if (Objs==null || Objs.length==0) { Db.close(); return null; }            
         }

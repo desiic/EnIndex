@@ -244,7 +244,10 @@ class cruds {
     /**
      * Find many, avoid using multiple conditions in Cond coz it's slow,
      * USE COMPOUND INDEX INSTEAD.
-     * @return {Object}
+     * @param  {String} Store_Name - Name without # prefix
+     * @param  {Object} Cond       - Multiple ranges, keys are fields to match
+     * @param  {Number} limit      - Max number of objects to find
+     * @return {Array}  All found objects
      */
     static async find_many(Store_Name,Cond, limit=Number.MAX_SAFE_INTEGER){
         if (idbxs.Skey==null) {

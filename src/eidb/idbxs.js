@@ -28,6 +28,8 @@ var GLOBAL_DEFAULT_META = {
     Etdr_Recovery_Iv: null       // Iv of recovery ciphertext
 };
 
+function $_____CLASS_____(){}
+
 /**
  * Extended IndexedDB secure functionalities<br/>
  * NOTE: ACCESSIBLE THRU eidb.idbxs.* OR eidb.sec.*, 
@@ -56,61 +58,25 @@ var GLOBAL_DEFAULT_META = {
  */ 
 class idbxs { // Aka sec         
 
-    /**
-     * _________________________________________________________________________
-     */
-    SUB_NAMESPACES;
+    #_____SUB_NAMESPACES_____(){}
 
     static cruds;
     static op_hists;
     static ftss;
 
-    /**
-     * _________________________________________________________________________
-     */
-    CONSTANTS;
+    #_____CONSTANTS_____(){}
 
     static ITERATIONS = 100000; // For key derivatiion
 
-    /**
-     * _________________________________________________________________________
-     */
-    PROPERTIES;
+    #_____PROPERTIES_____(){}
 
     static Ekey     = null; // Encryption key
     static Akeypair = null; // Authentication key pair {privateKey:, publicKey:}
     static Skey     = null; // Static key (save once at db creation, or on total re-encryption)
     static Rkey     = null; // Recovery key (UNUSED, use separate variable)
 
-    /*
-     * _________________________________________________________________________
-     */
-    METHODS;
-
-    /**
-     * Open db with version set automatically (av, ie. auto-versioning)
-     * @param  {String} Db_Name - Database name
-     * @param  {Object} Indices - Index schema of database
-     * @return {Array}  Error or null, and database object
-     */
-    static async open_av(Db_Name,Indices){
-        // Check _secure marking in every store
-        var Store_Names = Object.keys(Indices);
-
-        for (let Store_Name of Store_Names){
-            if (Indices[Store_Name]._secure == null) continue;
-
-            // Remove marking 
-            delete Indices[Store_Name]._secure;
-
-            // Prefix store name with #
-            Indices["#"+Store_Name] = {...Indices[Store_Name]};
-            delete Indices[Store_Name];
-        }
-
-        // Open db
-        return await idbx.open_av(Db_Name,Indices);        
-    }
+    #_____METHODS_____(){}
+    #_____Utils____(){}
 
     /**
      * Turn value into secure value (encrypted by static key)
@@ -282,20 +248,34 @@ class idbxs { // Aka sec
         return await idbxs.#obj_to_sobj_arb_rec(Clone);
     }
 
-    /**
-     * Set enc/dec keys to be used by secure ops
-     */ 
-    static set_ea_keys(Ekey,Akeypair){
-        idbxs.Ekey     = Ekey;
-        idbxs.Akeypair = Akeypair;
-    }
+    #_____Db_____(){}
 
     /**
-     * Set static key
+     * Open db with version set automatically (av, ie. auto-versioning)
+     * @param  {String} Db_Name - Database name
+     * @param  {Object} Indices - Index schema of database
+     * @return {Array}  Error or null, and database object
      */
-    static set_static_key(Skey){
-        idbxs.Skey = Skey;
+    static async open_av(Db_Name,Indices){
+        // Check _secure marking in every store
+        var Store_Names = Object.keys(Indices);
+
+        for (let Store_Name of Store_Names){
+            if (Indices[Store_Name]._secure == null) continue;
+
+            // Remove marking 
+            delete Indices[Store_Name]._secure;
+
+            // Prefix store name with #
+            Indices["#"+Store_Name] = {...Indices[Store_Name]};
+            delete Indices[Store_Name];
+        }
+
+        // Open db
+        return await idbx.open_av(Db_Name,Indices);        
     }
+
+    #_____Metadata_____(){}
 
     /**
      * Ensure global metadata (ensure, and change no whole saving)
@@ -350,6 +330,41 @@ class idbxs { // Aka sec
 
         // Close db if opened
         if (Orig_Param==null) Db.close();
+    }
+
+    /**
+     * Set username and password (user for chaning username or password, or both at once)
+     */ 
+    static async set_user_and_pw(Username,Password){
+        // Get current static key
+        var Skey = await idbxs.load_static_key();
+        if (Skey==null) return new Error("failed-to-load-static-key");
+        idbxs.set_static_key(Skey);
+
+        // NEW Enc/dec keys
+        var [Ekey,Akeypair] = await idbxs.get_key_chain(Username,Password);
+        idbxs.set_ea_keys(Ekey,Akeypair);
+
+        // Save back static key encrypted with new Ekey
+        let enforce;
+        await idbxs.save_static_key(Skey, enforce=true);
+    }
+
+    #_____Keys_____(){}
+
+    /**
+     * Set enc/dec keys to be used by secure ops
+     */ 
+    static set_ea_keys(Ekey,Akeypair){
+        idbxs.Ekey     = Ekey;
+        idbxs.Akeypair = Akeypair;
+    }
+
+    /**
+     * Set static key
+     */
+    static set_static_key(Skey){
+        idbxs.Skey = Skey;
     }
 
     /**
@@ -534,24 +549,6 @@ class idbxs { // Aka sec
     }
 
     /**
-     * Set username and password (user for chaning username or password, or both at once)
-     */ 
-    static async set_user_and_pw(Username,Password){
-        // Get current static key
-        var Skey = await idbxs.load_static_key();
-        if (Skey==null) return new Error("failed-to-load-static-key");
-        idbxs.set_static_key(Skey);
-
-        // NEW Enc/dec keys
-        var [Ekey,Akeypair] = await idbxs.get_key_chain(Username,Password);
-        idbxs.set_ea_keys(Ekey,Akeypair);
-
-        // Save back static key encrypted with new Ekey
-        let enforce;
-        await idbxs.save_static_key(Skey, enforce=true);
-    }
-
-    /**
      * Get key chain from password<br/>
      * Use Enc_Key for encryption/decryption, send Auth_Keypair.publicKey to 
      * server for registration, use Auth_Keypair.privateKey to sign authentication
@@ -588,6 +585,8 @@ class idbxs { // Aka sec
         var Key  = await wcrypto.make_static_key(Salt,1000);     
         return Key;
     }
+
+    #_____Recovery_____(){}
 
     /**
      * Get recovery info for key chain (3 keys); call this method to get new
@@ -897,6 +896,8 @@ class idbxs { // Aka sec
         return await wcrypto.import_key_aes_raw(Hex);
     }
 
+    #_____Miscs_____(){}
+
     // Decrypt a single object (by eg. crud.find_one), 
     // may be used by apps to decrypt directly instead of going through EnIndex CRUD
     static async decrypt_obj(Sobj){
@@ -905,6 +906,8 @@ class idbxs { // Aka sec
         Obj.id   = Sobj.id;
         return Obj;
     }
+
+    #_____CORE_____(){}
 
     /**
      * Init
