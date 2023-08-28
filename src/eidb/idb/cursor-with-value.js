@@ -5,6 +5,8 @@
 // Modules
 import cursor from "../idb/cursor.js";
 
+function $_____CLASS_____(){}
+
 /**
  * IDBCursorWithValue wraper class
  */

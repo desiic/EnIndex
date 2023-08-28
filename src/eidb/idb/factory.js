@@ -13,6 +13,9 @@ var logw     = console.warn;
 var loge     = console.error;
 var new_lock = base.new_lock;
 
+function OX_INDENT_ONERROR_ONSUCCESS(){}
+function $_____CLASS_____(){}
+
 /** 
  * `eidb.idb.factory` IDBFactory class wrapper
  */
@@ -31,6 +34,8 @@ class factory {
     constructor(Idb_Factory){
         this.self = Idb_Factory;
     }
+
+    #_____DB_OPS_____(){}
 
     /**
      * Get the list of databases, using the instance of IDBFactory set by constructor

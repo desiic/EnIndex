@@ -45,6 +45,8 @@ var log  = console.log;
 var logw = console.warn;
 var loge = console.error;
 
+function $_____CLASS_____(){}
+
 /**
  * Main class of EnIndex library, can be used directly under global scope, 
  * that is `window.eidb` or just `eidb`. It contains mainly sub-namespaces
@@ -52,10 +54,7 @@ var loge = console.error;
  */
 class eidb {
 
-    /**
-     * _________________________________________________________________________
-     */
-    SUB_NAMESPACES;
+    #_____SUB_NAMESPACES_____(){}
 
     /**
      * Sub-namespace, IndexedDB wrapper
@@ -83,10 +82,7 @@ class eidb {
      */ 
     static utils;
 
-    /**
-     * _________________________________________________________________________
-     */
-    LITERALS;
+    #_____LITERALS_____(){};
 
     /**
      * Field type, non-unique + single value
@@ -108,10 +104,7 @@ class eidb {
      */
     static u2 = 4;
 
-    /**
-     * _________________________________________________________________________
-     */
-    CONSTANTS;
+    #_____CONSTANTS_____(){}
 
     /**
      * Read-only mode for creating transaction
@@ -123,22 +116,17 @@ class eidb {
      */
     static RW = "readwrite";    
 
-    /**
-     * _________________________________________________________________________
-     */
-    PROPERTIES;
+    #_____PROPERTIES_____(){}
 
     /**
      * Global idb_factory
      */
     static Factory;
 
-    /**
-     * _________________________________________________________________________
-     */
-    METHODS;
-
-    // BASE OPS ****************************************************************
+    #_____BLANK1_____(){}
+    #_____ALIASES_____(){}
+    #_____Base_Ops_____(){}
+    
     /**
      * Alias of `eidb.idb.databases` [See here](module-eidb_idb-idb.html#.databases)
      */
@@ -158,7 +146,8 @@ class eidb {
      */
     static delete_database;
 
-    // EXTENDED OPS ************************************************************
+    #_____Extended_Ops_____(){}
+
     /**
      * Alias of `eidb.idbx.open_av` [See here](module-eidb_idbx-idbx.html#.open_av)
      */
@@ -194,7 +183,8 @@ class eidb {
      */
     static del_obj_store;
 
-    // CRUD OPS ****************************************************************
+    #_____Crud_Ops_____(){}
+
     /**
      * Alias of `eidb.idbx.crud.insert_one` [See here](module-eidb_idbx_crud-crud.html#.insert_one)</br>
      * CRUD/CREATE
@@ -282,7 +272,8 @@ class eidb {
     // Alias of eidb.idbx.crud.remove_all
     static remove_all;   
     
-    // OP HISTORY **************************************************************
+    #_____Op_Hist_____(){}
+
     /**
      * Alias of `eidb.idbx.op_hist.set_max_history`
      */
@@ -313,7 +304,8 @@ class eidb {
      */
     static clear_op_hist;
 
-    // FULL-TEXT SEARCH ********************************************************
+    #_____Fts_____(){}
+
     /**
      * Alias of `eidb.idbx.fts.enable_fts`
      */
@@ -329,13 +321,15 @@ class eidb {
      */
     static find_many_by_terms;
 
-    // EXTENDED OPS (SECURE) ***************************************************
+    #_____Sec_Extended_Ops_____(){}
+
     /**
      * Alias of `eidb.idbxs.s_open_av` [See here](module-eidb_idbxs-idbxs.html#.open_av)
      */
     static s_open_av;
 
-    // CRUD OPS (SECURE) *******************************************************
+    #_____Sec_Crud_Opts_____(){}
+
     /**
      * Alias of `eidb.idbxs.cruds.insert_one` [See here](module-eidb_idbxs_cruds-cruds.html#.insert_one)</br>
      * CRUD/CREATE
@@ -421,7 +415,8 @@ class eidb {
      */
     static s_remove_many;   
     
-    // OP HISTORY (SECURE) *****************************************************
+    #_____Sec_Op_Hist_____(){}
+
     /**
      * Alias of `eidb.idbxs.op_hists.set_max_history`
      */
@@ -452,7 +447,8 @@ class eidb {
      */
     static s_clear_op_hist;
 
-    // FULL-TEXT SEARCH (SECURE) ***********************************************
+    #_____Sec_Fts_____(){}
+
     /**
      * Alias of `eidb.idbxs.ftss.enable_fts`
      */
@@ -467,11 +463,9 @@ class eidb {
      * Alias of `eidb.idbx.fts.find_many_by_terms`
      */
     static s_find_many_by_terms;
-
-    /*
-     * _________________________________________________________________________
-     */
-    METHODS(){}
+    
+    #_____BLANK2_____(){}
+    #_____METHODS_____(){}
 
     /**
      * Init globals, bindings in window.*
@@ -767,6 +761,8 @@ class eidb {
         eidb._put = _put;
         if (with_globals) window._put = _put;
     }
+
+    #_____CORE_____(){}
 
     /**
      * Initialise EnIndex library

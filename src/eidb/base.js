@@ -7,10 +7,14 @@ var log  = console.log;
 var logw = console.warn;
 var loge = console.error;
 
+function $_____CLASS_____(){}
+
 /** 
  * `eidb.base` Base functionality class
  */
 class base{
+
+    #_____JS_EXTENDED_____(){}
 
     /**
      * Create async/await lock

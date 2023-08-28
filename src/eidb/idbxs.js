@@ -897,6 +897,15 @@ class idbxs { // Aka sec
         return await wcrypto.import_key_aes_raw(Hex);
     }
 
+    // Decrypt a single object (by eg. crud.find_one), 
+    // may be used by apps to decrypt directly instead of going through EnIndex CRUD
+    static async decrypt_obj(Sobj){
+        var Json = await wcrypto.decrypt_aes_fiv(Sobj.Etds_Obj, idbxs.Skey);
+        var Obj  = utils.json_to_obj_bd(Json);
+        Obj.id   = Sobj.id;
+        return Obj;
+    }
+
     /**
      * Init
      */ 

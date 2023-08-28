@@ -15,6 +15,8 @@ var loge     = console.error;
 var obj2json = JSON.stringify;
 var json2obj = JSON.parse;
 
+function $_____CONSTANTS_____(){}
+
 // Literals
 const n1=1, n2=2, u1=3, u2=4; // Match values in eidb.js
 
@@ -96,15 +98,14 @@ _DEFAULT_INDICES["#fts_ids"] = {
                             // this compound value is always true, or doesn't exist.
 };
 
+function $_____CLASS_____(){}
+
 /** 
  * `eidb.idbx` IndexedDB extended feature class
  */ 
 class idbx {
-
-    /**
-     * _________________________________________________________________________
-     */
-    SUB_NAMESPACES;
+    
+    #_____SUB_NAMESPACES_____(){}
 
     /**
      * CRUD functionalities
@@ -120,21 +121,16 @@ class idbx {
      * FTS features
      */
     static fts;
-
-    /**
-     * _________________________________________________________________________
-     */ 
-    PROPERTIES;
+    
+    #_____PROPERTIES_____(){}
 
     /**
      * Index schema saved when open_av
      */ 
     static Indices = {};
-
-    /*
-     * _________________________________________________________________________
-     */
-    METHODS;
+    
+    #_____METHODS_____(){}
+    #_____Utils_____(){}
 
     /**
      * Check if is unused store (=is an existing store + is flagged as unused)
@@ -239,6 +235,8 @@ class idbx {
         // String keypath
         return Keypath;
     }
+
+    #_____Database_____(){}
 
     /** 
      * Check if db name exists
@@ -532,6 +530,8 @@ class idbx {
         eidb._Db_Name = Name;
     }
 
+    #_____Store_____(){}
+
     /**
      * Get store property
      * TO-DO: Add error checking
@@ -592,6 +592,8 @@ class idbx {
         // Close the upgraded db
         Db.close();
     }
+
+    #_____CORE_____(){}
 
     /**
      * Init

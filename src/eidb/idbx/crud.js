@@ -18,6 +18,9 @@ var new_lock = base.new_lock;
 var json2obj = JSON.parse;
 var obj2json = JSON.stringify;
 
+function OX_INDENT_ONERROR_ONSUCCESS(){}
+function $_____CLASS_____(){}
+
 /**
  * CRUD op class<br/>
  * NOTE: ONLY insert_one, find_one, update_one, upsert_one, remove_one WILL 
@@ -25,6 +28,149 @@ var obj2json = JSON.stringify;
  * NOTE: ONLY OPERATIONS THOSE CHANGE DATA AFFECT FTS, ie. insert, update, upsert, remove.
  */
 class crud {
+
+    #_____UTILS_____(){}
+
+    /**
+     * Get object by 1 condition only<br/>
+     * Keys of Conds are all index names.
+     */
+    static async get_1stcond_obj(Store,Cond){ // Cond can't be empty {}
+        var Keys  = Object.keys(Cond);
+        var Index = Store.index(Keys[0]);
+
+        if (Index instanceof Error){
+            loge("[EI] crud.get_1stcond_obj: Failed to get index, "+
+                 "add this index to schema:",Store.Name,"/",Keys[0]);
+            return null;
+        }
+
+        var Range = Cond[Keys[0]];
+        return await Index.get(Range);
+    }
+
+    /**
+     * Get objects by 1 condition only<br/>
+     * Keys of Conds are all index names.
+     */
+    static async get_1stcond_objs(Store,Cond){ // Cond can't be empty {}
+        var Keys  = Object.keys(Cond);
+        var Index = Store.index(Keys[0]);
+
+        if (Index instanceof Error){
+            loge("[EI] crud.get_1stcond_obj: Failed to get index, "+
+                 "add this index to schema:",Store.Name,"/",Keys[0]);
+            return null;
+        }
+
+        var Range = Cond[Keys[0]];        
+        return await Index.get_all(Range);
+    }
+
+    /**
+     * Intersect conditions (key values) to get ids, eg. Cond {foo:"a", bar:"b"},
+     * key foo gives multiple items of value 'a', key bar gives multiple items
+     * of value 'b', intersect these 2 for id list.<br/>
+     * Keys of Conds are all index names.
+     */ 
+    static async intersect_cond(Store,Cond){
+        var Keys = Object.keys(Cond);
+        if (Keys.length==0) return [];
+
+        // Multiple conditions, intersect       
+        var Id_Arrays = [];
+
+        for (let Key of Keys){
+            let Index = Store.index(Key);
+
+            if (Index instanceof Error){
+                loge("[EI] crud.get_1stcond_obj: Failed to get index, "+
+                     "add this index to schema:",Store.Name,"/",Key);
+                return null;
+            }
+
+            let Range = Cond[Key];
+            let Objs  = await Index.get_all(Range);
+            let Ids   = Objs.map(Obj=>Obj.id);
+            Id_Arrays.push(Ids);
+        }
+        
+        return utils.intersect_arrs(Id_Arrays);
+    }
+
+    /**
+     * Intersect conditions (key values) to get ids, eg. Cond {foo:"a", bar:"b"},
+     * key foo gives multiple items of value 'a', key bar gives multiple items
+     * of value 'b', intersect these 2 for object list.<br/>
+     * Keys of Conds are all index names.
+     */ 
+    static async intersect_cond_getobjs(Store,Cond){
+        var Keys = Object.keys(Cond);
+        if (Keys.length==0) return [];
+
+        // Multiple conditions, intersect       
+        var Id_Arrays = [];
+        var Id2Objs   = {};
+
+        for (let Key of Keys){
+            let Index = Store.index(Key);
+
+            if (Index instanceof Error){
+                loge("[EI] crud.get_1stcond_obj: Failed to get index, "+
+                     "add this index to schema:",Store.Name,"/",Key);
+                return null;
+            }
+
+            let Range = Cond[Key];
+            let Objs  = await Index.get_all(Range);
+
+            let Ids = Objs.map(Obj=>{
+                Id2Objs[Obj.id] = Obj;
+                return Obj.id;
+            });
+
+            Id_Arrays.push(Ids);
+        }
+        
+        var Id_Intersection = utils.intersect_arrs(Id_Arrays);
+        return Id_Intersection.map(id => Id2Objs[id]);
+    }
+
+    /**
+     * Get value at prop path
+     */ 
+    static get_proppath_value(Obj,Path){
+        var Tokens = Path.split(".");
+        var Value  = Obj;
+
+        for (let Token of Tokens)
+            if (Value[Token] != null)
+                Value = Value[Token];     
+            else 
+                return null;
+
+        return Value;
+    }
+
+    /**
+     * Check if object matches condition<br/>
+     * Keys of Conds are all index names.
+     */ 
+    static obj_matches_cond(Obj,Cond){
+        for (let Key in Cond){
+            let Value     = Cond[Key];
+            let Obj_Value = crud.get_proppath_value(Obj,Key);
+
+            if (Obj_Value==null)
+                return false;
+            if (obj2json(Obj_Value).indexOf(Value) == -1)
+                return false;
+        }
+
+        return true;
+    }
+
+    #_____CREATE_____(){}
 
     /**
      * Insert one
@@ -103,110 +249,7 @@ class crud {
         return Ids;
     }
 
-    /**
-     * Get object by 1 condition only<br/>
-     * Keys of Conds are all index names.
-     */
-    static async get_1stcond_obj(Store,Cond){ // Cond can't be empty {}
-        var Keys  = Object.keys(Cond);
-        var Index = Store.index(Keys[0]);
-
-        if (Index instanceof Error){
-            loge("[EI] crud.get_1stcond_obj: Failed to get index, "+
-                 "add this index to schema:",Store.Name,"/",Keys[0]);
-            return null;
-        }
-
-        var Range = Cond[Keys[0]];
-        return await Index.get(Range);
-    }
-
-    /**
-     * Get objects by 1 condition only<br/>
-     * Keys of Conds are all index names.
-     */
-    static async get_1stcond_objs(Store,Cond){ // Cond can't be empty {}
-        var Keys  = Object.keys(Cond);
-        var Index = Store.index(Keys[0]);
-
-        if (Index instanceof Error){
-            loge("[EI] crud.get_1stcond_obj: Failed to get index, "+
-                 "add this index to schema:",Store.Name,"/",Keys[0]);
-            return null;
-        }
-
-        var Range = Cond[Keys[0]];        
-        return await Index.get_all(Range);
-    }
-
-    /**
-     * Intersect conditions (key values) to get ids, eg. Cond {foo:"a", bar:"b"},
-     * key foo gives multiple items of value 'a', key bar gives multiple items
-     * of value 'b', intersect these 2 for id list.<br/>
-     * Keys of Conds are all index names.
-     */ 
-    static async intersect_cond(Store,Cond){
-        var Keys = Object.keys(Cond);
-        if (Keys.length==0) return [];
-
-        // Multiple conditions, intersect       
-        var Id_Arrays = [];
-
-        for (let Key of Keys){
-            let Index = Store.index(Key);
-
-            if (Index instanceof Error){
-                loge("[EI] crud.get_1stcond_obj: Failed to get index, "+
-                     "add this index to schema:",Store.Name,"/",Key);
-                return null;
-            }
-
-            let Range = Cond[Key];
-            let Objs  = await Index.get_all(Range);
-            let Ids   = Objs.map(Obj=>Obj.id);
-            Id_Arrays.push(Ids);
-        }
-        
-        return utils.intersect_arrs(Id_Arrays);
-    }
-
-    /**
-     * Intersect conditions (key values) to get ids, eg. Cond {foo:"a", bar:"b"},
-     * key foo gives multiple items of value 'a', key bar gives multiple items
-     * of value 'b', intersect these 2 for object list.<br/>
-     * Keys of Conds are all index names.
-     */ 
-     static async intersect_cond_getobjs(Store,Cond){
-        var Keys = Object.keys(Cond);
-        if (Keys.length==0) return [];
-
-        // Multiple conditions, intersect       
-        var Id_Arrays = [];
-        var Id2Objs   = {};
-
-        for (let Key of Keys){
-            let Index = Store.index(Key);
-
-            if (Index instanceof Error){
-                loge("[EI] crud.get_1stcond_obj: Failed to get index, "+
-                     "add this index to schema:",Store.Name,"/",Key);
-                return null;
-            }
-
-            let Range = Cond[Key];
-            let Objs  = await Index.get_all(Range);
-
-            let Ids = Objs.map(Obj=>{
-                Id2Objs[Obj.id] = Obj;
-                return Obj.id;
-            });
-
-            Id_Arrays.push(Ids);
-        }
-        
-        var Id_Intersection = utils.intersect_arrs(Id_Arrays);
-        return Id_Intersection.map(id => Id2Objs[id]);
-    }
+    #_____READ_____(){}
 
     /**
      * Check existence of obj<br/>
@@ -383,40 +426,6 @@ class crud {
     }
 
     /**
-     * Get value at prop path
-     */ 
-    static get_proppath_value(Obj,Path){
-        var Tokens = Path.split(".");
-        var Value  = Obj;
-
-        for (let Token of Tokens)
-            if (Value[Token] != null)
-                Value = Value[Token];     
-            else 
-                return null;
-
-        return Value;
-    }
-
-    /**
-     * Check if object matches condition<br/>
-     * Keys of Conds are all index names.
-     */ 
-    static obj_matches_cond(Obj,Cond){
-        for (let Key in Cond){
-            let Value     = Cond[Key];
-            let Obj_Value = crud.get_proppath_value(Obj,Key);
-
-            if (Obj_Value==null)
-                return false;
-            if (obj2json(Obj_Value).indexOf(Value) == -1)
-                return false;
-        }
-
-        return true;
-    }
-
-    /**
      * Filter (value contain, for exact match: use find, find_many)<br/>
      * Keys of Conds are all index names.
      */ 
@@ -440,6 +449,8 @@ class crud {
         Db.close();
         return Objs;
     }
+
+    #_____UPDATE_____(){}
 
     /**
      * Update one, avoid using multiple conditions in Cond coz it's slow,
@@ -648,6 +659,8 @@ class crud {
         return Obj.id;
     }
 
+    #_____DELETE_____(){}
+
     /**
      * Remove one, avoid using multiple conditions in Cond coz it's slow,
      * USE COMPOUND INDEX INSTEAD<br/>
@@ -783,6 +796,8 @@ class crud {
         Db.close();
         return null;
     }
+
+    #_____CORE_____(){}
 
     /**
      */

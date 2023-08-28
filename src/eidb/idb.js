@@ -11,6 +11,8 @@ var logw     = console.warn;
 var loge     = console.error;
 var new_lock = base.new_lock;
 
+function $_____CLASS_____(){}
+
 /** 
  * `eidb.idb` IndexedDB wrapper
  */

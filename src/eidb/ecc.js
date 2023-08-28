@@ -24,6 +24,8 @@ var log = console.log;
  */ 
 var Curve = {p:0, n:0, gx:0, gy:0};
 
+function $_____UTILS_____(){}
+
 /**
  * Modulo (not remainder %)
  */ 
@@ -57,6 +59,8 @@ function invert(number, modulo=Curve.p) {
     if (gcd !== 1n) throw new Error("invert: Does not exist(?)");
     return mod(x, modulo);
 }
+
+function $_____CLASS_____(){}
 
 /**
  * Point on elliptic curve
@@ -109,6 +113,8 @@ class Point {
         return P;
     }
 }  
+
+function $_____EXPORTS_____(){}
 
 /**
  * Set curve properties before calculation

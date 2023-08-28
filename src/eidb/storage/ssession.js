@@ -10,6 +10,8 @@ const log  = console.log;
 const logw = console.warn;
 const loge = console.error;
 
+function $_____CLASS_____(){}
+
 /**
  * sessionStorage manager
  */ 
@@ -21,6 +23,8 @@ class ssession {
     static keys(){
         return Object.keys(sessionStorage);
     }
+
+    #_____SLR_____(){}
 
     /**
      * Set object

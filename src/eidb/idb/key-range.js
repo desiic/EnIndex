@@ -7,6 +7,8 @@ var log  = console.log;
 var logw = console.warn;
 var loge = console.error;
 
+function $_____CLASS_____(){}
+
 /**
  * IDBKeyRange wrapper class
  */
@@ -20,11 +22,8 @@ class key_range {
     constructor(Idb_Key_Range){
         this.self = Idb_Key_Range;
     }
-
-    /**
-     * _________________________________________________________________________
-     */ 
-    SETS_AND_GETS;
+    
+    #_____SETS_AND_GETS_____(){}
 
     /**
      * Get lower
@@ -54,10 +53,7 @@ class key_range {
         return this.self.upperOpen;
     }
 
-    /*
-     * _________________________________________________________________________
-     */
-    METHODS;
+    #_____METHODS_____(){}
 
     /**
      * Check inclusion

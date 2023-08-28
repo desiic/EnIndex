@@ -8,6 +8,8 @@ import index             from "./index.js";
 import cursor            from "./cursor.js";
 import cursor_with_value from "./cursor-with-value.js";
 
+function $_____CLASS_____(){}
+
 /**
  * IDBRequest wraper class
  */
@@ -20,11 +22,8 @@ class request {
     constructor(Idb_Request){
         this.self = Idb_Request;
     }
-
-    /**
-     * _________________________________________________________________________
-     */
-    SETS_AND_GETS;
+    
+    #_____SETS_AND_GETS_____(){}
 
     /**
      * Get error
@@ -65,11 +64,8 @@ class request {
     get Transaction(){
         return new transaction(this.self.transaction);
     }
-
-    /**
-     * _________________________________________________________________________
-     */
-    EVENTS;
+    
+    #_____EVENTS_____(){}
 
     /**
      * On error

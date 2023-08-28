@@ -13,6 +13,8 @@ var logw     = console.warn;
 var loge     = console.error;
 var new_lock = base.new_lock;
 
+function $_____CLASS_____(){}
+
 /** 
  * `eidb.idb.database` IDBDatabase class wrapper
  */
@@ -30,11 +32,8 @@ class database {
     constructor(Idb_Database){
         this.self = Idb_Database;
     }
-
-    /**
-     * _________________________________________________________________________
-     */
-    SETS_AND_GETS;
+   
+    #_____SETS_AND_GETS_____(){}
 
     /**
      * Get name
@@ -59,11 +58,8 @@ class database {
     get version(){
         return this.self.version;
     }
-
-    /**
-     * _________________________________________________________________________
-     */
-    EVENTS;
+    
+    #_____EVENTS_____(){}
 
     /**
      * Close event, callback receives single param event
@@ -78,12 +74,8 @@ class database {
     set on_version_change(callback){
         this.self.onversionchange = callback;
     }
-
-    /* NON-JSDOC
-     * IN ALPHABETIC ORDER MATCHING MOZILLA.ORG
-     * _________________________________________________________________________
-     */
-    METHODS;
+    
+    #_____METHODS_____(){}
 
     /**
      * Close database connection

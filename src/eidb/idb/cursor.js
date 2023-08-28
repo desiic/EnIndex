@@ -11,6 +11,9 @@ var logw     = console.warn;
 var loge     = console.error;
 var new_lock = base.new_lock;
 
+function OX_INDENT_ONERROR_ONSUCCESS(){}
+function $_____CLASS_____(){}
+
 /**
  * IDBCursor wraper class
  */
@@ -23,11 +26,8 @@ class cursor {
     constructor(Idb_Cursor){
         this.self = Idb_Cursor;
     }
-
-    /**
-     * _________________________________________________________________________
-     */ 
-    SETS_AND_GETS;
+    
+    #_____SETS_AND_GETS_____(){}
 
     /**
      * Get direction
@@ -66,11 +66,8 @@ class cursor {
         if (Src instanceof IDBObjectStore) return new object_store(Src);
         return new index(Src);
     }
-
-    /*
-     * _________________________________________________________________________
-     */
-    METHODS;
+    
+    #_____METHODS_____(){}
 
     /**
      * Advance cursor

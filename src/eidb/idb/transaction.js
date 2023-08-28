@@ -12,6 +12,8 @@ var logw     = console.warn;
 var loge     = console.error;
 var new_lock = base.new_lock;
 
+function $_____CLASS_____(){}
+
 /** 
  * `eidb.idb.transaction` IDBTransaction class wrapper
  */
@@ -29,12 +31,8 @@ class transaction {
     constructor(Idb_Transaction){
         this.self = Idb_Transaction;
     }
-
-    /**
-     * IN ALPHABETIC ORDER MATCHING MOZILLA.ORG
-     * _________________________________________________________________________
-     */
-    SETS_AND_GETS;
+    
+    #_____SETS_AND_GETS_____(){}
 
     /**
      * Get db
@@ -75,12 +73,8 @@ class transaction {
     get Object_Store_Names(){
         return [...this.self.objectStoreNames];
     }
-
-    /**
-     * IN ALPHABETIC ORDER MATCHING MOZILLA.ORG
-     * _________________________________________________________________________
-     */ 
-    EVENTS;
+    
+    #_____EVENTS_____(){}
 
     /**
      * On abort event
@@ -102,12 +96,8 @@ class transaction {
     set on_error(callback){
         this.self.onerror = callback;
     }
-
-    /* NON-JSDOC
-     * IN ALPHABETIC ORDER MATCHING MOZILLA.ORG
-     * _________________________________________________________________________
-     */
-    METHODS;
+    
+    #_____METHODS_____(){}
 
     /**
      * Abort
@@ -150,11 +140,8 @@ class transaction {
             return Dom_Exception;
         } 
     }
-
-    /* NON-JSDOC
-     * _________________________________________________________________________
-     */
-    ADDITIONAL_METHODS;
+    
+    #_____ADDITIONAL_METHODS_____(){}
 
     /**
      * Get first object store when creating transaction

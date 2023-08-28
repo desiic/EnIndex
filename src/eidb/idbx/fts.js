@@ -23,6 +23,8 @@ const log  = console.log;
 const logw = console.warn;
 const loge = console.error;
 
+function $_____CLASS_____(){}
+
 /**
  * FTS manager class
  */
@@ -38,6 +40,8 @@ class fts {
     important terms the better.
     */
 
+    #_____SETTINGS_____(){}
+
     /**
      * Enable FTS, should run after `.open_av`
      */ 
@@ -51,6 +55,8 @@ class fts {
     static disable_fts(){
         fts.enabled = false;
     }
+
+    #_____UTILS_____(){}
 
     /**
      * String to unique words (all lowercase)
@@ -111,6 +117,8 @@ class fts {
         else
             await Swords.delete(eidb.value_is(Entry.id));
     }
+
+    #_____UPDATE_____(){}
 
     /**
      * Update FTS
@@ -244,6 +252,8 @@ class fts {
         // Run in background, no await
         fts.update_fts("delete", Store_Name, id, Obj, secure);
     }
+
+    #_____SEARCH_____(){}
 
     /**
      * All objects containing a term
@@ -426,6 +436,8 @@ class fts {
             Note:Note
         };
     }
+
+    #_____CORE_____(){}
 
     /**
      * Init

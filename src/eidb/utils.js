@@ -7,6 +7,8 @@ const log  = console.log;
 const logw = console.warn;
 const loge = console.error;
 
+function $_____CLASS_____(){}
+
 /**
  * Utility class
  */
