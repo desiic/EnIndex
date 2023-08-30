@@ -164,6 +164,9 @@ class idbxs { // Aka sec
                 if ((Props[i].Value instanceof Object) && !(Props[i].Value instanceof Date))
                     Text = utils.obj_to_json(Props[i].Value);
                 else{
+                    if (Props[i].Value == null)
+                        Text = "null";
+                    else
                     if (Props[i].Value instanceof Date)
                         Text = Props[i].Value.toISOString();
                     else
