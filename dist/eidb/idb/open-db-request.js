@@ -1,1 +1,0 @@
-import request from"../idb/request.js";class open_db_request extends request{self=null;constructor(e){this.self=e}EVENTS;set on_blocked(e){this.self.onblocked=e}set on_upgrade_needed(e){this.self.onupgradeneeded=e}}export default open_db_request;

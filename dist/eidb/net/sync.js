@@ -1,1 +1,0 @@
-import wsocket from"./wsocket.js";class sync{}export default sync;

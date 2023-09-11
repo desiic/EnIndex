@@ -1,1 +1,0 @@
-class wsocket{}export default wsocket;
