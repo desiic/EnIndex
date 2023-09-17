@@ -91,7 +91,8 @@ class database {
         // Debug log
         window._num_db_cons--;
         // This value should be always 0, or something wrong:
-        log("[EI] Num db connections after close:",window._num_db_cons);
+        // Commented out, too many logs:
+        // log("[EI] Num db connections after close:",window._num_db_cons);
 
         return Res;
     }
