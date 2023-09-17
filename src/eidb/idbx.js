@@ -242,7 +242,7 @@ class idbx {
      * Check if db name exists
      */
     static async db_exists(Db_Name){
-        var Db_Names = (await idb.databases()).map(Db=>Db.name);
+        var Db_Names = (await idb.databases(Db_Name)).map(Db=>Db.name);
         if (Db_Names.indexOf(Db_Name) == -1) return false;
         return true;
     }
@@ -254,9 +254,16 @@ class idbx {
         if (!await thisclass.db_exists(Db_Name)) return {};
         var Db = await idb.open(Db_Name);
 
+        // Check empty db, no stores
+        var Indices = {};
+
+        if (Db.Object_Store_Names.length == 0) {
+            Db.close();
+            return Indices;
+        }
+
         // Get indices
-        var Indices = {};        
-        var T       = Db.transaction(Db.Object_Store_Names,eidb.RO);
+        var T = Db.transaction(Db.Object_Store_Names,eidb.RO);
 
         for (let Store_Name of Db.Object_Store_Names){
             // Ignore unused store to avoid upgrade being triggered again and again
@@ -343,6 +350,11 @@ class idbx {
 
         // Open db with new version will trigger upgrade
         var Db = await idb.open(Db_Name, new_ver);
+
+        if (Db instanceof Error){
+            loge("[EI] idbx.upgrade_db: Failed to open db,", Db);
+            return;
+        }
 
         // Delete unused stores (and their indices)
         var Cur_Stores = Object.keys(Cur_Indices);
@@ -475,7 +487,7 @@ class idbx {
         idbx.Indices = Indices;    
 
         // Db names
-        var Dbnames = (await idb.databases()).map(X => X.name);
+        var Dbnames = (await idb.databases(Db_Name)).map(X => X.name);
 
         // Check if indices changed
         eidb._Db_Name = Db_Name; // Save for reopen()
@@ -488,7 +500,7 @@ class idbx {
 
         var Cur_Indices_Str = idbx.indices2str(Cur_Indices);
         var New_Indices_Str = idbx.indices2str(New_Indices);
-        
+
         // No indices changed, use current db
         if (New_Indices_Str == Cur_Indices_Str)
             return await idb.open(Db_Name);

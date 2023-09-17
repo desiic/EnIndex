@@ -85,7 +85,15 @@ class database {
         // Reduce number of db cons
         eidb._num_db_cons -= 1;
 
-        return this.self.close(); // No exceptions
+        // Close
+        var Res = this.self.close(); // No exceptions
+
+        // Debug log
+        window._num_db_cons--;
+        // This value should be always 0, or something wrong:
+        log("[EI] Num db connections after close:",window._num_db_cons);
+
+        return Res;
     }
 
     /**

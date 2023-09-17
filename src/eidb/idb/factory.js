@@ -39,11 +39,23 @@ class factory {
 
     /**
      * Get the list of databases, using the instance of IDBFactory set by constructor
+     * @param  {String} Db_Name - Name to check if on Firefox, no .databases() until 2023.
      * @return {Object} Error or the list of database names
      */
-    async databases(){
+    async databases(Db_Name){
         try {
-            return await this.self.databases();
+            // Firefox low adaption of IDBFactory.databases(),
+            // not existing even until 2023.
+            // Force create db
+            if (this.self.databases == null){
+                var Db = await this.open(Db_Name);
+                Db.close();
+                return [{name:Db_Name}];
+            }
+
+            // Chromium-based should be fine with this:
+            else
+                return await this.self.databases();
         }
         catch (Dom_Exception){
             loge("[EI] factory.databases: Error:",Dom_Exception);
@@ -84,6 +96,16 @@ class factory {
      *                  </ul>
      */
     async open(Name, version){
+        // Counter
+        if (window._num_db_cons == null)
+            window._num_db_cons = 1;
+        else
+            window._num_db_cons++;
+
+        // This value should be always 0, or something wrong!
+        log("[EI] Num db connections before open:",window._num_db_cons-1);
+
+        // Open
         try {
             var Req = this.self.open(Name,version);
         }
