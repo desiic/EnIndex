@@ -47,7 +47,13 @@ class transaction {
      * @return {String}
      */ 
     get Durability(){
-        return this.self.durability;
+        // No such this property in Firefox (Sep 2023)
+        if (this.self.durability == null)
+            return "none";
+
+        // All other browsers' values: strict, relaxed, or default
+        else
+            return this.self.durability;
     }
 
     /**
