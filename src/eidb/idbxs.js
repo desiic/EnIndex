@@ -549,6 +549,10 @@ class idbxs { // Aka sec
         eidb.slocal.clear("Ekey_Hex");
         eidb.slocal.clear("Akeypriv_Jwk");
         eidb.slocal.clear("Akeypub_Jwk");
+        eidb.sec.Skey     = null;
+        eidb.sec.Ekey     = null;
+        eidb.sec.Rkey     = null;
+        eidb.sec.Akeypair = null;
     }
 
     /**
