@@ -23,6 +23,9 @@ const log  = console.log;
 const logw = console.warn;
 const loge = console.error;
 
+const MIN_WORD_LEN = 2;
+const MAX_WORD_LEN = 40; // Even German is only around this
+
 function $_____CLASS_____(){}
 
 /**
@@ -71,7 +74,7 @@ class fts {
         Str = Str.replace(/[\s]{2,}/g, "\x20").trim();
 
         // Keep unique words only
-        var Words = Str.split("\x20");
+        var Words = Str.split("\x20").filter(X => X.length>=MIN_WORD_LEN && X.length<=MAX_WORD_LEN);
         return Array.from(new Set(Words));
     }
 
