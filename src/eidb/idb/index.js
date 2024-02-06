@@ -15,6 +15,9 @@ var   logw     = console.warn;
 var   loge     = console.error;
 const new_lock = base.new_lock;
 
+function OX_INDENT_ONERROR_ONSUCCESS(){}
+function $_____CLASS_____(){}
+
 /**
  * IDBIndex class wrapper
  */
@@ -27,11 +30,8 @@ class index {
     constructor(Idb_Index){
         this.self = Idb_Index;
     }
-
-    /**
-     * _________________________________________________________________________
-     */ 
-    SETS_AND_GETS;
+    
+    #_____SETS_AND_GETS_____(){}
 
     /**
      * Get key path
@@ -67,11 +67,8 @@ class index {
     get unique(){
         return this.self.unique;
     }
-
-    /*
-     * _________________________________________________________________________
-     */
-    METHODS;
+    
+    #_____METHODS_____(){}
 
     /**
      * Count
@@ -313,10 +310,7 @@ class index {
         }            
     }
 
-    /**
-     * _________________________________________________________________________
-     */ 
-    EXTENDED_METHODS(){}
+    #_____EXTENDED_METHODS_____(){}
 
     /**
      * Delete using index instead of primary key

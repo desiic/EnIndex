@@ -1,6 +1,10 @@
 {
   "dependencies": {
     "clean-jsdoc-theme": "^4.1.8",
-    "docdash": "^1.2.0"
+    "docdash": "^1.2.0",
+    "webpack": "^5.88.2"
+  },
+  "devDependencies": {
+    "webpack-cli": "^5.1.4"
   }
 }

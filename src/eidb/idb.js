@@ -11,6 +11,8 @@ var logw     = console.warn;
 var loge     = console.error;
 var new_lock = base.new_lock;
 
+function $_____CLASS_____(){}
+
 /** 
  * `eidb.idb` IndexedDB wrapper
  */
@@ -20,8 +22,8 @@ class idb{
      * Get the list of databases, using the default instance of IDBFactory at `window.indexedDB`
      * @return {Array} See `eidb.idb.factory` class [here](module-eidb_idb_factory-factory.html#databases)
      */
-    static async databases(){
-        return await eidb.Factory.databases();
+    static async databases(Db_Name){
+        return await eidb.Factory.databases(Db_Name);
     }
 
     /**

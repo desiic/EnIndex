@@ -16,6 +16,9 @@ var logw     = console.warn;
 var loge     = console.error;
 var new_lock = base.new_lock;
 
+function OX_INDENT_ONERROR_ONSUCCESS(){}
+function $_____CLASS_____(){}
+
 /** 
  * `eidb.idb.object_store` IDBObjectStore class wrapper
  */
@@ -33,12 +36,8 @@ class object_store {
     constructor(Idb_Object_Store){
         this.self = Idb_Object_Store;
     }
-
-    /**
-     * IN ALPHABETIC ORDER MATCHING MOZILLA.ORG
-     * _________________________________________________________________________
-     */
-    SETS_AND_GETS;
+    
+    #_____SETS_AND_GETS_____(){}
 
     /**
      * Get autoIncrement
@@ -79,12 +78,8 @@ class object_store {
     get Transaction(){
         return new transaction(this.self.transaction);
     }
-
-    /* NON-JSDOC
-     * IN ALPHABETIC ORDER MATCHING MOZILLA.ORG
-     * _________________________________________________________________________
-     */
-    METHODS;
+    
+    #_____METHODS_____(){}
 
     /**
      * Add value (INSERT), EnIndex has id field autoincremented, 

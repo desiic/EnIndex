@@ -24,12 +24,64 @@ const new_lock = base.new_lock;
 // Constants
 const _secure = true;
 
+function $_____CLASS_____(){}
+
 /**
  * CRUD secure<br/>
  * WARN: FOR ENCRYPTED CRUD OPS: ALL Cond PASSED TO METHODS IN THIS CLASS ARE ALL DIRECT VALUES,
  *       CAN'T BE RANGES AS IN crud CLASS, SEE dobi.js, DOBI CAN BE RANGES.
  */
 class cruds {
+
+    #_____UTILS_____(){}
+
+    /**
+     * Get object by 1 condition only
+     */
+    static async get_1stcond_obj(Store,Cond){ // Cond can't be empty {}
+        // Unused
+    }
+
+    /**
+     * Get objects by 1 condition only
+     */
+    static async get_1stcond_objs(Store,Cond){ // Cond can't be empty {}
+        // Unused
+    }
+
+    /**
+     * Intersect conditions (key values) to get ids, eg. Cond {foo:"a", bar:"b"},
+     * key foo gives multiple items of value 'a', key bar gives multiple items
+     * of value 'b', intersect these 2 for id list.
+     */ 
+    static async intersect_cond(Store,Cond){
+        // Unused
+    }
+
+    /**
+     * Intersect conditions (key values) to get ids, eg. Cond {foo:"a", bar:"b"},
+     * key foo gives multiple items of value 'a', key bar gives multiple items
+     * of value 'b', intersect these 2 for object list.
+     */ 
+    static async intersect_cond_getobjs(Store,Cond){
+        // Unused
+    }
+
+    /**
+     * Get value at prop path
+     */ 
+    static get_proppath_value(Obj,Path){
+        // Unused
+    }
+
+    /**
+     * Check if object matches condition
+     */ 
+    static obj_matches_cond(Obj,Cond){
+        // Unused
+    }
+
+    #_____CREATE_____(){}
 
     /**
      * Insert one
@@ -74,37 +126,7 @@ class cruds {
         return Ids;
     }
 
-    /**
-     * Get object by 1 condition only
-     */
-    static async get_1stcond_obj(Store,Cond){ // Cond can't be empty {}
-        // Unused
-    }
-
-    /**
-     * Get objects by 1 condition only
-     */
-    static async get_1stcond_objs(Store,Cond){ // Cond can't be empty {}
-        // Unused
-    }
-
-    /**
-     * Intersect conditions (key values) to get ids, eg. Cond {foo:"a", bar:"b"},
-     * key foo gives multiple items of value 'a', key bar gives multiple items
-     * of value 'b', intersect these 2 for id list.
-     */ 
-    static async intersect_cond(Store,Cond){
-        // Unused
-    }
-
-    /**
-     * Intersect conditions (key values) to get ids, eg. Cond {foo:"a", bar:"b"},
-     * key foo gives multiple items of value 'a', key bar gives multiple items
-     * of value 'b', intersect these 2 for object list.
-     */ 
-    static async intersect_cond_getobjs(Store,Cond){
-        // Unused
-    }
+    #_____READ_____(){}
 
     /**
      * Check existence of obj<br/>
@@ -222,7 +244,10 @@ class cruds {
     /**
      * Find many, avoid using multiple conditions in Cond coz it's slow,
      * USE COMPOUND INDEX INSTEAD.
-     * @return {Object}
+     * @param  {String} Store_Name - Name without # prefix
+     * @param  {Object} Cond       - Multiple ranges, keys are fields to match
+     * @param  {Number} limit      - Max number of objects to find
+     * @return {Array}  All found objects
      */
     static async find_many(Store_Name,Cond, limit=Number.MAX_SAFE_INTEGER){
         if (idbxs.Skey==null) {
@@ -290,20 +315,6 @@ class cruds {
     }
 
     /**
-     * Get value at prop path
-     */ 
-    static get_proppath_value(Obj,Path){
-        // Unused
-    }
-
-    /**
-     * Check if object matches condition
-     */ 
-    static obj_matches_cond(Obj,Cond){
-        // Unused
-    }
-
-    /**
      * Filter (value contain, for exact match: use find, find_many)
      */ 
     static async filter(Store_Name,Cond, limit=Number.MAX_SAFE_INTEGER){
@@ -339,6 +350,8 @@ class cruds {
 
         return Objs;
     }
+
+    #_____UPDATE_____(){}
 
     /**
      * Update one, avoid using multiple conditions in Cond coz it's slow,
@@ -524,6 +537,8 @@ class cruds {
         return id;
     }
 
+    #_____DELETE_____(){}
+
     /**
      * Remove one, avoid using multiple conditions in Cond coz it's slow,
      * USE COMPOUND INDEX INSTEAD
@@ -603,6 +618,8 @@ class cruds {
         // Remove
         await crud.remove_many(Store_Name,Scond, _secure,Objs);
     }
+
+    #_____CORE_____(){}
 
     /**
      * Init static stuff

@@ -23,6 +23,11 @@ const log  = console.log;
 const logw = console.warn;
 const loge = console.error;
 
+const MIN_WORD_LEN = 2;
+const MAX_WORD_LEN = 40; // Even German is only around this
+
+function $_____CLASS_____(){}
+
 /**
  * FTS manager class
  */
@@ -38,6 +43,8 @@ class fts {
     important terms the better.
     */
 
+    #_____SETTINGS_____(){}
+
     /**
      * Enable FTS, should run after `.open_av`
      */ 
@@ -52,6 +59,8 @@ class fts {
         fts.enabled = false;
     }
 
+    #_____UTILS_____(){}
+
     /**
      * String to unique words (all lowercase)
      */
@@ -65,7 +74,7 @@ class fts {
         Str = Str.replace(/[\s]{2,}/g, "\x20").trim();
 
         // Keep unique words only
-        var Words = Str.split("\x20");
+        var Words = Str.split("\x20").filter(X => X.length>=MIN_WORD_LEN && X.length<=MAX_WORD_LEN);
         return Array.from(new Set(Words));
     }
 
@@ -111,6 +120,8 @@ class fts {
         else
             await Swords.delete(eidb.value_is(Entry.id));
     }
+
+    #_____UPDATE_____(){}
 
     /**
      * Update FTS
@@ -244,6 +255,8 @@ class fts {
         // Run in background, no await
         fts.update_fts("delete", Store_Name, id, Obj, secure);
     }
+
+    #_____SEARCH_____(){}
 
     /**
      * All objects containing a term
@@ -426,6 +439,8 @@ class fts {
             Note:Note
         };
     }
+
+    #_____CORE_____(){}
 
     /**
      * Init

@@ -5,6 +5,8 @@
 // Modules
 import request from "../idb/request.js";
 
+function $_____CLASS_____(){}
+
 /**
  * IDBOpenDbRequest wraper class
  */
@@ -18,10 +20,7 @@ class open_db_request extends request {
         this.self = Idb_Open_Db_Request;
     }
 
-    /**
-     * _________________________________________________________________________
-     */
-    EVENTS;
+    #_____EVENTS_____(){}
 
     /**
      * On blocked

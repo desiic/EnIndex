@@ -1,6 +1,6 @@
 module.exports = {
     entry: {
-        eidb: "./dist/eidb.js"
+        eidb: "./src/eidb.js"
     },
     mode: "production",
     output: {
@@ -19,6 +19,9 @@ module.exports = {
                 importMeta: false
             }
         }
+    },
+    optimization: {
+        minimize: true
     }
 };
 // EOF

@@ -2,6 +2,8 @@
  * @module eidb/idb/version_change_event
  */
 
+function $_____CLASS_____(){}
+
 /**
  * IDBVersionChangeEvent wraper class
  */
@@ -14,11 +16,8 @@ class version_change_event {
     constructor(Idb_Version_Change_Event){
         this.self = Idb_Version_Change_Event;
     }
-
-    /**
-     * _________________________________________________________________________
-     */
-    SETS_AND_GETS;
+    
+    #_____SETS_AND_GETS_____(){}
 
     /**
      * Get newVersion

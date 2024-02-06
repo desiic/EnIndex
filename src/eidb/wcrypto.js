@@ -15,6 +15,8 @@ var logw     = console.warn;
 var loge     = console.error;
 var new_lock = base.new_lock;
 
+function $_____CONSTANTS_____(){}
+
 // Constants
 const BIT_LEN = 256;
 
@@ -28,6 +30,8 @@ const BIT_LEN = 256;
 const FIXED_IV_BYTES = new Uint8Array([0,3,6,9, 12,15,18,21, 24,27,30,33, 36,39,42,45]); 
 const FIXED_IV       = "000306090c0f1215181b1e2124272a2d";
 
+function $_____CLASS_____(){}
+
 /**
  * Crypto class<br/>
  * NOTE: Web Crypto always return ArrayBuffer but receive Uint8Array params.
@@ -37,11 +41,8 @@ class wcrypto {
     static BIT_LEN        = BIT_LEN;
     static FIXED_IV_BYTES = FIXED_IV_BYTES;
     static FIXED_IV       = FIXED_IV; // Can be changed, per user, stored as Etds_Data_Iv in meta.
-
-    /**
-     * _________________________________________________________________________
-     */
-    static EXTERNAL_LIBS(){}
+    
+    #_____EXTERNAL_LIBS_____(){}
 
     /**
      * Make ECDSA public key from private key
@@ -86,10 +87,7 @@ class wcrypto {
         return await Lock;
     }
 
-    /**
-     * _________________________________________________________________________
-     */
-    static BASE_FUNCS(){}
+    #_____BASE_FUNCS_____(){}
 
     /**
      * Random values (unsigned)
@@ -151,10 +149,7 @@ class wcrypto {
         return (Left+Right).replaceAll("-","");
     }
 
-    /**
-     * _________________________________________________________________________
-     */
-    static UTILS(){}
+    #_____UTILS_____(){}
 
     /**
      * Base64URL to Base64
@@ -322,10 +317,7 @@ class wcrypto {
         return wcrypto.base64_to_base64url(Base64);
     }
 
-    /**
-     * _________________________________________________________________________
-     */
-    static SUBTLE(){}
+    #_____SUBTLE_____(){}
 
     /**
      * Digest to SHA1
@@ -920,10 +912,7 @@ class wcrypto {
         // TO-DO
     }
 
-    /**
-     * _________________________________________________________________________
-     */
-    static EXTENDED(){} 
+    #_____EXTENDED_____(){} 
 
     /**
      * Split string into 2
@@ -974,6 +963,8 @@ class wcrypto {
         var Rand = wcrypto.random_uuidx(); // 256 bits
         return await wcrypto.derive_key_pb2aes(Rand,Salt,iterations); // AES 256-bit
     }
+
+    #_____CORE_____(){}
 
     /**
      * Init static stuff

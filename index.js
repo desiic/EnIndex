@@ -2,6 +2,8 @@
 var log  = console.log;
 var logw = console.warn;
 
+function $_____UTILS_____(){}
+
 // ES6 modules are loaded asynchronously, wait.
 (function wait4modules(){
 if (window.eidb==null) { setTimeout(wait4modules,0); return; }    
@@ -16,6 +18,8 @@ var _Test_Indices = {
         _secure, foo:1, "bar.blah":1
     }
 };
+
+function $_____ALL_TESTS_____(){}
 
 // Main
 async function main(){

@@ -25,6 +25,8 @@ const loge = console.error;
 // Constants
 const _secure = true;
 
+function $_____CLASS_____(){}
+
 /**
  * FTS secure
  */
@@ -41,6 +43,8 @@ class ftss {
     important terms the better.
     */
 
+    #_____SETTINGS_____(){}
+
     /**
      * Enable FTS, should run after `.s_open_av`
      */ 
@@ -54,6 +58,8 @@ class ftss {
     static disable_fts(){
         fts.disable_fts();
     }
+
+    #_____UTILS_____(){}
 
     /**
      * String to unique words (all lowercase)
@@ -92,6 +98,8 @@ class ftss {
         // Unused
     }
 
+    #_____UPDATE_____(){}
+
     /**
      * Update FTS
      */ 
@@ -126,6 +134,8 @@ class ftss {
     static update_fts_d(Store_Name, id, Obj){
         fts.update_fts_d(Store_Name, id, Obj, _secure);
     }
+
+    #_____SEARCH_____(){}
 
     /**
      * All objects containing a term
@@ -173,6 +183,8 @@ class ftss {
         var Res = Sres; // Decrypted
         return Res;
     }
+
+    #_____CORE_____(){}
 
     /**
      * Init static stuff

@@ -13,6 +13,8 @@ var logw     = console.warn;
 var loge     = console.error;
 var new_lock = base.new_lock;
 
+function $_____CLASS_____(){}
+
 /** 
  * `eidb.idb.database` IDBDatabase class wrapper
  */
@@ -30,11 +32,8 @@ class database {
     constructor(Idb_Database){
         this.self = Idb_Database;
     }
-
-    /**
-     * _________________________________________________________________________
-     */
-    SETS_AND_GETS;
+   
+    #_____SETS_AND_GETS_____(){}
 
     /**
      * Get name
@@ -59,11 +58,8 @@ class database {
     get version(){
         return this.self.version;
     }
-
-    /**
-     * _________________________________________________________________________
-     */
-    EVENTS;
+    
+    #_____EVENTS_____(){}
 
     /**
      * Close event, callback receives single param event
@@ -78,12 +74,8 @@ class database {
     set on_version_change(callback){
         this.self.onversionchange = callback;
     }
-
-    /* NON-JSDOC
-     * IN ALPHABETIC ORDER MATCHING MOZILLA.ORG
-     * _________________________________________________________________________
-     */
-    METHODS;
+    
+    #_____METHODS_____(){}
 
     /**
      * Close database connection
@@ -93,7 +85,16 @@ class database {
         // Reduce number of db cons
         eidb._num_db_cons -= 1;
 
-        return this.self.close(); // No exceptions
+        // Close
+        var Res = this.self.close(); // No exceptions
+
+        // Debug log
+        window._num_db_cons--;
+        // This value should be always 0, or something wrong:
+        // Commented out, too many logs:
+        // log("[EI] Num db connections after close:",window._num_db_cons);
+
+        return Res;
     }
 
     /**

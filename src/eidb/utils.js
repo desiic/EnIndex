@@ -7,6 +7,8 @@ const log  = console.log;
 const logw = console.warn;
 const loge = console.error;
 
+function $_____CLASS_____(){}
+
 /**
  * Utility class
  */
@@ -30,6 +32,7 @@ class utils {
      * This returns a string with extra space at end
      */ 
     static #obj_to_valuestr(Obj){ // Recursion
+        if (typeof Obj == "string") return Obj;
         if (Obj.constructor != Object) return "";
 
         // Iterate thru' fields
@@ -39,7 +42,14 @@ class utils {
             let Value = Obj[Field];
             if (Value==null) continue;
 
-            // Value is not raw Object
+            // Value is array
+            if (Value instanceof Array){
+                for (let V of Value)
+                    Str += utils.obj_to_valuestr(V)+" ";
+              
+                continue;
+            }
+            // Value is not raw Object            
             if (Value.constructor != Object){
                 if (typeof Value == "string")
                     Str += Value+" ";
@@ -83,6 +93,8 @@ class utils {
      */ 
     static json_to_obj_bd(Json){ // Binary date
         return JSON.parse(Json,(K,V)=>{
+            if (V==null)
+                return null;
             if (V.constructor != String)
                 return V;
 

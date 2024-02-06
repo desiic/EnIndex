@@ -10,6 +10,8 @@ const log  = console.log;
 const logw = console.warn;
 const loge = console.error;
 
+function $_____CLASS_____(){}
+
 /**
  * localStorage manager
  */ 
@@ -21,6 +23,8 @@ class slocal {
     static keys(){
         return Object.keys(localStorage);
     }
+
+    #_____SLR_____(){}
 
     /**
      * Set object
