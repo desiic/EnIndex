@@ -33,5 +33,13 @@ fi
 # done
 
 echo -e "Packing into bundle..."
-webpack bundle --stats-error-details
+Mode=$1
+
+if [[ -z $Mode || $Mode == "prod" ]]; then
+    webpack bundle --stats-error-details
+elif [[ $Mode == "dev" ]]; then
+    webpack bundle --stats-error-details --config webpack-dev.config.js
+else
+    webpack bundle --stats-error-details
+fi
 # EOF
