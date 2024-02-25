@@ -356,7 +356,6 @@ tr > th:last-child { border-right: 1px solid #ddd; }
 .disabled {
     color: #454545;
 }
-
 #main      { float:right !important; }
 #main +nav { float:left  !important; }
 /* EOF */
