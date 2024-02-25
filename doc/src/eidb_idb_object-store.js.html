@@ -1,0 +1,556 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: eidb/idb/object-store.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: eidb/idb/object-store.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/**
+ * @module eidb/idb/object_store
+ */
+// Modules
+import eidb              from "../../eidb.js";
+import base              from "../base.js";
+import index             from "../idb/index.js";
+import transaction       from "./transaction.js";
+import key_range         from "./key-range.js";
+import cursor            from "./cursor.js";
+import cursor_with_value from "./cursor-with-value.js";
+
+// Shorthands
+var log      = console.log;
+var logw     = console.warn;
+var loge     = console.error;
+var new_lock = base.new_lock;
+
+function OX_INDENT_ONERROR_ONSUCCESS(){}
+function $_____CLASS_____(){}
+
+/** 
+ * `eidb.idb.object_store` IDBObjectStore class wrapper
+ */
+class object_store {
+
+    /**
+     * Properties
+     */
+    self = null;
+
+    /**
+     * Construct with the IDBObjectStore instance underhood
+     * @param {IDBObjectStore} Idb_Object_Store - IDBObjectStore instance to use
+     */
+    constructor(Idb_Object_Store){
+        this.self = Idb_Object_Store;
+    }
+    
+    #_____SETS_AND_GETS_____(){}
+
+    /**
+     * Get autoIncrement
+     * @return {Boolean}
+     */
+    get auto_increment(){
+        return this.self.autoIncrement;
+    }
+
+    /**
+     * Get indexNames
+     * @return {Array}
+     */
+    get Index_Names(){
+        return [...this.self.indexNames];
+    }
+
+    /**
+     * Get keyPath
+     * @return {String|Array}
+     */
+    get Key_Path(){
+        return this.self.keyPath;
+    }
+
+    /**
+     * Get name
+     * @return {Boolean}
+     */
+    get Name(){
+        return this.self.name;
+    }
+
+    /**
+     * Get current transaction
+     * @return {Object}
+     */
+    get Transaction(){
+        return new transaction(this.self.transaction);
+    }
+    
+    #_____METHODS_____(){}
+
+    /**
+     * Add value (INSERT), EnIndex has id field autoincremented, 
+     * no key will be passed to IDBObjectStore.add
+     * @return {Object} Error or added object id
+     */ 
+    async add(Value){
+        try {
+            var Req           = this.self.add(Value);
+            var [Lock,unlock] = new_lock();
+
+            Req.onerror = function(Ev){
+                unlock(Ev.target.error);
+            };
+            Req.onsuccess = function(Ev){
+                unlock(Ev.target.result);
+            };
+            return await Lock;
+        }
+        catch (Dom_Exception){
+            loge("[EI] object_store.add: Error:",Dom_Exception);
+            return Dom_Exception;
+        }
+    }
+
+    /**
+     * Clear store (DELETE)
+     * @return {Object} Error or null
+     */
+    async clear(){
+        try {
+            var Req           = this.self.clear();
+            var [Lock,unlock] = new_lock();
+
+            Req.onerror = function(Ev){
+                unlock(Ev.target.error);
+            };
+            Req.onsuccess = function(Ev){
+                unlock(Ev.target.result);
+            };
+            return await Lock;
+        }
+        catch (Dom_Exception){
+            loge("[EI] object_store.clear: Error:",Dom_Exception);
+            return Dom_Exception;
+        }
+    }
+
+    /**
+     * Count values (COUNT)
+     * @param  {key_range} Range - The primary index range to count, can be null
+     * @return {Object}    Error or count value
+     */
+    async count(Range){
+        try {
+            if (Range==null)
+                var Req = this.self.count();
+            else{
+                if (Range.constructor==key_range)
+                    var Req = this.self.count(Range.self);
+                else
+                    var Req = this.self.count(Range);
+            }
+
+            var [Lock,unlock] = new_lock();
+
+            Req.onerror = function(Ev){
+                unlock(Ev.target.error);
+            };
+            Req.onsuccess = function(Ev){
+                unlock(Ev.target.result);
+            };
+            return await Lock;
+        }
+        catch (Dom_Exception){
+            loge("[EI] object_store.count: Error:",Dom_Exception);
+            return Dom_Exception;
+        }
+    }
+
+    /**
+     * Create index (CREATE INDEX)
+     * @return {Object} Error or the index object
+     */
+    create_index(Name,Key_Path,Key_Type){
+        try {
+            if (Key_Type==eidb.n1)
+                var Params={unique:false, multiEntry:false};
+            else
+            if (Key_Type==eidb.n2)
+                var Params={unique:false, multiEntry:true};
+            else
+            if (Key_Type==eidb.u1)
+                var Params={unique:true, multiEntry:false};
+            else
+            if (Key_Type==eidb.u2)
+                var Params={unique:true, multiEntry:true};
+            else{}
+
+            return new index(this.self.createIndex(Name,Key_Path,Params));
+        }
+        catch (Dom_Exception){
+            loge("[EI] object_store.create_index: Error:",Dom_Exception);
+            return Dom_Exception;
+        }
+    }
+
+    /**
+     * Delete objects (DELETE)
+     * @param  {key_range} Range - A primary key range
+     * @return {Object}    Error or null
+     */
+    async delete(Range){
+        try {
+            if (Range.constructor==key_range)
+                var Req = this.self.delete(Range.self);
+            else
+                var Req = this.self.delete(Range);
+
+            var [Lock,unlock] = new_lock();
+
+            Req.onerror = function(Ev){
+                unlock(Ev.target.error);
+            };
+            Req.onsuccess = function(Ev){
+                unlock(Ev.target.result);
+            };
+            return await Lock;
+        }
+        catch (Dom_Exception){
+            loge("[EI] object_store.delete: Error:",Dom_Exception);
+            return Dom_Exception;
+        }
+    }
+
+    /**
+     * Delete index (DELETE INDEX)
+     * @return {Object} Error or null
+     */
+    delete_index(Name){
+        try {
+            this.self.deleteIndex(Name);
+        }
+        catch (Dom_Exception){
+            loge("[EI] object_store.delete_index: Error:",Dom_Exception);
+            return Dom_Exception;
+        }
+    }
+
+    /**
+     * Get (SELECT) 1 object specified by primary key range
+     * @return {Object} Error or data object
+     */
+    async get(Range){
+        try {
+            if (Range==null)
+                var Req = this.self.get();
+            else{
+                if (Range.constructor==key_range)
+                    var Req = this.self.get(Range.self);
+                else
+                    var Req = this.self.get(Range);
+            }
+
+            var [Lock,unlock] = new_lock();
+
+            Req.onerror = function(Ev){
+                unlock(Ev.target.error);
+            };
+            Req.onsuccess = function(Ev){
+                unlock(Ev.target.result);
+            };
+            return await Lock;
+        }
+        catch (Dom_Exception){
+            loge("[EI] object_store.get: Error:",Dom_Exception);
+            return Dom_Exception;
+        }
+    }
+
+    /**
+     * Get (SELECT) all objects specified by primary key range
+     * @return {Object} Error or array of objects
+     */
+     async get_all(Range){
+        try {
+            if (Range==null)
+                var Req = this.self.getAll();
+            else{
+                if (Range.constructor==key_range)
+                    var Req = this.self.getAll(Range.self);
+                else    
+                    var Req = this.self.getAll(Range);
+            }
+
+            var [Lock,unlock] = new_lock();
+
+            Req.onerror = function(Ev){
+                unlock(Ev.target.error);
+            };
+            Req.onsuccess = function(Ev){
+                unlock(Ev.target.result);
+            };
+            return await Lock;
+        }
+        catch (Dom_Exception){
+            loge("[EI] object_store.get_all: Error:",Dom_Exception);
+            return Dom_Exception;
+        }
+    }
+
+    /**
+     * Get (SELECT) all key objects (key field of object only) specified by primary key range
+     * @return {Object} Error or array of keys
+     */
+    async get_all_keys(Range, max){
+        try {
+            if (Range==null)
+                var Req = this.self.getAllKeys();
+            else{
+                if (Range.constructor==key_range)
+                    var Req = this.self.getAllKeys(Range.self, max);
+                else    
+                    var Req = this.self.getAllKeys(Range, max);
+            }
+
+            var [Lock,unlock] = new_lock();
+
+            Req.onerror = function(Ev){
+                unlock(Ev.target.error);
+            };
+            Req.onsuccess = function(Ev){
+                unlock(Ev.target.result);
+            };
+            return await Lock;
+        }
+        catch (Dom_Exception){
+            loge("[EI] object_store.get_all_keys: Error:",Dom_Exception);
+            return Dom_Exception;
+        }
+    }
+
+    /**
+     * Get (SELECT) 1 key object (key field of object only) specified by primary key range
+     * @return {Object} Error or key
+     */
+    async get_key(Range){
+        try {
+            if (Range==null)
+                var Req = this.self.getKey();
+            else{
+                if (Range.constructor==key_range)
+                    var Req = this.self.getKey(Range.self);
+                else
+                    var Req = this.self.getKey(Range);
+            }
+
+            var [Lock,unlock] = new_lock();
+
+            Req.onerror = function(Ev){
+                unlock(Ev.target.error);
+            };
+            Req.onsuccess = function(Ev){
+                unlock(Ev.target.result);
+            };
+            return await Lock;
+        }
+        catch (Dom_Exception){
+            loge("[EI] object_store.get_key: Error:",Dom_Exception);
+            return Dom_Exception;
+        }
+    }
+
+    /**
+     * Get index
+     */
+    index(Name){
+        try {
+            return new index(this.self.index(Name));
+        }
+        catch (Dom_Exception){
+            loge("[EI] object_store.index: Error:",Dom_Exception);
+            return Dom_Exception;
+        }
+    }
+
+    /**
+     * Open cursor (normal cursor with .value)&lt;br>
+     * Use callback `func` with cursor coz `.onsuccess` is fired multiple times.
+     * There's no cursor close in IndexedDB, callback returns "stop" to stop the cursor, 
+     * will be terminated by transaction end.
+     * @return {Object} Error or null
+     */
+    async open_cursor(Range,Direction="next", func){ // "nextunique", "prev", "prevunique"
+        try {         
+            if (Range==null)   
+                var Req = this.self.openCursor();
+            else{
+                if (Range.constructor==key_range)
+                    var Req = this.self.openCursor(Range.self, Direction);
+                else
+                    var Req = this.self.openCursor(Range, Direction);
+            }
+
+            var [Lock,unlock] = new_lock();
+
+            // Events
+            Req.onerror = function(Ev){
+                unlock(Ev.target.error);
+            };
+            Req.onsuccess = async function(Ev){
+                var Cursor = Ev.target.result;
+
+                if (Cursor!=null){ 
+                    let guide = await func(Cursor);
+
+                    if (guide=="stop")
+                        unlock(); // Don't call Cursor.continue()
+                    else
+                        Cursor.continue();
+                }
+                else 
+                    unlock(null);
+            };
+            return await Lock;
+        }
+        catch (Dom_Exception){
+            loge("[EI] object_store.open_cursor: Error:",Dom_Exception);
+            return Dom_Exception;
+        }
+    }
+
+    /**
+     * Open key cursor (cursor with no .value)&lt;br>
+     * Use callback `func` with cursor coz `.onsuccess` is fired multiple times.
+     * There's no cursor close in IndexedDB, callback returns "stop" to stop the cursor, 
+     * will be terminated by transaction end.
+     * @return {Object} Error or null
+     */
+    async open_key_cursor(Range,Direction="next", func){ // "nextunique", "prev", "prevunique"
+        try {         
+            if (Range==null)   
+                var Req = this.self.openKeyCursor();
+            else{
+                if (Range.constructor==key_range)
+                    var Req = this.self.openKeyCursor(Range.self, Direction);
+                else
+                    var Req = this.self.openKeyCursor(Range, Direction);
+            }
+
+            var [Lock,unlock] = new_lock();
+
+            // Events
+            Req.onerror = function(Ev){
+                unlock(Ev.target.error);
+            };
+            Req.onsuccess = async function(Ev){
+                var Cursor = Ev.target.result;
+
+                if (Cursor!=null){ 
+                    let guide = await func(Cursor);
+
+                    if (guide=="stop")
+                        unlock(); // Don't call Cursor.continue()
+                    else
+                        Cursor.continue();
+                }
+                else 
+                    unlock(null);
+            };
+            return await Lock;
+        }
+        catch (Dom_Exception){
+            loge("[EI] object_store.open_key_cursor: Error:",Dom_Exception);
+            return Dom_Exception;
+        }
+    }
+
+    /**
+     * Put (UPSERT) value to store, 
+     * Item.id==null|notExisting -> INSERT, Item.id!=null -> UPDATE
+     * @param  {Object}  Item     - Item to put
+     * @param  {Object}  Range    - Warn: Don't use this field, all stores use in-line primary key.
+     * @param  {Boolean} wait     - Use false for those need to put in a loop
+     * @param  {Object}  callback - Use together with wait=false, to count when all puts are done.
+     * @return {Object}  Error or result
+     */
+    async put(Item,Range, wait=true,callback){ // wait &amp; callback param are for cruds.update_many
+        try {            
+            if (Range==null)
+                var Req = this.self.put(Item); // With .id -> update, otherwise insert
+            else{
+                if (Range.constructor==key_range)
+                    var Req = this.self.put(Item,Range.self); // For out-line key
+                else{
+                    log(Item,Range)
+                    var Req = this.self.put(Item,Range); // For out-line key
+                }
+            }
+
+            var [Lock,unlock] = new_lock();
+
+            Req.onerror = function(Ev){
+                if (wait==false) callback(Ev.target.error);
+                unlock(Ev.target.error);
+            };
+            Req.onsuccess = function(Ev){
+                if (wait==false) callback(Ev.target.result);
+                unlock(Ev.target.result);
+            };
+
+            if (wait) return await Lock;
+            else      return;
+        }
+        catch (Dom_Exception){
+            loge("[EI] object_store.put: Error:",Dom_Exception);
+            return Dom_Exception;
+        }
+    }
+}
+
+// Module export
+export default object_store;
+// EOF</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-eidb.html">eidb</a></li><li><a href="module-eidb_base.html">eidb/base</a></li><li><a href="module-eidb_idb.html">eidb/idb</a></li><li><a href="module-eidb_idb_cursor.html">eidb/idb/cursor</a></li><li><a href="module-eidb_idb_cursor_with_value.html">eidb/idb/cursor_with_value</a></li><li><a href="module-eidb_idb_database.html">eidb/idb/database</a></li><li><a href="module-eidb_idb_factory.html">eidb/idb/factory</a></li><li><a href="module-eidb_idb_index.html">eidb/idb/index</a></li><li><a href="module-eidb_idb_key_range.html">eidb/idb/key_range</a></li><li><a href="module-eidb_idb_object_store.html">eidb/idb/object_store</a></li><li><a href="module-eidb_idb_open_db_request.html">eidb/idb/open_db_request</a></li><li><a href="module-eidb_idb_request.html">eidb/idb/request</a></li><li><a href="module-eidb_idb_transaction.html">eidb/idb/transaction</a></li><li><a href="module-eidb_idb_version_change_event.html">eidb/idb/version_change_event</a></li><li><a href="module-eidb_idbx.html">eidb/idbx</a></li><li><a href="module-eidb_idbx_crud.html">eidb/idbx/crud</a></li><li><a href="module-eidb_idbx_fts.html">eidb/idbx/fts</a></li><li><a href="module-eidb_idbx_miscs.html">eidb/idbx/miscs</a></li><li><a href="module-eidb_idbx_op_hist.html">eidb/idbx/op_hist</a></li><li><a href="module-eidb_idbxs.html">eidb/idbxs</a></li><li><a href="module-eidb_idbxs_blind_index.html">eidb/idbxs/blind_index</a></li><li><a href="module-eidb_idbxs_cruds.html">eidb/idbxs/cruds</a></li><li><a href="module-eidb_idbxs_dobi.html">eidb/idbxs/dobi</a></li><li><a href="module-eidb_idbxs_ftss.html">eidb/idbxs/ftss</a></li><li><a href="module-eidb_idbxs_op_hists.html">eidb/idbxs/op_hists</a></li><li><a href="module-eidb_net_sync.html">eidb/net/sync</a></li><li><a href="module-eidb_net_wsocket.html">eidb/net/wsocket</a></li><li><a href="module-eidb_storage_slocal.html">eidb/storage/slocal</a></li><li><a href="module-eidb_storage_ssession.html">eidb/storage/ssession</a></li><li><a href="module-eidb_utils.html">eidb/utils</a></li><li><a href="module-eidb_wcrypto.html">eidb/wcrypto</a></li></ul><h3>Classes</h3><ul><li><a href="Point.html">Point</a></li><li><a href="module-eidb_base-base.html">base</a></li><li><a href="module-eidb_idb_cursor_with_value-cursor_with_value.html">cursor_with_value</a></li><li><a href="module-eidb_idb_cursor-cursor.html">cursor</a></li><li><a href="module-eidb_idb_database-database.html">database</a></li><li><a href="module-eidb_idb_factory-factory.html">factory</a></li><li><a href="module-eidb_idb_index-index.html">index</a></li><li><a href="module-eidb_idb_key_range-key_range.html">key_range</a></li><li><a href="module-eidb_idb_object_store-object_store.html">object_store</a></li><li><a href="module-eidb_idb_open_db_request-open_db_request.html">open_db_request</a></li><li><a href="module-eidb_idb_request-request.html">request</a></li><li><a href="module-eidb_idb_transaction-transaction.html">transaction</a></li><li><a href="module-eidb_idb_version_change_event-version_change_event.html">version_change_event</a></li><li><a href="module-eidb_idbx_crud-crud.html">crud</a></li><li><a href="module-eidb_idbx_fts-fts.html">fts</a></li><li><a href="module-eidb_idbx_miscs-miscs.html">miscs</a></li><li><a href="module-eidb_idbx_op_hist-op_hist.html">op_hist</a></li><li><a href="module-eidb_idbxs_blind_index-blind_index.html">blind_index</a></li><li><a href="module-eidb_idbxs_cruds-cruds.html">cruds</a></li><li><a href="module-eidb_idbxs_dobi-dobi.html">dobi</a></li><li><a href="module-eidb_idbxs_ftss-ftss.html">ftss</a></li><li><a href="module-eidb_idbxs_op_hists-op_hists.html">op_hists</a></li><li><a href="module-eidb_idbxs-idbxs.html">idbxs</a></li><li><a href="module-eidb_idbx-idbx.html">idbx</a></li><li><a href="module-eidb_idb-idb.html">idb</a></li><li><a href="module-eidb_net_sync-sync.html">sync</a></li><li><a href="module-eidb_net_wsocket-wsocket.html">wsocket</a></li><li><a href="module-eidb_storage_slocal-slocal.html">slocal</a></li><li><a href="module-eidb_storage_ssession-ssession.html">ssession</a></li><li><a href="module-eidb_utils-utils.html">utils</a></li><li><a href="module-eidb_wcrypto-wcrypto.html">wcrypto</a></li><li><a href="module-eidb-eidb.html">eidb</a></li></ul><h3>Global</h3><ul><li><a href="global.html#Curve">Curve</a></li><li><a href="global.html#get_pubkey_point">get_pubkey_point</a></li><li><a href="global.html#mod">mod</a></li><li><a href="global.html#set_curve">set_curve</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.2</a> on Sun Feb 25 2024 15:26:25 GMT+0700 (Indochina Time)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

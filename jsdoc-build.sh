@@ -5,6 +5,9 @@ if [[ $BASH_SOURCE != $0 ]]; then
     echo "Don't source this file, Bash it."
     return
 fi
+echo "Deprecated, use DevOps"
+exit
+
 if [[ ! -f doc-conf/jsdoc.json ]]; then
     echo "Error: Config file ./doc-conf/jsdoc.json not found!"
     exit  

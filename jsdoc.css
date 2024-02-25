@@ -1,0 +1,3 @@
+#main      { float:right !important; }
+#main +nav { float:left  !important; }
+/* EOF */

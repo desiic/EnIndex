@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: eidb/idb/factory.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: eidb/idb/factory.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/**
+ * @module eidb/idb/factory
+ */
+// Modules
+import eidb        from "../../eidb.js";
+import base        from "../base.js";
+import database    from "./database.js";
+import transaction from "./transaction.js";
+
+// Shorthands
+var log      = console.log;
+var logw     = console.warn;
+var loge     = console.error;
+var new_lock = base.new_lock;
+
+function OX_INDENT_ONERROR_ONSUCCESS(){}
+function $_____CLASS_____(){}
+
+/** 
+ * `eidb.idb.factory` IDBFactory class wrapper
+ */
+class factory {
+    
+    /**
+     * Properties
+     */ 
+    self = null;
+
+    /**
+     * Construct with the IDBFactory instance underhood
+     * @param {IDBFactory} Idb_Factory - IDBFactory instance to use, usually 
+     *                                   just `window.indexedDB`
+     */
+    constructor(Idb_Factory){
+        this.self = Idb_Factory;
+    }
+
+    #_____DB_OPS_____(){}
+
+    /**
+     * Get the list of databases, using the instance of IDBFactory set by constructor
+     * @param  {String} Db_Name - Name to check if on Firefox, no .databases() until 2023.
+     * @return {Object} Error or the list of database names
+     */
+    async databases(Db_Name){
+        try {
+            // Firefox low adaption of IDBFactory.databases(),
+            // not existing even until 2023.
+            // Force create db
+            if (this.self.databases == null){
+                var Db = await this.open(Db_Name);
+                Db.close();
+                return [{name:Db_Name}];
+            }
+
+            // Chromium-based should be fine with this:
+            else
+                return await this.self.databases();
+        }
+        catch (Dom_Exception){
+            loge("[EI] factory.databases: Error:",Dom_Exception);
+            return Dom_Exception;
+        }
+    }
+
+    /**
+     * Delete database, using the instance of IDBFactory set by constructor
+     * @param  {String}      Name - Name of the database to delete
+     * @return {Object|null} Error object or null; note that it's no
+     *                       errors when the database name doesn't exist
+     */
+     async delete_database(Name){
+        var Req           = this.self.deleteDatabase(Name); // No exceptions
+        var [Lock,unlock] = new_lock();
+
+        Req.onerror = function(Ev){
+            unlock(Ev.target.error);
+        };
+        Req.onsuccess = function(Ev){
+            unlock(null);
+        };
+        return await Lock;
+    }
+
+    /** 
+     * Open db using db name and a specific version, using the IDBFactory 
+     * instance set by constructor     
+     * @param  {String} Name    - Name of db to open
+     * @param  {Number} version - Version of db (version of index schema), >= current ver
+     * @return {Object} Error or the database object&lt;br/>
+     *                  &lt;ul>&lt;b>4 cases of returned value:&lt;/b>
+     *                      &lt;li>`Err.Status = "errored"`&lt;/li>
+     *                      &lt;li>`Err.Status = "blocked", Err.Event = Event_Obj`&lt;/li>
+     *                      &lt;li>`Db.to_upgrade = true, Db.Transaction to use`&lt;/li>
+     *                      &lt;li>`Db.to_upgrade = false`&lt;/li>
+     *                  &lt;/ul>
+     */
+    async open(Name, version){
+        // Counter
+        if (window._num_db_cons == null)
+            window._num_db_cons = 1;
+        else
+            window._num_db_cons++;
+
+        // This value should be always 0, or something wrong!
+        // Commented out, too many logs:
+        // log("[EI] Num db connections before open:",window._num_db_cons-1);
+
+        // Open
+        try {
+            var Req = this.self.open(Name,version);
+        }
+        catch (Err){ // eg. when version is 0 or negative
+            loge("[EI] idb.open: Error caught:",Err);
+            Err.Status = "errored";
+            return Err;
+        }
+
+        // Lock to wait for callback
+        var [Lock,unlock] = new_lock();
+        var Err_Obj       = null;
+        var Ev_Obj        = null;
+
+        // Operation sequences may happen:
+        //   - error
+        //   - blocked -(wait for closing all connections)-> upgrade -> success
+        //   - upgrade -> success
+        var Sequence_Cancel_Reason = null;
+
+        Req.onerror = function(Ev){
+            // TO-DO: Fix "DOMException: The connection was closed" when callin open_av,
+            // open_av already returned db with to-upgrade but this onerror still fired.
+            // Temporary commented this error log line out:
+            // loge("[EI] idb.open: Failed with error:",Ev.target.error);            
+            Err_Obj = Ev.target.error;
+            unlock("errored"); // Nothing next but just clear the lock, no sequence to cancel
+        };        
+        Req.onblocked = function(Ev){
+            logw(`[EI] idb.open: Upgrade blocked, requested to change to version ${version}`);
+            logw("[EI] Check source code, shouldn't be blocked by connections in current tab or other tabs.");
+            logw("[EI] Tip: Avoid being blocked by using temporary connections in all tabs\x20"+
+                 "together with IDBDatabase.versionchange event.");
+
+            Ev_Obj = Ev;     
+            unlock("blocked");
+            Sequence_Cancel_Reason = "blocked";
+        };
+        Req.onupgradeneeded = function(Ev){
+            if (Sequence_Cancel_Reason != null){
+                logw(`[EI] idb.open: Upgrade cancelled due to '${Sequence_Cancel_Reason}' event fired right previously`);
+                unlock(); // Redundant, no longer awaited
+                return;
+            }
+
+            log(`[EI] idb.open: Upgrade needed, to version ${version}`);
+            unlock("to-upgrade");
+            Sequence_Cancel_Reason = "to-upgrade";
+        };
+        Req.onsuccess = function(Ev){
+            if (Sequence_Cancel_Reason != null){
+                logw(`[EI] idb.open: Open cancelled due to '${Sequence_Cancel_Reason}' event fired right previously`);
+                unlock(); // Redundant, no longer awaited
+                return;
+            }
+
+            // log(`[EI] idb.open: Database opened successfully`); // Avoid log polution, commented out
+            unlock("opened");
+        };
+        var Result = await Lock;
+
+        if (Result=="errored"){   
+            Err_Obj.Status = "errored";
+            return Err_Obj; // Error, no .result        
+        }
+
+        if (Result=="blocked"){ 
+            let Err_Obj    = new Error("Upgrade is blocked by other connections, close them all first.");
+            Err_Obj.Status = "blocked";
+            Err_Obj.Event  = Ev_Obj;
+            return Err_Obj;
+        }
+        
+        // To upgrade: Caller to upgrade, close, and reopen db
+        if (Result=="to-upgrade"){ 
+            let Db = new database(Req.result); // .result is IDBDatabase object    
+            Db.to_upgrade  = true;
+            Db.Transaction = new transaction(Req.transaction);
+
+            // Count number of connections
+            if (eidb._num_db_cons==null) eidb._num_db_cons =1;
+            else                         eidb._num_db_cons+=1;
+
+            return Db;
+        }
+
+        // Db opened normally
+        if (Result=="opened"){ 
+            let Db = new database(Req.result); // .result is IDBDatabase object    
+            Db.to_upgrade = false;
+
+            // Count number of connections
+            if (eidb._num_db_cons==null) eidb._num_db_cons =1;
+            else                         eidb._num_db_cons+=1;
+            
+            return Db;
+        }
+    }
+}
+
+// Module export
+export default factory;
+// EOF</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-eidb.html">eidb</a></li><li><a href="module-eidb_base.html">eidb/base</a></li><li><a href="module-eidb_idb.html">eidb/idb</a></li><li><a href="module-eidb_idb_cursor.html">eidb/idb/cursor</a></li><li><a href="module-eidb_idb_cursor_with_value.html">eidb/idb/cursor_with_value</a></li><li><a href="module-eidb_idb_database.html">eidb/idb/database</a></li><li><a href="module-eidb_idb_factory.html">eidb/idb/factory</a></li><li><a href="module-eidb_idb_index.html">eidb/idb/index</a></li><li><a href="module-eidb_idb_key_range.html">eidb/idb/key_range</a></li><li><a href="module-eidb_idb_object_store.html">eidb/idb/object_store</a></li><li><a href="module-eidb_idb_open_db_request.html">eidb/idb/open_db_request</a></li><li><a href="module-eidb_idb_request.html">eidb/idb/request</a></li><li><a href="module-eidb_idb_transaction.html">eidb/idb/transaction</a></li><li><a href="module-eidb_idb_version_change_event.html">eidb/idb/version_change_event</a></li><li><a href="module-eidb_idbx.html">eidb/idbx</a></li><li><a href="module-eidb_idbx_crud.html">eidb/idbx/crud</a></li><li><a href="module-eidb_idbx_fts.html">eidb/idbx/fts</a></li><li><a href="module-eidb_idbx_miscs.html">eidb/idbx/miscs</a></li><li><a href="module-eidb_idbx_op_hist.html">eidb/idbx/op_hist</a></li><li><a href="module-eidb_idbxs.html">eidb/idbxs</a></li><li><a href="module-eidb_idbxs_blind_index.html">eidb/idbxs/blind_index</a></li><li><a href="module-eidb_idbxs_cruds.html">eidb/idbxs/cruds</a></li><li><a href="module-eidb_idbxs_dobi.html">eidb/idbxs/dobi</a></li><li><a href="module-eidb_idbxs_ftss.html">eidb/idbxs/ftss</a></li><li><a href="module-eidb_idbxs_op_hists.html">eidb/idbxs/op_hists</a></li><li><a href="module-eidb_net_sync.html">eidb/net/sync</a></li><li><a href="module-eidb_net_wsocket.html">eidb/net/wsocket</a></li><li><a href="module-eidb_storage_slocal.html">eidb/storage/slocal</a></li><li><a href="module-eidb_storage_ssession.html">eidb/storage/ssession</a></li><li><a href="module-eidb_utils.html">eidb/utils</a></li><li><a href="module-eidb_wcrypto.html">eidb/wcrypto</a></li></ul><h3>Classes</h3><ul><li><a href="Point.html">Point</a></li><li><a href="module-eidb_base-base.html">base</a></li><li><a href="module-eidb_idb_cursor_with_value-cursor_with_value.html">cursor_with_value</a></li><li><a href="module-eidb_idb_cursor-cursor.html">cursor</a></li><li><a href="module-eidb_idb_database-database.html">database</a></li><li><a href="module-eidb_idb_factory-factory.html">factory</a></li><li><a href="module-eidb_idb_index-index.html">index</a></li><li><a href="module-eidb_idb_key_range-key_range.html">key_range</a></li><li><a href="module-eidb_idb_object_store-object_store.html">object_store</a></li><li><a href="module-eidb_idb_open_db_request-open_db_request.html">open_db_request</a></li><li><a href="module-eidb_idb_request-request.html">request</a></li><li><a href="module-eidb_idb_transaction-transaction.html">transaction</a></li><li><a href="module-eidb_idb_version_change_event-version_change_event.html">version_change_event</a></li><li><a href="module-eidb_idbx_crud-crud.html">crud</a></li><li><a href="module-eidb_idbx_fts-fts.html">fts</a></li><li><a href="module-eidb_idbx_miscs-miscs.html">miscs</a></li><li><a href="module-eidb_idbx_op_hist-op_hist.html">op_hist</a></li><li><a href="module-eidb_idbxs_blind_index-blind_index.html">blind_index</a></li><li><a href="module-eidb_idbxs_cruds-cruds.html">cruds</a></li><li><a href="module-eidb_idbxs_dobi-dobi.html">dobi</a></li><li><a href="module-eidb_idbxs_ftss-ftss.html">ftss</a></li><li><a href="module-eidb_idbxs_op_hists-op_hists.html">op_hists</a></li><li><a href="module-eidb_idbxs-idbxs.html">idbxs</a></li><li><a href="module-eidb_idbx-idbx.html">idbx</a></li><li><a href="module-eidb_idb-idb.html">idb</a></li><li><a href="module-eidb_net_sync-sync.html">sync</a></li><li><a href="module-eidb_net_wsocket-wsocket.html">wsocket</a></li><li><a href="module-eidb_storage_slocal-slocal.html">slocal</a></li><li><a href="module-eidb_storage_ssession-ssession.html">ssession</a></li><li><a href="module-eidb_utils-utils.html">utils</a></li><li><a href="module-eidb_wcrypto-wcrypto.html">wcrypto</a></li><li><a href="module-eidb-eidb.html">eidb</a></li></ul><h3>Global</h3><ul><li><a href="global.html#Curve">Curve</a></li><li><a href="global.html#get_pubkey_point">get_pubkey_point</a></li><li><a href="global.html#mod">mod</a></li><li><a href="global.html#set_curve">set_curve</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.2</a> on Sun Feb 25 2024 15:26:25 GMT+0700 (Indochina Time)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>
